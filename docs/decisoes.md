@@ -61,7 +61,18 @@ Limites que se mantêm:
 | IMP-19 | O nível usado para atribuir benefícios é o que o cliente tinha antes de fechar o ciclo | Evita que a mesma lavagem suba o nível e beneficie logo do nível novo |
 | IMP-20 | As regras são versões imutáveis. Uma nova versão vale a partir da publicação; os movimentos guardam a versão aplicada | Auditabilidade (cap. 13.3) |
 | IMP-21 | O progresso é sempre calculado a partir do livro de movimentos; não há tabela `loyalty_progress` | O cap. 11.1 exige que o progresso mostrado resulte dos movimentos; evita duas fontes de verdade |
-| IMP-22 | O consentimento de fidelização (cap. 14.2) ainda não condiciona a acumulação | Os consentimentos são do marco I-9 |
+| IMP-22 | ~~O consentimento de fidelização ainda não condiciona a acumulação~~ Substituída pela IMP-51 | — |
+
+## Decisões de implementação (I-9)
+
+| ID | Decisão | Motivo |
+|---|---|---|
+| IMP-51 | Sem consentimento de fidelização (o último registo), o cliente não acumula progresso nem usa benefícios; o saldo e o histórico mantêm-se | Cap. 14.2: o consentimento é "para acumular progresso e receber benefícios" |
+| IMP-52 | Um cliente sem nenhum registo de consentimento é tratado como "não consentiu" | Minimização: o consentimento tem de ser explícito |
+| IMP-53 | O fecho de caixa é um registo imutável por operador e dia. Uma diferença exige nota e aparece como inconsistência | Cap. 13.3: correcções registadas, nunca apagadas |
+| IMP-54 | Um pagamento digital pendente há mais de 30 min é uma inconsistência | Proposta para o fecho; o valor é ajustável no código (`STALE_PENDING_MINUTES`) |
+| IMP-55 | Os sinais de fraude (D-08) não foram implementados | Pendentes. Os controlos básicos (idempotência, unicidade, auditoria) existem |
+| IMP-56 | O consentimento de marketing é guardado mas não é usado: o módulo de campanhas continua reservado | DEC-13 |
 
 ## Decisões de implementação (I-8)
 
@@ -105,7 +116,7 @@ Limites que se mantêm:
 | IMP-23 | O assistente fica em `interfaces/chat`, como um canal de entrada ao lado da API HTTP, e chama os mesmos casos de uso | Cap. 15.6: "usa os mesmos serviços e regras do Pátio". Os textos da conversa são apresentação |
 | IMP-24 | Os avisos ao cliente passam por uma porta (`CustomerNotifier`); a implementação escreve mensagens do sistema na conversa | Os casos de uso não dependem do canal. Uma integração real (fora do protótipo) só substitui a implementação |
 | IMP-25 | Os avisos são gravados na mesma transacção da operação que os origina | Uma operação desfeita não deixa avisos falsos |
-| IMP-26 | Os consentimentos de fidelização e de marketing são pedidos no registo pela conversa e guardados com histórico. Ainda não condicionam a acumulação nem as campanhas | Cap. 14.2. A aplicação dos consentimentos e o consentimento de partilha com bancos ficam para o I-9 e o I-7 |
+| IMP-26 | Os consentimentos de fidelização e de marketing são pedidos no registo pela conversa e guardados com histórico | Cap. 14.2. A aplicação está na IMP-51; a partilha com bancos é a autorização do I-7 |
 | IMP-27 | Uma conversa nova começa sempre em `START`: o assistente cumprimenta pelo nome quem já é cliente (por exemplo, registado no Pátio) | Evita pedir o registo a quem já existe |
 | IMP-28 | O pagamento pela conversa é digital simulado e confirmado logo; a chave de idempotência depende da conversa e do serviço | Demonstração do fluxo M5. Repetir a confirmação não paga duas vezes |
 | IMP-29 | As horas na conversa usam o fuso de Maputo (`Africa/Maputo`) | O texto é gerado no servidor e não depende do fuso do browser |

@@ -69,7 +69,7 @@ A arquitectura e a regra de dependências entre camadas estão em [docs/arquitec
 | I-6 | Painel, viaturas por classe, histórico por matrícula, catálogo | ✅ |
 | I-7 | Vertente Banco, só para demonstração (Moza Banco; D-16: demonstrativo com aviso) | ✅ |
 | I-8 | Marcações e capacidade (políticas D-09 a D-14 por validar) | ✅ |
-| I-9 | Consentimentos, registo de alterações, reconciliação | — |
+| I-9 | Consentimentos, registo de alterações, reconciliação | ✅ |
 | I-10 | Documentação e changelog | em curso |
 
 O histórico de alterações está em [changelog.md](changelog.md).
@@ -81,8 +81,8 @@ O histórico de alterações está em [changelog.md](changelog.md).
 | `/` | Início, com os módulos | ✅ |
 | `/patio` | Pátio: marcações de hoje, fila, em execução, pronto, postos, registo de serviço, numerário declarado (M7, M8, M9) | ✅ |
 | `/simulador` · `/simulador/whatsapp/:telefone` | Simulador de WhatsApp: o utilizador faz de cliente (M1–M6) | ✅ |
-| `/painel` | Painel: indicadores com definição e origem, gráficos, capacidade e agenda, viaturas por classe, histórico por matrícula (M10–M13) | ✅ |
-| `/catalogo` | Catálogo: planos e preços por classe, classes, parâmetros de fidelização (M14) | ✅ |
+| `/painel` | Painel: indicadores com definição e origem, gráficos, capacidade e agenda, fecho do dia, viaturas por classe, histórico por matrícula (M10–M13) | ✅ |
+| `/catalogo` | Catálogo: planos e preços por classe, classes, parâmetros de fidelização, postos, registo de alterações (M14) | ✅ |
 | `/banco` | Vertente Banco: autorizações e registo de acessos (lavadora, M15); relatório autorizado e exportação (banco, M16) | ✅ |
 
 O Pátio actualiza-se a cada 3 s. O nome do operador escrito no topo fica registado como autor de cada acção. Como não há autenticação, esse nome é declarado e não verificado.
@@ -149,6 +149,19 @@ Fidelização:
 | `GET /api/customers/:id/loyalty/movements` | Livro de movimentos (`earn`, `grant`, `redeem`, `restore`, `revert`, `revert_not_applied`) |
 
 `POST /api/washes` aceita `useBenefit: true` para usar um benefício da classe da viatura.
+
+Governação (consentimentos, alterações, postos, fecho do dia):
+
+| Método e rota | Descrição |
+|---|---|
+| `GET /api/customers/:id/consents` · `POST` | Consentimentos de fidelização e de marketing, separados. `{ type, granted }`: vale o último |
+| `GET /api/change-log?entity=` | Registo de alterações de preços, planos, viaturas, regras e postos |
+| `PATCH /api/stations/:id` | `{ active }`: um posto inactivo sai da capacidade (fica registado) |
+| `GET /api/reconciliation?date=` | Fecho do dia: numerário declarado por operador, fechos e inconsistências com correcções |
+| `POST /api/reconciliation/closings` | `{ date, operator, countedCents, note? }`: uma diferença exige nota; um fecho por operador e dia |
+| `POST /api/reconciliation/corrections` | `{ date, washId?, issueCode, note }`: correcção registada, nunca apagada |
+
+`POST /api/customers` aceita `consents: { loyalty, marketing }`.
 
 Marcações e capacidade:
 
@@ -220,6 +233,8 @@ Simulador de WhatsApp:
   - cancelar devolve o benefício usado; reembolsar reverte o progresso ou regista uma "reversão não aplicada";
   - todos os parâmetros pendentes (D-01 a D-07) são configuráveis em `loyalty_rules`, em versões.
 - **Indicadores:** são sempre calculados a partir dos registos, cada um com a sua definição e origem (cap. 13.4). O digital confirmado e o numerário declarado nunca são somados (também nos gráficos, onde aparecem lado a lado). O valor por receber nunca é receita.
+- **Consentimentos:** fidelização e marketing são separados, com histórico (vale o último). Sem consentimento de fidelização não se acumula progresso nem se usa benefício, mas o histórico mantém-se. Na conversa: `ADERIR` e `PARAR`.
+- **Fecho do dia:** numerário declarado vs. contado por operador (uma diferença exige nota) e inconsistências do dia (concluído sem pagamento, digital pendente antigo, reembolsos, diferenças de caixa). As correcções são registadas, nunca apagadas, e contam na qualidade dos dados.
 - **Marcações:**
   - uma marcação reserva um bloco (duração + margem de segurança) num posto, respeitando os trabalhadores disponíveis e a reserva para a fila (D-12);
   - uma marcação confirmada **nunca é antecipada sem aceitação do cliente** (DEC-10): a lavadora propõe, o cliente aceita ou recusa (ACEITAR/MANTER na conversa); sem resposta no prazo, mantém-se o horário;
