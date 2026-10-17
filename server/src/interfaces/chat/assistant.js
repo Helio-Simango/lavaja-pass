@@ -3,12 +3,15 @@
 // Uma regra violada (ex.: matrícula de outro cliente) é respondida na conversa, sem perder o estado.
 import { BotState, ConsentType, globalCommandOf, isGreeting, optionNumber, yesNo } from '../../domain/conversation.js';
 import { parseCustomerName } from '../../domain/customer.js';
+import { addDays, localDateOf } from '../../domain/business-time.js';
 import { DomainError, NotFoundError } from '../../domain/errors.js';
 import { parsePlate } from '../../domain/plate.js';
 import { ACTIVE_WASH_STATUSES, WashPaymentState, WashStatus } from '../../domain/wash.js';
-import { date, MENU_TEXT, money, numberedList, plate, washStatusLine, washSummary } from './format.js';
+import { date, MENU_TEXT, money, numberedList, plate, time, washStatusLine, washSummary } from './format.js';
 
 const CHANNEL = 'simulador';
+const SLOTS_SHOWN = 8;
+const Intent = Object.freeze({ QUEUE: 'queue', APPOINTMENT: 'appointment' });
 const HISTORY_SIZE = 5;
 const PAYABLE_STATES = [WashPaymentState.UNPAID, WashPaymentState.DELIVERED_UNPAID];
 const CLASS_OPTIONS = [
@@ -46,6 +49,9 @@ export class WhatsAppAssistant {
     const command = globalCommandOf(session.text);
     if (command === 'STOP_MARKETING' && session.customer) return this.#stopMarketing(session);
     if (command === 'MENU' && session.customer) return this.#menu();
+    if ((command === 'ACCEPT_OFFER' || command === 'KEEP_OFFER') && session.customer) {
+      return this.#answerOffer(session, command === 'ACCEPT_OFFER');
+    }
 
     const handlers = {
       [BotState.START]: () => this.#start(session),
@@ -57,6 +63,8 @@ export class WhatsAppAssistant {
       [BotState.ASK_CLASS]: () => this.#askClass(session),
       [BotState.CHOOSE_PLAN]: () => this.#choosePlan(session),
       [BotState.CONFIRM_BENEFIT]: () => this.#confirmBenefit(session),
+      [BotState.CHOOSE_DAY]: () => this.#chooseDay(session),
+      [BotState.CHOOSE_SLOT]: () => this.#chooseSlot(session),
       [BotState.CHOOSE_PAY]: () => this.#choosePay(session),
       [BotState.CONFIRM_PAY]: () => this.#confirmPay(session),
     };
@@ -116,8 +124,8 @@ export class WhatsAppAssistant {
   #menuOption(session) {
     const options = [
       () => this.#plansAndPrices(),
-      () => this.#startQueue(session),
-      () => outcome(BotState.MENU, {}, 'As marcações ainda não estão disponíveis nesta demonstração. Pode entrar na fila (opção *2*).'),
+      () => this.#startQueue(session, Intent.QUEUE),
+      () => this.#startQueue(session, Intent.APPOINTMENT),
       () => this.#status(session),
       () => this.#startPayment(session),
       () => this.#history(session),
@@ -142,12 +150,13 @@ export class WhatsAppAssistant {
 
   // ---------- Entrar na fila ----------
 
-  #startQueue({ customer }) {
-    if (customer.vehicles.length === 0) return outcome(BotState.ASK_PLATE, {}, 'Qual é a matrícula da viatura?');
+  /** Entrar na fila (2) ou marcar horário (3): escolhe a viatura e depois o plano. */
+  #startQueue({ customer }, intent) {
+    if (customer.vehicles.length === 0) return outcome(BotState.ASK_PLATE, { intent }, 'Qual é a matrícula da viatura?');
     const vehicles = customer.vehicles.map((v) => `${plate(v.plate)} (classe ${v.classCode})`);
     return outcome(
       BotState.CHOOSE_VEHICLE,
-      { vehicleIds: customer.vehicles.map((v) => v.id) },
+      { intent, vehicleIds: customer.vehicles.map((v) => v.id) },
       `Que viatura?\n${numberedList([...vehicles, 'Outra viatura'])}`,
     );
   }
@@ -155,15 +164,19 @@ export class WhatsAppAssistant {
   #chooseVehicle({ text, context, customer }) {
     const option = optionNumber(text, context.vehicleIds.length + 1);
     if (!option) return outcome(BotState.CHOOSE_VEHICLE, context, 'Responda com o número da viatura.');
-    if (option > context.vehicleIds.length) return outcome(BotState.ASK_PLATE, {}, 'Qual é a matrícula da viatura?');
+    if (option > context.vehicleIds.length) return outcome(BotState.ASK_PLATE, { intent: context.intent }, 'Qual é a matrícula da viatura?');
     const vehicle = customer.vehicles.find((v) => v.id === context.vehicleIds[option - 1]);
-    return this.#offerPlans(vehicle);
+    return this.#offerPlans(vehicle, context.intent);
   }
 
-  #askPlate({ text }) {
+  #askPlate({ text, context }) {
     const plateNumber = parsePlate(text);
     const options = CLASS_OPTIONS.map(([code, label]) => `Classe ${code} — ${label}`);
-    return outcome(BotState.ASK_CLASS, { plate: plateNumber }, `Qual é a classe de ${plate(plateNumber)}?\n${numberedList(options)}`);
+    return outcome(
+      BotState.ASK_CLASS,
+      { intent: context.intent, plate: plateNumber },
+      `Qual é a classe de ${plate(plateNumber)}?\n${numberedList(options)}`,
+    );
   }
 
   #askClass({ text, context, customer }) {
@@ -173,15 +186,15 @@ export class WhatsAppAssistant {
       plate: context.plate,
       classId: CLASS_OPTIONS[option - 1][0],
     });
-    return this.#offerPlans(vehicle);
+    return this.#offerPlans(vehicle, context.intent);
   }
 
-  #offerPlans(vehicle) {
+  #offerPlans(vehicle, intent = Intent.QUEUE) {
     const plans = this.#services.catalogService.listPlans({ classRef: vehicle.classCode }).filter((plan) => plan.unavailableReason === null);
     const lines = plans.map((plan) => `${plan.name} · ${money(plan.priceForClass.priceCents, plan.priceForClass.currency)}`);
     return outcome(
       BotState.CHOOSE_PLAN,
-      { vehicleId: vehicle.id, classCode: vehicle.classCode, planIds: plans.map((plan) => plan.id) },
+      { intent, vehicleId: vehicle.id, classCode: vehicle.classCode, planIds: plans.map((plan) => plan.id) },
       `Planos para ${plate(vehicle.plate)} (classe ${vehicle.classCode}):\n${numberedList(lines)}`,
     );
   }
@@ -190,6 +203,9 @@ export class WhatsAppAssistant {
     const option = optionNumber(text, context.planIds.length);
     if (!option) return outcome(BotState.CHOOSE_PLAN, context, 'Responda com o número do plano.');
     const chosen = { ...context, planId: context.planIds[option - 1] };
+    if (context.intent === Intent.APPOINTMENT) {
+      return outcome(BotState.CHOOSE_DAY, chosen, `Para que dia?\n${numberedList(['Hoje', 'Amanhã'])}`);
+    }
     const progress = this.#loyaltyClass(customer.id, context.classCode);
     if (progress?.benefitsAvailable > 0) {
       return outcome(
@@ -213,12 +229,63 @@ export class WhatsAppAssistant {
     return outcome(BotState.MENU, {}, ['Está na fila ✅', washStatusLine(wash), benefit].filter(Boolean).join('\n'), 'Avisamos quando começar e quando estiver pronto. As horas são estimativas.');
   }
 
+  // ---------- Marcar horário (cap. 12) ----------
+
+  #chooseDay({ text, context, customer }) {
+    const option = optionNumber(text, 2);
+    if (!option) return outcome(BotState.CHOOSE_DAY, context, 'Responda *1* (Hoje) ou *2* (Amanhã).');
+    const { appointmentService } = this.#services;
+    const day = addDays(appointmentService.today(), option - 1);
+    const slots = appointmentService
+      .availability({ date: day, planId: context.planId, classRef: context.classCode })
+      .slice(0, SLOTS_SHOWN);
+    if (slots.length === 0) {
+      return outcome(BotState.CHOOSE_DAY, context, `Não há horários livres ${option === 1 ? 'hoje' : 'amanhã'}. Escolha outro dia ou escreva *MENU*.`);
+    }
+    return outcome(
+      BotState.CHOOSE_SLOT,
+      { ...context, slots: slots.map((slot) => slot.startsAt) },
+      `Horários livres (${date(slots[0].startsAt)}):\n${numberedList(slots.map((slot) => time(slot.startsAt)))}`,
+    );
+  }
+
+  #chooseSlot({ text, context, customer }) {
+    const option = optionNumber(text, context.slots.length);
+    if (!option) return outcome(BotState.CHOOSE_SLOT, context, 'Responda com o número do horário.');
+    // O aviso "Marcação registada" chega como mensagem do sistema.
+    this.#services.appointmentService.book({
+      vehicleId: context.vehicleId,
+      planId: context.planId,
+      startsAt: context.slots[option - 1],
+      source: CHANNEL,
+      actor: customer.name,
+    });
+    return outcome(BotState.MENU, {}, 'Obrigado! Se surgir um horário mais cedo, perguntamos antes de mudar.');
+  }
+
+  #answerOffer({ customer }, accept) {
+    const appointment = this.#services.appointmentService.respondToPendingOffer(customer.id, { accept, actor: customer.name });
+    const reply = accept ? 'Feito ✅' : `Mantém-se a marcação às ${time(appointment.startsAt)} de ${date(appointment.startsAt)}.`;
+    return outcome(BotState.MENU, {}, reply);
+  }
+
   // ---------- Estado, pagamento, histórico, fidelização ----------
 
   #status({ customer }) {
     const active = this.#services.washService.list({ customerId: customer.id, statuses: [...ACTIVE_WASH_STATUSES] });
-    if (active.length === 0) return outcome(BotState.MENU, {}, 'Não tem serviços em curso. Escreva *2* para entrar na fila.');
-    return outcome(BotState.MENU, {}, ['*Os seus serviços*', ...active.map(washStatusLine)].join('\n\n'));
+    const appointments = this.#services.appointmentService.upcomingForCustomer(customer.id);
+    if (active.length === 0 && appointments.length === 0) {
+      return outcome(BotState.MENU, {}, 'Não tem serviços em curso nem marcações. Escreva *2* para entrar na fila ou *3* para marcar.');
+    }
+    const sections = [];
+    if (active.length) sections.push(['*Os seus serviços*', ...active.map(washStatusLine)].join('\n\n'));
+    if (appointments.length) {
+      const lines = appointments.map(
+        (a) => `${date(a.startsAt)} às ${time(a.startsAt)} · ${plate(a.plate)} · ${a.planName} · ${a.status === 'requested' ? 'por confirmar' : 'confirmada'}`,
+      );
+      sections.push(['*As suas marcações*', ...lines].join('\n'));
+    }
+    return outcome(BotState.MENU, {}, sections.join('\n\n'));
   }
 
   #startPayment({ customer }) {
