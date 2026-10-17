@@ -86,6 +86,29 @@
       </div>
     </section>
 
+    <section id="fecho" class="section" aria-labelledby="closing-title">
+      <div class="section-head">
+        <div>
+          <h2 id="closing-title">Fecho do dia</h2>
+          <p class="muted">Numerário declarado vs. contado por operador e inconsistências do dia. As correcções ficam registadas e nunca são apagadas.</p>
+        </div>
+        <label class="operator">Gestor
+          <input id="manager" placeholder="O seu nome" maxlength="40" autocomplete="off">
+        </label>
+      </div>
+      <div class="panels two">
+        <article class="panel">
+          <h3>Caixa por operador</h3>
+          <table class="data-table" id="closings-table"></table>
+        </article>
+        <article class="panel">
+          <h3>Inconsistências</h3>
+          <div id="issues"></div>
+        </article>
+      </div>
+      <div id="closing-error" class="error-box" hidden></div>
+    </section>
+
     <section id="viaturas" class="section" aria-labelledby="vehicles-title">
       <div class="section-head">
         <div>

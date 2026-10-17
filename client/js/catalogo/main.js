@@ -55,6 +55,36 @@ async function loadRules() {
   ).join('');
 }
 
+// ---------- Postos e registo de alterações ----------
+
+const formatDateTime = (iso) => new Date(iso).toLocaleString('pt-PT', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+const CHANGE_FORMATS = { priceCents: (v) => (v === null ? 'sem preço' : withoutCurrency(`${(Number(v) / 100).toFixed(2).replace('.', ',')} MZN`)) };
+
+async function loadStations() {
+  const { stations } = await api('GET', '/stations');
+  $('#stations-table').innerHTML = stations
+    .map((s) => `<tr><td><strong>${escapeHtml(s.code)}</strong></td><td>${s.active ? '<span class="pill green">Activo</span>' : '<span class="pill">Inactivo</span>'}</td>
+      <td><button class="link-button" data-station="${s.id}" data-active="${!s.active}">${s.active ? 'Desactivar' : 'Activar'}</button></td></tr>`)
+    .join('');
+}
+
+async function loadChanges() {
+  const { changes } = await api('GET', '/change-log');
+  const show = (field, value) => (value === null ? '—' : CHANGE_FORMATS[field] ? CHANGE_FORMATS[field](value) : value.length > 40 ? `${value.slice(0, 40)}…` : value);
+  $('#changes-table').innerHTML = `<tr><th>Quando</th><th>O quê</th><th>Antes</th><th>Depois</th><th>Quem</th></tr>${changes
+    .slice(0, 30)
+    .map((c) => `<tr><td>${escapeHtml(formatDateTime(c.createdAt))}</td><td>${escapeHtml(`${c.entityLabel} ${c.entityId} · ${c.field}`)}</td>
+      <td>${escapeHtml(show(c.field, c.oldValue))}</td><td>${escapeHtml(show(c.field, c.newValue))}</td><td>${escapeHtml(c.actor)}</td></tr>`)
+    .join('') || '<tr><td colspan="5" class="muted">Sem alterações.</td></tr>'}`;
+}
+
+$('#stations-table').addEventListener('click', async (event) => {
+  const button = event.target.closest('[data-station]');
+  if (!button) return;
+  await api('PATCH', `/stations/${button.dataset.station}`, { active: button.dataset.active === 'true' }, { actor: actor() });
+  await Promise.all([loadStations(), loadChanges()]);
+});
+
 // ---------- Editar plano ----------
 
 enableCloseButtons(dialog);
@@ -92,11 +122,11 @@ $('form', dialog).addEventListener('submit', async (event) => {
       await api('PUT', `/plans/${plan.id}/prices/${input.dataset.class}`, { priceCents }, { actor: actor() });
     }
     dialog.close();
-    await loadPlans();
+    await Promise.all([loadPlans(), loadChanges()]);
   } catch (error) {
     showMessage($('#plan-error'), error.message);
   }
 });
 
 await loadClasses();
-await Promise.all([loadPlans(), loadRules()]);
+await Promise.all([loadPlans(), loadRules(), loadStations(), loadChanges()]);
