@@ -340,10 +340,13 @@ export class WhatsAppAssistant {
     return outcome(BotState.MENU, {}, 'Obrigado! Escreva *MENU* para voltar ao menu.');
   }
 
+  /** Por pagar: primeiro os serviços em curso, depois os entregues sem pagamento, mais recentes primeiro. */
   #payableWashes(customerId) {
+    const inYard = (wash) => ACTIVE_WASH_STATUSES.includes(wash.status);
     return this.#services.washService
       .list({ customerId })
-      .filter((wash) => wash.status !== WashStatus.CANCELLED && PAYABLE_STATES.includes(wash.paymentState));
+      .filter((wash) => wash.status !== WashStatus.CANCELLED && PAYABLE_STATES.includes(wash.paymentState))
+      .sort((a, b) => Number(inYard(b)) - Number(inYard(a)) || b.queuedAt.localeCompare(a.queuedAt));
   }
 
   #history({ customer }) {

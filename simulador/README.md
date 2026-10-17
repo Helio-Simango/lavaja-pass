@@ -14,17 +14,17 @@ Números da demonstração:
 
 ## O que o assistente faz
 
-Menu (cap. 15.6), com `MENU` para voltar e `PARAR` para deixar de receber ofertas:
+Menu (cap. 15.6), com `MENU` para voltar, `PARAR` para deixar de receber ofertas, `ADERIR` para entrar no programa de fidelização, e `ACEITAR` / `MANTER` para responder a uma proposta de horário:
 
 1. **Planos e preços:** preços por classe.
 2. **Entrar na fila:** viatura existente ou nova (matrícula e classe), plano e uso do benefício de fidelização.
-3. **Marcar horário:** ainda não disponível (marco I-8).
+3. **Marcar horário:** viatura, plano, dia (hoje ou amanhã) e horário livre. Uma marcação confirmada só muda de horário se o cliente aceitar uma proposta (**ACEITAR** / **MANTER**).
 4. **Estado:** serviços em curso, com posição e horas estimadas.
 5. **Pagar (simulado):** pagamento digital simulado, com confirmação.
 6. **Histórico:** últimas lavagens.
 7. **Fidelização:** cartão com progresso, nível e benefícios por classe.
 
-Os avisos automáticos (serviço iniciado, pronto, pagamento recebido, entregue com progresso de fidelização) aparecem destacados, distintos das respostas do assistente. Mover um serviço no Pátio gera os avisos na conversa do cliente.
+Os avisos automáticos (serviço iniciado, pronto, pagamento recebido, entregue com progresso de fidelização; marcação registada, confirmada, proposta e remarcada) aparecem destacados, distintos das respostas do assistente. Mover um serviço no Pátio gera os avisos na conversa do cliente.
 
 ## Estrutura
 

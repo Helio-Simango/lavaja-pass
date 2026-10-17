@@ -33,6 +33,7 @@ import { SqliteStationRepository } from './infrastructure/database/repositories/
 import { SqliteVehicleRepository } from './infrastructure/database/repositories/vehicle-repository.js';
 import { SqliteWashRepository } from './infrastructure/database/repositories/wash-repository.js';
 import { SqliteUnitOfWork } from './infrastructure/database/unit-of-work.js';
+import { resetDemoDatabase } from './infrastructure/database/demo-reset.js';
 import { ConversationNotifier } from './interfaces/chat/notifier.js';
 
 export function createContainer({ db, clock = systemClock }) {
@@ -78,6 +79,8 @@ export function createContainer({ db, clock = systemClock }) {
     unitOfWork,
     repositories,
     services: {
+      // Reposição da demonstração (só exposta com token, confirmação e acesso local)
+      demoResetService: { reset: () => resetDemoDatabase(db, { clock }) },
       appointmentService,
       bankReportService,
       catalogService,

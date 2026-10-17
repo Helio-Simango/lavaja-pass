@@ -7,7 +7,8 @@ Guia para trabalhar neste repositório com o Claude Code.
 **LavaJá Pass** é um protótipo para o Hackathon Moza xLab – UEM (22 e 23/10/2026), caso "Lava Já – Matola". Organiza a actividade das pequenas lavadoras (clientes, viaturas, serviços, filas, pagamentos e fidelização). Com autorização da lavadora, essa actividade torna-se informação estruturada que um banco pode usar. Na demonstração, o banco é o **Moza Banco**.
 
 - **Especificação:** `docs/referencia/LavaJa-Pass-Documento-Referencia-v3.pdf`. Os capítulos 10 a 15 são a especificação de desenvolvimento e o capítulo 17 o plano de marcos (I-0 a I-10).
-- **Decisões:** decisões e pendentes posteriores à v3 em `docs/decisoes.md`; arquitectura em `docs/arquitectura.md`.
+- **Decisões:** decisões e pendentes posteriores à v3 em `docs/decisoes.md`; arquitectura em `docs/arquitectura.md`; roteiro da demonstração em `docs/demo.md`.
+- **Estado:** todos os marcos I-0 a I-10 estão implementados (v1.0.0). Trabalho seguinte: decisões pendentes, validação no terreno e piloto (cap. 18).
 
 ## Comandos
 
@@ -16,6 +17,7 @@ npm install
 npm run db:reset          # apaga server/data/lavaja.db, migra e carrega a demonstração
 npm start                 # http://localhost:3000 (Pátio em /patio)
 npm run dev               # com reinício automático
+DEMO_RESET_TOKEN=x npm start  # activa POST /api/admin/demo/reset (token, "REPOR", acesso local)
 npm test                  # toda a suite; test:unit, test:integration e test:client em separado
 ```
 
@@ -58,7 +60,8 @@ As dependências apontam sempre para dentro. O teste `server/test/unit/architect
 - **Origem dos dados:** o digital confirmado e o numerário declarado nunca se somam como a mesma coisa. Os dados declarados nunca aparecem como comprovados.
 - **Marcações:** uma marcação confirmada nunca é antecipada sem aceitação do cliente.
 - **Partilha com bancos:** só com autorização explícita da lavadora, com dados agregados e cada acesso registado.
-- **Registos de auditoria** (`change_log`, `wash_status_events`): só acrescentam registos (protegidos por triggers).
+- **Registos de auditoria** (`change_log`, `wash_status_events`, `loyalty_transactions`, `messages`, `consents`, `access_logs`, `appointment_events`, `cash_closings`, `reconciliation_notes`): só acrescentam registos (protegidos por triggers).
+- **Consentimentos:** sem consentimento de fidelização não se acumula nem se usa benefício.
 - **Moza Banco:** não afirmar parceria, interesse ou compromisso do Moza Banco, nem usar a sua marca sem confirmação. O relatório nunca é uma avaliação de crédito.
 - **Restrições técnicas (DEC-12):** frontend em JS puro, sem frameworks nem build. Sem integrações reais com o WhatsApp nem com pagamentos.
 

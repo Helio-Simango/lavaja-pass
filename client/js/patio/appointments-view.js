@@ -3,16 +3,17 @@ import { escapeHtml, formatTime } from '../core/dom.js';
 
 const STATUS_TONES = { requested: 'amber', confirmed: 'blue', checked_in: 'green', no_show: 'red', cancelled: '' };
 
-export function renderAppointments(list, countElement, appointments) {
+/** @param isToday só as marcações de hoje podem registar a chegada ou a falta */
+export function renderAppointments(list, countElement, appointments, { isToday = true } = {}) {
   const active = appointments.filter((a) => a.status !== 'cancelled');
   const confirmed = active.filter((a) => a.status === 'confirmed').length;
   countElement.textContent = active.length ? `${confirmed} confirmada(s) · ${active.length} no total` : '';
   list.innerHTML = active.length
-    ? active.map(appointmentHtml).join('')
-    : '<li class="muted">Sem marcações para hoje. As marcações reservam capacidade nos postos.</li>';
+    ? active.map((appointment) => appointmentHtml(appointment, isToday)).join('')
+    : '<li class="muted">Sem marcações. As marcações reservam capacidade nos postos.</li>';
 }
 
-function appointmentHtml(appointment) {
+function appointmentHtml(appointment, isToday) {
   const declined = appointment.offers.filter((o) => o.status === 'declined').map((o) => `proposta ${formatTime(o.proposedStartsAt)} recusada`);
   const pending = appointment.offers.filter((o) => o.status === 'pending').map((o) => `proposta ${formatTime(o.proposedStartsAt)} à espera`);
   const notes = [...declined, ...pending].map((note) => ` · ${escapeHtml(note)}`).join('');
@@ -21,13 +22,14 @@ function appointmentHtml(appointment) {
     <span class="grow"><span class="mono">${escapeHtml(appointment.vehicle.plateDisplay)}</span> · ${escapeHtml(appointment.plan.name)} (${escapeHtml(appointment.vehicle.classCode)}) · ${escapeHtml(appointment.customer.name)} · ${escapeHtml(appointment.station.code)}</span>
     <span class="pill ${STATUS_TONES[appointment.status]}">${escapeHtml(appointment.statusLabel)}${appointment.status === 'requested' ? ' (D-09)' : ''}</span>
     <span class="muted small">${notes}</span>
-    <span class="actions">${actionsHtml(appointment)}</span>
+    <span class="actions">${actionsHtml(appointment, isToday)}</span>
   </li>`;
 }
 
-function actionsHtml({ id, status }) {
+function actionsHtml({ id, status }, isToday) {
   const button = (action, label, tone = '') => `<button class="btn small ${tone}" data-appointment-action="${action}" data-id="${id}">${label}</button>`;
   if (status === 'requested') return button('confirmed', 'Confirmar', 'primary') + button('cancelled', 'Cancelar', 'ghost');
+  if (status === 'confirmed' && !isToday) return button('cancelled', 'Cancelar', 'ghost');
   if (status === 'confirmed') return button('checked_in', 'Chegou', 'success') + button('no_show', 'Faltou', 'ghost') + button('cancelled', 'Cancelar', 'ghost');
   return '';
 }

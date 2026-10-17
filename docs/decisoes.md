@@ -63,6 +63,13 @@ Limites que se mantêm:
 | IMP-21 | O progresso é sempre calculado a partir do livro de movimentos; não há tabela `loyalty_progress` | O cap. 11.1 exige que o progresso mostrado resulte dos movimentos; evita duas fontes de verdade |
 | IMP-22 | ~~O consentimento de fidelização ainda não condiciona a acumulação~~ Substituída pela IMP-51 | — |
 
+## Decisões de implementação (I-10)
+
+| ID | Decisão | Motivo |
+|---|---|---|
+| IMP-57 | A reposição da demonstração pela API fica desactivada por omissão. Exige token, confirmação "REPOR" e acesso local | Cap. 14.4 |
+| IMP-58 | A reposição apaga as tabelas (DROP TABLE não dispara os triggers de auditoria) e volta a migrar e a semear | É a única forma de repor tabelas que só aceitam novos registos. Só existe para a demonstração |
+
 ## Decisões de implementação (I-9)
 
 | ID | Decisão | Motivo |

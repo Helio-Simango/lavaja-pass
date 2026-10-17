@@ -10,7 +10,7 @@ const applied = migrate(db);
 if (applied.length) console.log(`Migrações aplicadas: ${applied.join(', ')}`);
 
 const { services } = createContainer({ db });
-const server = createHttpApp({ services }).listen(config.port, config.host, () => {
+const server = createHttpApp({ services, demoResetToken: config.demoResetToken }).listen(config.port, config.host, () => {
   const host = config.host === '0.0.0.0' ? 'localhost' : config.host;
   console.log(`LavaJá Pass em http://${host}:${config.port}`);
   console.log('Protótipo sem autenticação: não usar com dados reais.');

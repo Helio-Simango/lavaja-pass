@@ -147,6 +147,12 @@
  */
 
 /**
+ * Reposição dos dados de demonstração (cap. 15.5).
+ * @typedef {object} DemoResetService
+ * @property {() => void} reset
+ */
+
+/**
  * Avisos ao cliente (no protótipo, mensagens do sistema na conversa do simulador).
  * @typedef {object} CustomerNotifier
  * @property {(wash: object) => void} washStarted

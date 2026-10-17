@@ -22,5 +22,7 @@ export function loadConfig(env = process.env) {
     port: Number(env.PORT ?? 3000),
     host: env.HOST ?? '127.0.0.1',
     dbPath: resolveDbPath(env),
+    // Reposição da demonstração pela API: desactivada se não houver token (cap. 14.4).
+    demoResetToken: env.DEMO_RESET_TOKEN?.trim() || null,
   });
 }

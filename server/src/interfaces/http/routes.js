@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { createAdminController } from './controllers/admin-controller.js';
 import { createAppointmentController } from './controllers/appointment-controller.js';
 import { createBankController } from './controllers/bank-controller.js';
 import { createCatalogController } from './controllers/catalog-controller.js';
@@ -10,7 +11,7 @@ import { createPaymentController } from './controllers/payment-controller.js';
 import { createSimulatorController } from './controllers/simulator-controller.js';
 import { createWashController } from './controllers/wash-controller.js';
 
-export function createApiRouter({ services, clock }) {
+export function createApiRouter({ services, clock, demoResetToken = null }) {
   const catalog = createCatalogController(services);
   const customers = createCustomerController(services);
   const washes = createWashController({ ...services, clock });
@@ -21,6 +22,7 @@ export function createApiRouter({ services, clock }) {
   const bank = createBankController(services);
   const appointments = createAppointmentController(services);
   const governance = createGovernanceController(services);
+  const admin = createAdminController(services, { demoResetToken });
   const router = Router();
 
   router.get('/health', (req, res) => res.json({ status: 'ok', name: 'LavaJá Pass', prototype: true }));
@@ -98,6 +100,9 @@ export function createApiRouter({ services, clock }) {
   router.get('/simulator/threads', simulator.listThreads);
   router.get('/simulator/threads/:phone/messages', simulator.listMessages);
   router.post('/simulator/threads/:phone/messages', simulator.sendMessage);
+
+  // Demonstração
+  router.post('/admin/demo/reset', admin.resetDemo);
 
   return router;
 }

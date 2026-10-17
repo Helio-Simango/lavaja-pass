@@ -1,6 +1,14 @@
 # Changelog
 
-## [Unreleased]
+## [1.0.0] — 2026-10-17
+
+Protótipo completo: marcos **I-6** a **I-10**. Cada marco foi desenvolvido numa branch `feature/…`, integrado em `develop` e depois em `main`.
+
+### I-10 · Documentação e demonstração
+
+- `docs/demo.md`: roteiro da demonstração alinhado com o guião de 5 minutos (cap. 19), perguntas do júri e números de teste.
+- Reposição protegida da demonstração: `POST /api/admin/demo/reset`, desactivada por omissão; exige `DEMO_RESET_TOKEN`, a confirmação "REPOR" e acesso local.
+- README com os comandos reais e a secção "Limitações e pendências"; `CLAUDE.md`, `docs/arquitectura.md` e o README do simulador actualizados.
 
 ### I-9 · Consentimentos, registo de alterações e reconciliação
 
