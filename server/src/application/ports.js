@@ -100,6 +100,30 @@
  */
 
 /**
+ * Leituras agregadas para indicadores e relatórios (sem dados pessoais).
+ * @typedef {object} ReportingRepository
+ * @property {(from: string, to: string) => object[]} washesBetween
+ * @property {(to: string) => object[]} paymentsUpTo
+ * @property {() => Set<number>} earnedWashIds
+ * @property {() => string|null} firstWashAt
+ * @property {(from: string, to: string) => number} correctionsBetween
+ */
+
+/**
+ * @typedef {object} SharingRepository
+ * @property {() => object[]} listInstitutions
+ * @property {(id: number) => object|null} findInstitution
+ * @property {() => number} nextAuthorizationSequence
+ * @property {(authorization: object) => number} insertAuthorization
+ * @property {(id: number) => object|null} findAuthorization
+ * @property {() => object[]} listAuthorizations
+ * @property {(id: number, changes: object) => void} revokeAuthorization
+ * @property {(now: string) => number} countActive
+ * @property {(log: object, now: string) => void} insertAccessLog
+ * @property {(filter: {authorizationId?: number}) => object[]} listAccessLogs
+ */
+
+/**
  * @typedef {object} ChangeLogRepository
  * @property {(entry: object, now: string) => void} append
  * @property {(entity: string, entityId: string|number) => object[]} listFor

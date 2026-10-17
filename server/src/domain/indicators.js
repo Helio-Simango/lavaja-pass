@@ -131,6 +131,18 @@ export function receiptsByWeek(payments, { to }, weeks) {
   });
 }
 
+/** Serviços concluídos por semana, a última a terminar em period.to. */
+export function completedByWeek(washes, { to }, weeks) {
+  const endMs = Date.parse(to);
+  return Array.from({ length: weeks }, (_, index) => {
+    const offset = weeks - 1 - index;
+    const from = new Date(endMs - (offset + 1) * 7 * DAY_MS).toISOString();
+    const until = new Date(endMs - offset * 7 * DAY_MS).toISOString();
+    const completed = washes.filter((w) => w.status === 'completed' && w.completedAt > from && w.completedAt <= until).length;
+    return { label: offset === 0 ? 'Últimos 7 d' : `Sem −${offset}`, from, to: until, completed };
+  });
+}
+
 function weekdayIndex(iso, timeZone) {
   const name = new Date(iso).toLocaleDateString('en-GB', { weekday: 'short', timeZone });
   return ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].indexOf(name);

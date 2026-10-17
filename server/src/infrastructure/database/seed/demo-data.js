@@ -32,6 +32,11 @@ export const SETTINGS = [
   { key: 'business.name', value: 'Lava Já – Matola', description: 'Lavadora do caso do hackathon (dados de demonstração)' },
   { key: 'business.currency', value: 'MZN', description: 'Moeda dos preços', toValidate: false },
   {
+    key: 'business.openWeekdays',
+    value: [1, 2, 3, 4, 5, 6, 7],
+    description: 'Dias de funcionamento declarados pela lavadora (1 = segunda … 7 = domingo)',
+  },
+  {
     key: 'demo.institution',
     value: 'Moza Banco',
     description:
@@ -101,3 +106,28 @@ export const YARD_TIMELINE = [
 ];
 
 export const YARD_START_OFFSET_MIN = 90;
+
+// Vertente Banco (I-7): o Moza Banco, dono do desafio e patrocinador do hackathon, como instituição
+// de demonstração. Não existe parceria formal nem compromisso do banco (DEC-14).
+export const DEMO_INSTITUTION = { code: 'MOZA', name: 'Moza Banco' };
+
+export const DEMO_AUTHORIZATIONS = [
+  {
+    daysAgo: 20,
+    purpose: 'Demonstração inicial do relatório de actividade',
+    sections: ['activity', 'receipts'],
+    dataMonths: 3,
+    validDays: 30,
+    revoke: { daysAgo: 12, reason: 'Demonstração concluída' },
+  },
+  {
+    daysAgo: 2,
+    purpose: 'Análise de oportunidade de financiamento de equipamento',
+    sections: ['activity', 'receipts', 'customers', 'data_quality'],
+    dataMonths: 6,
+    validDays: 30,
+    viewedDaysAgo: 1,
+  },
+];
+export const DEMO_ANALYST = 'analista.demo';
+export const DEMO_BUSINESS_OWNER = 'Gestor da lavadora';

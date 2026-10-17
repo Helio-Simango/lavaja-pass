@@ -95,3 +95,12 @@ export function planRevoke(authorization, { reason, actor, now }) {
   const text = typeof reason === 'string' ? reason.trim().slice(0, 200) : '';
   return { changed: true, changes: { revokedAt: now, revokedBy: actor, revokeReason: text || null } };
 }
+
+/** Notas fixas de todos os relatórios (cap. 9.3, ponto 6). */
+export const REPORT_NOTES = Object.freeze([
+  'Este relatório é informação adicional, autorizada pela lavadora. Não é uma avaliação nem uma pontuação de crédito, não demonstra capacidade de reembolso e não substitui a análise do banco.',
+  'O digital confirmado resulta de uma simulação (protótipo): não são transacções reais.',
+  'O numerário é declarado por operadores identificados e não é verificado por uma fonte externa.',
+  'Indicadores agregados: não inclui nomes nem telefones dos clientes finais.',
+  'Protótipo sem autenticação (D-16) e com dados de demonstração fictícios.',
+]);

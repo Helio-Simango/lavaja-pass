@@ -11,11 +11,13 @@ const WEEKS_SHOWN = 4;
 export class DashboardService {
   #reporting;
   #washes;
+  #sharingService;
   #clock;
 
-  constructor({ reportingRepository, washRepository, clock }) {
+  constructor({ reportingRepository, washRepository, sharingService, clock }) {
     this.#reporting = reportingRepository;
     this.#washes = washRepository;
+    this.#sharingService = sharingService;
     this.#clock = clock;
   }
 
@@ -33,6 +35,7 @@ export class DashboardService {
       byWeekday: completedByWeekday(washes, period, BUSINESS_TIME_ZONE),
       weeklyReceipts: receiptsByWeek(payments, period, WEEKS_SHOWN),
       yardNow: this.#yardNow(),
+      activeSharingAuthorizations: this.#sharingService.countActive(),
     };
   }
 

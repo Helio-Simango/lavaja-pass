@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { createBankController } from './controllers/bank-controller.js';
 import { createCatalogController } from './controllers/catalog-controller.js';
 import { createCustomerController } from './controllers/customer-controller.js';
 import { createDashboardController } from './controllers/dashboard-controller.js';
@@ -15,6 +16,7 @@ export function createApiRouter({ services, clock }) {
   const loyalty = createLoyaltyController(services);
   const simulator = createSimulatorController(services);
   const dashboard = createDashboardController(services);
+  const bank = createBankController(services);
   const router = Router();
 
   router.get('/health', (req, res) => res.json({ status: 'ok', name: 'LavaJá Pass', prototype: true }));
@@ -60,6 +62,14 @@ export function createApiRouter({ services, clock }) {
   // Painel
   router.get('/dashboard/summary', dashboard.summary);
   router.get('/dashboard/weekly', dashboard.weekly);
+
+  // Vertente Lavadora–Banco (demonstrativa, D-16)
+  router.get('/institutions', bank.listInstitutions);
+  router.get('/institutions/:id/reports/activity', bank.activityReport);
+  router.get('/sharing/authorizations', bank.listAuthorizations);
+  router.post('/sharing/authorizations', bank.grant);
+  router.post('/sharing/authorizations/:id/revoke', bank.revoke);
+  router.get('/sharing/access-logs', bank.accessLogs);
 
   // Simulador de WhatsApp
   router.get('/simulator/threads', simulator.listThreads);
