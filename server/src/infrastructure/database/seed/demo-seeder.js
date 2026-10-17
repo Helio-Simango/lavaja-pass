@@ -17,7 +17,7 @@ export function seedDemo(db, { clock = systemClock } = {}) {
     insertReferenceData(db, repositories.stationRepository, yardClock.nowIso());
     SETTINGS.forEach((setting) => services.settingsService.define(setting));
     CUSTOMERS.forEach((customer) => services.customerService.register(customer));
-    playYardTimeline(db, services.washService, yardClock);
+    playYardTimeline(db, services, yardClock);
   });
   return true;
 }
@@ -53,7 +53,7 @@ function insertReferenceData(db, stationRepository, now) {
   STATIONS.forEach((code, index) => stationRepository.insert({ code, name: `Posto ${index + 1}`, sortOrder: index + 1 }));
 }
 
-function playYardTimeline(db, washService, yardClock) {
+function playYardTimeline(db, { washService, paymentService }, yardClock) {
   const idOf = (sql, value) => db.prepare(sql).get(value).id;
   const washIds = {};
   let elapsedMin = 0;
@@ -70,6 +70,14 @@ function playYardTimeline(db, washService, yardClock) {
         source: 'demo',
         actor: SEED_ACTOR,
       }).id;
+    } else if (step.payDigital) {
+      const wash = washService.get(washIds[step.payDigital.key]);
+      const { payment } = paymentService.startDigital(wash.id, {
+        amountCents: wash.finalPriceCents,
+        idempotencyKey: `demo-digital-${wash.id}`,
+        actor: wash.customerName,
+      });
+      paymentService.simulate(payment.id, 'confirmed');
     } else {
       const { key, to, station, actor } = step.transition;
       const stationId = station ? idOf('SELECT id FROM stations WHERE code = ?', station) : undefined;

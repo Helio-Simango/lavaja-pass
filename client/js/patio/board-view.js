@@ -3,6 +3,16 @@ import { $, escapeHtml, formatTime, minutesSince, withoutCurrency } from '../cor
 
 const STATION_LABELS = { free: 'livre', busy: 'ocupado', ready: 'pronto', inactive: 'inactivo' };
 const COLUMNS = ['queued', 'in_progress', 'ready'];
+const PAYMENT_TONES = {
+  not_required: 'green',
+  paid_digital: 'green',
+  paid_cash: 'green',
+  pending: 'blue',
+  unpaid: 'amber',
+  refunded: 'red',
+  delivered_unpaid: 'red',
+};
+const AWAITING_PAYMENT = ['unpaid', 'pending'];
 
 export function renderStationsLine(element, stations) {
   const summary = stations.map((station) => `${station.code} ${STATION_LABELS[station.state]}`).join(' · ');
@@ -32,7 +42,7 @@ function cardHtml(wash, context) {
 }
 
 function cardHeader(wash) {
-  const paymentTone = wash.payment.status === 'not_required' ? 'green' : 'amber';
+  const paymentTone = PAYMENT_TONES[wash.payment.status] ?? 'amber';
   return `
     <div class="card-top">
       <span class="plate">${escapeHtml(wash.vehicle.plateDisplay)}</span>
@@ -58,8 +68,14 @@ function queuedBody(wash, { freeStations, chosenStation }) {
     <div class="card-meta">${estimateText}</div>
     <div class="card-actions">
       ${startControls}
+      ${cashButton(wash)}
       <button class="btn small ghost" data-action="cancel" data-id="${wash.id}">Cancelar</button>
     </div>`;
+}
+
+function cashButton(wash) {
+  if (!AWAITING_PAYMENT.includes(wash.payment.status)) return '';
+  return `<button class="btn small" data-action="cash" data-id="${wash.id}">Numerário…</button>`;
 }
 
 function stationOptions(stations, chosenStation) {
@@ -80,6 +96,7 @@ function inProgressBody(wash) {
     <div class="card-meta">${escapeHtml(wash.station?.code)} · ${minutesSince(wash.startedAt)} de ${wash.durationMin} min · ${timing}</div>
     <div class="card-actions">
       <button class="btn small success" data-action="ready" data-id="${wash.id}">✓ Marcar pronto</button>
+      ${cashButton(wash)}
     </div>`;
 }
 
@@ -87,6 +104,7 @@ function readyBody(wash) {
   return `
     <div class="card-meta">${escapeHtml(wash.station?.code)} · pronto há ${minutesSince(wash.readyAt)} min</div>
     <div class="card-actions">
+      ${cashButton(wash)}
       <button class="btn small primary" data-action="complete" data-id="${wash.id}">Concluir…</button>
     </div>`;
 }

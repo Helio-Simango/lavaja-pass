@@ -39,7 +39,7 @@ describe('aplicação HTTP', () => {
     assert.equal(home.status, 200);
     assert.match(await home.text(), /LavaJá/);
     assert.equal((await fetch(`${t.base}/patio`)).status, 200);
-    for (const path of ['/server/data/lavaja.db', '/data/lavaja.db', '/server/src/main.js', '/package.json', '/CLAUDE.md', '/simulador/README.md']) {
+    for (const path of ['/server/data/lavaja.db', '/data/lavaja.db', '/server/src/main.js', '/package.json', '/CLAUDE.md', '/simulador/README.md', '/test/cash-amount.test.js']) {
       assert.notEqual((await fetch(`${t.base}${path}`)).status, 200, path);
     }
   });
