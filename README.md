@@ -67,7 +67,7 @@ A arquitectura e a regra de dependências entre camadas estão em [docs/arquitec
 | I-4 | Motor de fidelização parametrizável (valores por omissão por validar: D-01, D-02) | ✅ |
 | I-5 | Simulador de WhatsApp e assistente | ✅ |
 | I-6 | Painel, viaturas por classe, histórico por matrícula, catálogo | ✅ |
-| I-7 | Vertente Banco, só para demonstração (Moza Banco; depende de D-16) | — |
+| I-7 | Vertente Banco, só para demonstração (Moza Banco; D-16: demonstrativo com aviso) | ✅ |
 | I-8 | Marcações e capacidade | — |
 | I-9 | Consentimentos, registo de alterações, reconciliação | — |
 | I-10 | Documentação e changelog | em curso |
@@ -83,7 +83,7 @@ O histórico de alterações está em [changelog.md](changelog.md).
 | `/simulador` · `/simulador/whatsapp/:telefone` | Simulador de WhatsApp: o utilizador faz de cliente (M1–M6) | ✅ |
 | `/painel` | Painel: indicadores com definição e origem, gráficos, viaturas por classe, histórico por matrícula (M11–M13) | ✅ |
 | `/catalogo` | Catálogo: planos e preços por classe, classes, parâmetros de fidelização (M14) | ✅ |
-| `/banco` | — | próximo marco |
+| `/banco` | Vertente Banco: autorizações e registo de acessos (lavadora, M15); relatório autorizado e exportação (banco, M16) | ✅ |
 
 O Pátio actualiza-se a cada 3 s. O nome do operador escrito no topo fica registado como autor de cada acção. Como não há autenticação, esse nome é declarado e não verificado.
 
@@ -160,6 +160,17 @@ Painel e histórico:
 | `GET /api/vehicles/:id/wash-history` | Histórico por matrícula: valores guardados, origem do pagamento, efeito na fidelização |
 | `GET /api/vehicles/:id/wash-history/summary` | Resumo: concluídas, canceladas, última, contaram para a fidelização |
 
+Vertente Lavadora–Banco (demonstrativa, sem autenticação — D-16):
+
+| Método e rota | Descrição |
+|---|---|
+| `GET /api/institutions` | Instituições (na demonstração, o Moza Banco) |
+| `GET /api/sharing/authorizations` | Autorizações da lavadora, com estado (`active`, `revoked`, `expired`) e número de acessos |
+| `POST /api/sharing/authorizations` | `{ institutionId, purpose, sections, dataMonths, validDays, confirm: true }` |
+| `POST /api/sharing/authorizations/:id/revoke` | `{ reason? }`: termina as novas consultas |
+| `GET /api/institutions/:id/reports/activity?authorizationId=` | Relatório de actividade (só com autorização activa; `?format=csv` exporta). Cada consulta fica registada |
+| `GET /api/sharing/access-logs?authorizationId=` | Registo de consultas e exportações |
+
 Simulador de WhatsApp:
 
 | Método e rota | Descrição |
@@ -197,6 +208,12 @@ Simulador de WhatsApp:
   - cancelar devolve o benefício usado; reembolsar reverte o progresso ou regista uma "reversão não aplicada";
   - todos os parâmetros pendentes (D-01 a D-07) são configuráveis em `loyalty_rules`, em versões.
 - **Indicadores:** são sempre calculados a partir dos registos, cada um com a sua definição e origem (cap. 13.4). O digital confirmado e o numerário declarado nunca são somados (também nos gráficos, onde aparecem lado a lado). O valor por receber nunca é receita.
+- **Partilha com bancos:**
+  - só com autorização explícita da lavadora, para uma instituição, com finalidade, âmbito, período de dados e validade;
+  - a autorização não pode ser alterada, só revogada (triggers);
+  - o relatório tem só as secções autorizadas e dados agregados, sem nomes nem telefones;
+  - cada consulta e exportação fica registada e é visível para a lavadora;
+  - o relatório não é uma avaliação nem uma pontuação de crédito.
 - **Simulador e assistente:**
   - uma conversa por número, guardada e isolada, por ordem estável;
   - o assistente é uma máquina de estados (cap. 15.6) que usa os mesmos casos de uso do Pátio;
