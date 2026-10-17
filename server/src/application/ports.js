@@ -62,6 +62,16 @@
  */
 
 /**
+ * @typedef {object} PaymentRepository
+ * @property {(id: number) => object|null} findById
+ * @property {(key: string) => object|null} findByIdempotencyKey
+ * @property {(washId: number) => object[]} listByWash
+ * @property {(washIds: number[]) => Map<number, object[]>} listByWashes
+ * @property {(payment: object, now: string) => number} insert
+ * @property {(id: number, expectedStatus: string, changes: object, now: string) => boolean} update
+ */
+
+/**
  * @typedef {object} ChangeLogRepository
  * @property {(entry: object, now: string) => void} append
  * @property {(entity: string, entityId: string|number) => object[]} listFor

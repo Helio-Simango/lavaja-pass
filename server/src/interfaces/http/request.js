@@ -69,6 +69,11 @@ export function parseIsoDate(value, field = 'date') {
   return value;
 }
 
+/** A validação da chave é uma regra de domínio; aqui só se lê o cabeçalho. */
+export function idempotencyKeyOf(req) {
+  return req.get('idempotency-key');
+}
+
 /** Sem autenticação no protótipo (D-16): o autor é declarado no pedido e fica registado. */
 export function actorOf(req, fallback) {
   const declared = req.body?.actor ?? req.get('x-actor');

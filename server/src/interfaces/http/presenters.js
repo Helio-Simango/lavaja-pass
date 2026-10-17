@@ -2,12 +2,22 @@
 import { formatMoney } from '../../domain/money.js';
 import { formatPhone } from '../../domain/phone.js';
 import { formatPlate } from '../../domain/plate.js';
-import { paymentStatusOf, PaymentStatus, WASH_STATUS_LABELS, washCode } from '../../domain/wash.js';
+import { WASH_STATUS_LABELS, washCode, WashPaymentState } from '../../domain/wash.js';
 
-const PAYMENT_LABELS = Object.freeze({
-  [PaymentStatus.NOT_REQUIRED]: 'Sem valor a pagar',
-  [PaymentStatus.UNPAID]: 'Por pagar',
-  [PaymentStatus.DELIVERED_UNPAID]: 'Entregue sem pagamento',
+const PAYMENT_STATE_LABELS = Object.freeze({
+  [WashPaymentState.NOT_REQUIRED]: 'Sem valor a pagar',
+  [WashPaymentState.UNPAID]: 'Por pagar',
+  [WashPaymentState.PENDING]: 'Pendente · digital',
+  [WashPaymentState.PAID_DIGITAL]: 'Pago · digital (sim.)',
+  [WashPaymentState.PAID_CASH]: 'Numerário declarado',
+  [WashPaymentState.REFUNDED]: 'Reembolsado',
+  [WashPaymentState.DELIVERED_UNPAID]: 'Entregue sem pagamento',
+});
+
+// Como cada origem aparece (cap. 13.1): o declarado nunca aparece como comprovado.
+const PAYMENT_ORIGIN_LABELS = Object.freeze({
+  digital: 'Digital confirmado (simulado)',
+  cash: 'Numerário declarado',
 });
 
 export const presentMoney = (cents, currency) => ({ cents, currency, display: formatMoney(cents, currency) });
@@ -82,8 +92,40 @@ export function presentStation(station) {
   };
 }
 
+export function presentPayment(payment) {
+  return {
+    id: payment.id,
+    washId: payment.washId,
+    method: payment.method,
+    status: payment.status,
+    amount: presentMoney(payment.amountCents, payment.currency),
+    origin: PAYMENT_ORIGIN_LABELS[payment.method],
+    declaredBy: payment.declaredBy,
+    createdBy: payment.createdBy,
+    createdAt: payment.createdAt,
+    confirmedAt: payment.confirmedAt,
+    declaredAt: payment.declaredAt,
+    failedAt: payment.failedAt,
+    failureReason: payment.failureReason,
+    refundedAt: payment.refundedAt,
+    refundedBy: payment.refundedBy,
+    refundReason: payment.refundReason,
+  };
+}
+
+function presentWashPayment(wash) {
+  const { effectivePayment: effective, paymentState } = wash;
+  const label = effective?.method === 'cash'
+    ? `${PAYMENT_STATE_LABELS[paymentState]} por ${effective.declaredBy}`
+    : PAYMENT_STATE_LABELS[paymentState];
+  return {
+    status: paymentState,
+    label,
+    effective: effective ? { id: effective.id, method: effective.method, declaredBy: effective.declaredBy } : null,
+  };
+}
+
 export function presentWash(wash) {
-  const paymentStatus = paymentStatusOf(wash);
   const money = (cents) => presentMoney(cents, wash.currency);
   return {
     id: wash.id,
@@ -100,7 +142,7 @@ export function presentWash(wash) {
       loyaltyBenefit: money(wash.loyaltyBenefitCents),
       final: money(wash.finalPriceCents),
     },
-    payment: { status: paymentStatus, label: PAYMENT_LABELS[paymentStatus] },
+    payment: presentWashPayment(wash),
     station: wash.stationId ? { id: wash.stationId, code: wash.stationCode } : null,
     source: wash.source,
     queuedAt: wash.queuedAt,

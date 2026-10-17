@@ -9,7 +9,7 @@ describe('base de dados', () => {
     const db = createTestDb({ seed: false });
     assert.deepEqual(migrate(db), []);
     const versions = db.prepare('SELECT version FROM schema_migrations ORDER BY version').all().map((r) => r.version);
-    assert.deepEqual(versions, ['001_foundation.sql', '002_catalog_customers.sql', '003_washes.sql']);
+    assert.deepEqual(versions, ['001_foundation.sql', '002_catalog_customers.sql', '003_washes.sql', '004_payments.sql']);
     db.close();
   });
 

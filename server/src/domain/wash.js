@@ -25,9 +25,14 @@ export const WASH_STATUS_LABELS = Object.freeze({
 
 export const WASH_SOURCES = Object.freeze(['patio', 'simulador', 'demo']);
 
-export const PaymentStatus = Object.freeze({
+/** Estado do pagamento de um serviço, tal como aparece no Pátio e no simulador. */
+export const WashPaymentState = Object.freeze({
   NOT_REQUIRED: 'not_required',
   UNPAID: 'unpaid',
+  PENDING: 'pending',
+  PAID_DIGITAL: 'paid_digital',
+  PAID_CASH: 'paid_cash',
+  REFUNDED: 'refunded',
   DELIVERED_UNPAID: 'delivered_unpaid',
 });
 
@@ -62,11 +67,17 @@ export function parseWashStatus(status, field = 'status') {
   return status;
 }
 
-/** Até ao I-3 não há pagamentos registados: só um valor final 0 dispensa o pagamento. */
-export function paymentStatusOf(wash) {
-  if (wash.finalPriceCents === 0) return PaymentStatus.NOT_REQUIRED;
-  if (wash.status === WashStatus.COMPLETED && wash.completedUnpaid) return PaymentStatus.DELIVERED_UNPAID;
-  return PaymentStatus.UNPAID;
+/**
+ * @param payments pagamentos do serviço, por ordem de registo ({ method, status })
+ */
+export function paymentStateOf(wash, payments = []) {
+  if (wash.finalPriceCents === 0) return WashPaymentState.NOT_REQUIRED;
+  const effective = payments.find((p) => p.status === 'confirmed' || p.status === 'declared');
+  if (effective) return effective.method === 'cash' ? WashPaymentState.PAID_CASH : WashPaymentState.PAID_DIGITAL;
+  if (payments.some((p) => p.status === 'pending')) return WashPaymentState.PENDING;
+  if (wash.status === WashStatus.COMPLETED && wash.completedUnpaid) return WashPaymentState.DELIVERED_UNPAID;
+  if (payments.at(-1)?.status === 'refunded') return WashPaymentState.REFUNDED;
+  return WashPaymentState.UNPAID;
 }
 
 /**
@@ -101,7 +112,8 @@ export function newQueuedWash({ vehicle, plan, price, source, actor, now }) {
  * Decide uma transição de estado.
  * @param wash serviço actual
  * @param command { to, stationId?, reason?, allowUnpaid?, actor }
- * @param context { now, station?, stationOccupiedBy? } — posto pedido e o serviço que o ocupa, se houver
+ * @param context { now, hasEffectivePayment, station?, stationOccupiedBy? } — pagamento efectivo registado,
+ *        posto pedido e o serviço que o ocupa, se houver
  * @returns {{ changed: false } | { changed: true, changes: object, event: object }}
  */
 export function planTransition(wash, command, context) {
@@ -126,6 +138,7 @@ export function planTransition(wash, command, context) {
       Object.assign(changes, completion(wash, command, context, event));
       break;
     case WashStatus.CANCELLED:
+      assertNoEffectivePayment(context);
       event.reason = parseCancelReason(command.reason);
       changes.cancelledAt = context.now;
       changes.cancelReason = event.reason;
@@ -158,7 +171,7 @@ function assertStationAvailable(stationId, { station, stationOccupiedBy }) {
 
 // Concluir sem pagamento exige confirmação explícita, que fica registada (cap. 10.3).
 function completion(wash, command, context, event) {
-  const paid = paymentStatusOf(wash) === PaymentStatus.NOT_REQUIRED;
+  const paid = wash.finalPriceCents === 0 || context.hasEffectivePayment === true;
   if (!paid && command.allowUnpaid !== true) {
     throw new ConflictError(
       'PAYMENT_REQUIRED',
@@ -168,6 +181,13 @@ function completion(wash, command, context, event) {
   }
   if (!paid) event.details = { allowUnpaid: true, amountDueCents: wash.finalPriceCents };
   return { completedAt: context.now, completedUnpaid: !paid };
+}
+
+// Um serviço com pagamento efectivo só é cancelado depois do reembolso.
+function assertNoEffectivePayment(context) {
+  if (context.hasEffectivePayment) {
+    throw new ConflictError('REFUND_REQUIRED', 'Este serviço tem um pagamento efectivo: reembolse-o antes de cancelar.');
+  }
 }
 
 function parseCancelReason(reason) {

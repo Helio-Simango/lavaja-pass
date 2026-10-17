@@ -1,12 +1,14 @@
 import { Router } from 'express';
 import { createCatalogController } from './controllers/catalog-controller.js';
 import { createCustomerController } from './controllers/customer-controller.js';
+import { createPaymentController } from './controllers/payment-controller.js';
 import { createWashController } from './controllers/wash-controller.js';
 
 export function createApiRouter({ services, clock }) {
   const catalog = createCatalogController(services);
   const customers = createCustomerController(services);
   const washes = createWashController({ ...services, clock });
+  const payments = createPaymentController(services);
   const router = Router();
 
   router.get('/health', (req, res) => res.json({ status: 'ok', name: 'LavaJá Pass', prototype: true }));
@@ -33,6 +35,13 @@ export function createApiRouter({ services, clock }) {
   router.post('/washes', washes.register);
   router.get('/washes/:id', washes.get);
   router.post('/washes/:id/transitions', washes.transition);
+
+  // Pagamentos simulados (com Idempotency-Key)
+  router.get('/washes/:id/payments', payments.listForWash);
+  router.post('/washes/:id/payments/digital', payments.startDigital);
+  router.post('/washes/:id/payments/cash', payments.declareCash);
+  router.post('/payments/:id/simulate', payments.simulate);
+  router.post('/payments/:id/refund', payments.refund);
 
   return router;
 }
