@@ -1,4 +1,8 @@
 // Conversão dos dados da aplicação para o formato JSON da API (inclui textos de apresentação).
+import { DATA_QUALITY_INDICATORS, INDICATORS } from '../../domain/indicators.js';
+import { ISSUE_LABELS } from '../../domain/reconciliation.js';
+import { APPOINTMENT_STATUS_LABELS } from '../../domain/scheduling.js';
+import { SECTION_LABELS } from '../../domain/sharing.js';
 import { formatMoney } from '../../domain/money.js';
 import { formatPhone } from '../../domain/phone.js';
 import { formatPlate } from '../../domain/plate.js';
@@ -212,6 +216,7 @@ export function presentLoyaltyCard(card, plans) {
   const { params } = card.rules;
   return {
     customerId: card.customerId,
+    consent: card.consent,
     rulesVersion: card.rules.version,
     toValidate: card.rules.toValidate,
     classes: card.classes.map((progress) => ({
@@ -269,5 +274,336 @@ export function presentMessage(message) {
     kind: message.kind,
     body: message.body,
     createdAt: message.createdAt,
+  };
+}
+
+// ---------- Painel e histórico ----------
+
+const indicator = (key, value, extra = {}) => ({ key, ...INDICATORS[key], value, ...extra });
+
+export function presentDashboard(summary) {
+  const { indicators: i, period } = summary;
+  const currency = 'MZN';
+  return {
+    period,
+    indicators: [
+      indicator('completed', i.completed),
+      indicator('eligibleForLoyalty', i.eligibleForLoyalty),
+      indicator('digitalConfirmed', presentMoney(i.digitalConfirmedCents, currency)),
+      indicator('cashDeclared', presentMoney(i.cashDeclaredCents, currency)),
+      indicator('receivable', presentMoney(i.receivableCents, currency), { count: i.receivableCount }),
+      indicator('refunded', presentMoney(i.refundedCents, currency)),
+      indicator('cancelled', i.cancelled),
+      indicator('returningCustomers', i.returningRate, {
+        returning: i.returningCustomers,
+        customers: i.distinctCustomers,
+      }),
+    ],
+    byWeekday: summary.byWeekday,
+    weeklyReceipts: summary.weeklyReceipts.map((week) => ({
+      label: week.label,
+      from: week.from,
+      to: week.to,
+      digital: presentMoney(week.digitalCents, currency),
+      cash: presentMoney(week.cashCents, currency),
+    })),
+    yardNow: summary.yardNow,
+    activeSharingAuthorizations: summary.activeSharingAuthorizations,
+  };
+}
+
+export function presentVehicleWithStats(vehicle) {
+  return { ...presentVehicleWithOwner(vehicle), completedCount: vehicle.completedCount, lastCompletedAt: vehicle.lastCompletedAt };
+}
+
+const LOYALTY_EFFECT_LABELS = Object.freeze({
+  counted: 'Contou',
+  reverted: 'Revertido (reembolso)',
+  benefit_used: 'Benefício usado',
+  benefit_restored: 'Benefício devolvido',
+  not_counted: 'Não contou',
+  none: '—',
+});
+
+export function presentHistoryEntry(wash) {
+  const effective = wash.effectivePayment;
+  const payment = effective
+    ? { method: effective.method, label: effective.method === 'cash' ? `Numerário (decl. ${effective.declaredBy})` : 'Digital (sim.)' }
+    : { method: null, label: wash.refunded ? 'Reembolsado' : '—' };
+  const money = (cents) => presentMoney(cents, wash.currency);
+  return {
+    id: wash.id,
+    code: washCode(wash.id),
+    queuedAt: wash.queuedAt,
+    completedAt: wash.completedAt,
+    cancelledAt: wash.cancelledAt,
+    status: wash.status,
+    statusLabel: WASH_STATUS_LABELS[wash.status],
+    planName: wash.planName,
+    classCode: wash.classCode,
+    price: {
+      base: money(wash.basePriceCents),
+      discount: money(wash.discountCents),
+      loyaltyBenefit: money(wash.loyaltyBenefitCents),
+      final: money(wash.finalPriceCents),
+    },
+    payment,
+    loyaltyEffect: { code: wash.loyaltyEffect, label: LOYALTY_EFFECT_LABELS[wash.loyaltyEffect] },
+  };
+}
+
+// ---------- Vertente Banco ----------
+
+const AUTHORIZATION_STATUS_LABELS = Object.freeze({ active: 'Activa', revoked: 'Revogada', expired: 'Expirada' });
+const ACCESS_ACTION_LABELS = Object.freeze({ view: 'consultou o relatório', export: 'exportou o relatório' });
+
+export function presentAuthorization(authorization) {
+  return {
+    id: authorization.id,
+    reference: authorization.reference,
+    institution: { id: authorization.institutionId, name: authorization.institutionName },
+    purpose: authorization.purpose,
+    sections: authorization.sections.map((key) => ({ key, label: SECTION_LABELS[key] })),
+    dataMonths: authorization.dataMonths,
+    validUntil: authorization.validUntil,
+    grantedBy: authorization.grantedBy,
+    grantedAt: authorization.grantedAt,
+    revokedAt: authorization.revokedAt,
+    revokedBy: authorization.revokedBy,
+    revokeReason: authorization.revokeReason,
+    status: authorization.status,
+    statusLabel: AUTHORIZATION_STATUS_LABELS[authorization.status],
+    accessCount: authorization.accessCount,
+  };
+}
+
+export function presentAccessLog(log) {
+  return {
+    id: log.id,
+    authorizationReference: log.reference,
+    institutionName: log.institutionName,
+    actor: log.actor,
+    action: log.action,
+    actionLabel: ACCESS_ACTION_LABELS[log.action],
+    sections: log.sections.map((key) => SECTION_LABELS[key]),
+    dataFrom: log.dataFrom,
+    dataTo: log.dataTo,
+    createdAt: log.createdAt,
+  };
+}
+
+const share = (value) => (value === null || value === undefined ? null : Math.round(value * 1000) / 10);
+const withMeta = (meta, value) => ({ ...meta, value });
+
+/** Relatório com a origem e a definição de cada valor; só as secções autorizadas. */
+export function presentActivityReport(report) {
+  const mzn = (cents) => presentMoney(cents, 'MZN');
+  const { activity, receipts, customers, data_quality: quality } = report.sections;
+  const sections = {};
+  if (activity) {
+    sections.activity = {
+      completed: withMeta(INDICATORS.completed, activity.completed),
+      cancelled: withMeta(INDICATORS.cancelled, activity.cancelled),
+      byWeek: activity.byWeek,
+      byWeekday: activity.byWeekday,
+      byClass: activity.byClass,
+      byPlan: activity.byPlan,
+    };
+  }
+  if (receipts) {
+    sections.receipts = {
+      digitalConfirmed: withMeta(INDICATORS.digitalConfirmed, mzn(receipts.digitalConfirmedCents)),
+      cashDeclared: withMeta(INDICATORS.cashDeclared, mzn(receipts.cashDeclaredCents)),
+      refunded: withMeta(INDICATORS.refunded, mzn(receipts.refundedCents)),
+      receivable: withMeta(INDICATORS.receivable, mzn(receipts.receivableCents)),
+      byWeek: receipts.byWeek.map((week) => ({ label: week.label, from: week.from, to: week.to, digital: mzn(week.digitalCents), cash: mzn(week.cashCents) })),
+    };
+  }
+  if (customers) {
+    sections.customers = {
+      distinctCustomers: customers.distinctCustomers,
+      returningCustomers: withMeta(INDICATORS.returningCustomers, share(customers.returningRate)),
+      returningCount: customers.returningCustomers,
+    };
+  }
+  if (quality) {
+    const q = DATA_QUALITY_INDICATORS;
+    sections.dataQuality = [
+      withMeta(q.historyAgeDays, `${quality.historyAgeDays} dias`),
+      withMeta(q.daysWithRecords, `${quality.daysWithRecords.days} de ${quality.daysWithRecords.operatingDays}`),
+      withMeta(q.completedWithPayment, percent(quality.completedWithPayment.share)),
+      withMeta(q.digitalShare, percent(quality.digitalShare)),
+      withMeta(q.deliveredUnpaid, `${quality.deliveredUnpaid.count} (${percent(quality.deliveredUnpaid.share)})`),
+      withMeta(
+        q.cancellationsAndRefunds,
+        `${quality.cancellationsAndRefunds.cancelled} cancelados (${percent(quality.cancellationsAndRefunds.cancelledShare)}) · ${quality.cancellationsAndRefunds.refunds} reembolsos`,
+      ),
+      withMeta(q.corrections, String(quality.corrections)),
+    ];
+  }
+  return {
+    business: report.business,
+    institution: report.institution,
+    authorization: {
+      ...report.authorization,
+      sections: report.authorization.sections.map((key) => ({ key, label: SECTION_LABELS[key] })),
+    },
+    period: report.period,
+    issuedAt: report.issuedAt,
+    sections,
+    notes: report.notes,
+  };
+}
+
+function percent(value) {
+  return value === null || value === undefined ? '—' : `${Math.round(value * 100)}%`;
+}
+
+/** Exportação: uma linha por indicador, com a origem; separador ";" (Excel em português). */
+export function activityReportToCsv(presented) {
+  const rows = [['secção', 'indicador', 'valor', 'origem']];
+  const add = (section, label, value, origin = '') => rows.push([section, label, value, origin]);
+  add('identificação', 'lavadora', presented.business);
+  add('identificação', 'instituição', presented.institution.name);
+  add('identificação', 'autorização', `${presented.authorization.reference} · ${presented.authorization.purpose}`);
+  add('identificação', 'período', `${presented.period.from} a ${presented.period.to}`);
+  add('identificação', 'emitido', presented.issuedAt);
+  const { activity, receipts, customers, dataQuality: quality } = presented.sections;
+  if (activity) {
+    add('actividade', activity.completed.label, activity.completed.value, activity.completed.origin);
+    add('actividade', activity.cancelled.label, activity.cancelled.value, activity.cancelled.origin);
+    for (const week of activity.byWeek) add('actividade', `concluídos · ${week.label}`, week.completed, 'Registado');
+  }
+  if (receipts) {
+    for (const key of ['digitalConfirmed', 'cashDeclared', 'refunded', 'receivable']) {
+      add('recebimentos', receipts[key].label, receipts[key].value.display, receipts[key].origin);
+    }
+  }
+  if (customers) {
+    add('clientes', 'clientes distintos', customers.distinctCustomers, 'Registado');
+    add('clientes', customers.returningCustomers.label, `${customers.returningCustomers.value ?? '—'}%`, customers.returningCustomers.origin);
+  }
+  if (quality) for (const item of quality) add('qualidade dos dados', item.label, item.value, item.origin);
+  for (const note of presented.notes) add('notas', '', note);
+  return rows.map((row) => row.map(csvCell).join(';')).join('\r\n');
+}
+
+function csvCell(value) {
+  const text = String(value ?? '');
+  return /[;"\r\n]/.test(text) ? `"${text.replaceAll('"', '""')}"` : text;
+}
+
+// ---------- Marcações e capacidade ----------
+
+const OFFER_STATUS_LABELS = Object.freeze({ pending: 'À espera de resposta', accepted: 'Aceite', declined: 'Recusada', expired: 'Expirada' });
+
+export const appointmentCode = (id) => `MC-${String(id).padStart(4, '0')}`;
+
+export function presentOffer(offer) {
+  return {
+    id: offer.id,
+    originalStartsAt: offer.originalStartsAt,
+    proposedStartsAt: offer.proposedStartsAt,
+    status: offer.status,
+    statusLabel: OFFER_STATUS_LABELS[offer.status],
+    expiresAt: offer.expiresAt,
+    respondedAt: offer.respondedAt,
+  };
+}
+
+export function presentAppointment(appointment) {
+  return {
+    id: appointment.id,
+    code: appointmentCode(appointment.id),
+    status: appointment.status,
+    statusLabel: APPOINTMENT_STATUS_LABELS[appointment.status],
+    customer: { id: appointment.customerId, name: appointment.customerName, phoneDisplay: formatPhone(appointment.customerPhone) },
+    vehicle: { id: appointment.vehicleId, plate: appointment.plate, plateDisplay: formatPlate(appointment.plate), classCode: appointment.classCode },
+    plan: { id: appointment.planId, name: appointment.planName },
+    durationMin: appointment.durationMin,
+    startsAt: appointment.startsAt,
+    endsAt: appointment.endsAt,
+    station: { id: appointment.stationId, code: appointment.stationCode },
+    source: appointment.source,
+    washId: appointment.washId,
+    washCode: appointment.washId ? washCode(appointment.washId) : null,
+    cancelReason: appointment.cancelReason,
+    offers: (appointment.offers ?? []).map(presentOffer),
+  };
+}
+
+export function presentCapacity(capacity) {
+  return {
+    date: capacity.date,
+    policy: capacity.policy,
+    stations: capacity.stations.map((station) => ({
+      id: station.id,
+      code: station.code,
+      active: station.active,
+      appointments: station.appointments.map(presentAppointment),
+      yard: station.yard.map((wash) => ({
+        id: wash.id,
+        code: washCode(wash.id),
+        plateDisplay: formatPlate(wash.plate),
+        status: wash.status,
+        startsAt: wash.startedAt ?? wash.estimate?.estimatedStartAt ?? null,
+        endsAt: wash.status === 'in_progress' ? wash.estimate?.estimatedEndAt : wash.estimate?.estimatedEndAt ?? null,
+        isEstimate: true,
+      })),
+    })),
+  };
+}
+
+// ---------- Registo de alterações, consentimentos e fecho do dia ----------
+
+const CHANGE_ENTITY_LABELS = Object.freeze({
+  wash_plan: 'Plano',
+  class_plan_price: 'Preço',
+  vehicle: 'Viatura',
+  loyalty_rules: 'Regras de fidelização',
+  station: 'Posto',
+});
+
+export function presentChange(entry) {
+  return { ...entry, entityLabel: CHANGE_ENTITY_LABELS[entry.entity] ?? entry.entity };
+}
+
+export function presentConsents(current) {
+  const consent = (type) => {
+    const value = current[type];
+    return value ? { granted: value.granted, source: value.source, at: value.at } : { granted: false, source: null, at: null };
+  };
+  return { loyalty: consent('loyalty'), marketing: consent('marketing') };
+}
+
+export function presentReconciliation(day) {
+  const mzn = (cents) => presentMoney(cents, 'MZN');
+  return {
+    date: day.date,
+    operators: day.operators.map((entry) => ({
+      operator: entry.operator,
+      count: entry.count,
+      declared: mzn(entry.declaredCents),
+      closing: entry.closing
+        ? {
+            counted: mzn(entry.closing.countedCents),
+            difference: { cents: entry.closing.differenceCents, display: formatMoney(entry.closing.differenceCents, 'MZN') },
+            note: entry.closing.note,
+            closedBy: entry.closing.closedBy,
+            closedAt: entry.closing.createdAt,
+          }
+        : null,
+    })),
+    issues: day.issues.map((issue) => ({
+      code: issue.code,
+      label: ISSUE_LABELS[issue.code],
+      washId: issue.washId,
+      washCode: issue.washId ? washCode(issue.washId) : null,
+      plateDisplay: issue.plate ? formatPlate(issue.plate) : null,
+      operator: issue.operator ?? null,
+      amount: { cents: issue.amountCents, display: formatMoney(issue.amountCents, 'MZN') },
+      reason: issue.reason ?? null,
+      corrections: issue.corrections.map((n) => ({ id: n.id, note: n.note, actor: n.actor, createdAt: n.createdAt })),
+    })),
   };
 }

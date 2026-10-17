@@ -8,10 +8,11 @@ const MINUTE_MS = 60_000;
 /**
  * @param now Date
  * @param stations [{ id, active }]
- * @param washes serviços activos: [{ id, status, stationId, startedAt, queuedAt, durationMin }]
+ * @param washes serviços activos: [{ id, status, stationId, startedAt, queuedAt, durationMin, appointmentId? }]
+ * @param reservations blocos das marcações confirmadas: [{ stationId, startMs, endMs }] (a fila não os ocupa)
  * @returns Map<washId, estimate>
  */
-export function estimateQueue({ now, stations, washes }) {
+export function estimateQueue({ now, stations, washes, reservations = [] }) {
   const nowMs = now.getTime();
   const stationFreeAt = new Map(stations.filter((s) => s.active).map((s) => [s.id, nowMs]));
   const estimates = new Map();
@@ -27,30 +28,42 @@ export function estimateQueue({ now, stations, washes }) {
   // Um serviço pronto ocupa o posto até à entrega; considera-se que liberta o posto já.
 
   queueInArrivalOrder(washes).forEach((wash, index) => {
-    estimates.set(wash.id, estimateQueuedWash(wash, index + 1, stationFreeAt, nowMs));
+    estimates.set(wash.id, estimateQueuedWash(wash, index + 1, stationFreeAt, nowMs, reservations));
   });
   return estimates;
 }
 
+/** Quem chega com marcação passa à frente da fila sem marcação; depois, por ordem de chegada. */
 function queueInArrivalOrder(washes) {
   return washes
     .filter((w) => w.status === WashStatus.QUEUED)
-    .sort((a, b) => a.queuedAt.localeCompare(b.queuedAt) || a.id - b.id);
+    .sort((a, b) => Number(Boolean(b.appointmentId)) - Number(Boolean(a.appointmentId)) || a.queuedAt.localeCompare(b.queuedAt) || a.id - b.id);
 }
 
-function estimateQueuedWash(wash, position, stationFreeAt, nowMs) {
+function estimateQueuedWash(wash, position, stationFreeAt, nowMs, reservations) {
   if (stationFreeAt.size === 0) return { position, estimatedStartAt: null, estimatedEndAt: null };
-  const [stationId, startMs] = earliestFreeStation(stationFreeAt);
-  const endMs = startMs + wash.durationMin * MINUTE_MS;
+  const durationMs = wash.durationMin * MINUTE_MS;
+  const [stationId, startMs] = earliestStart(stationFreeAt, durationMs, reservations);
+  const endMs = startMs + durationMs;
   stationFreeAt.set(stationId, endMs);
   return {
     position,
+    stationId,
     estimatedStartAt: new Date(startMs).toISOString(),
     estimatedEndAt: new Date(endMs).toISOString(),
     waitMin: Math.round((startMs - nowMs) / MINUTE_MS),
   };
 }
 
-function earliestFreeStation(stationFreeAt) {
-  return [...stationFreeAt.entries()].reduce((best, current) => (current[1] < best[1] ? current : best));
+/** Posto e hora de início mais cedo, sem sobrepor blocos reservados por marcações. */
+function earliestStart(stationFreeAt, durationMs, reservations) {
+  const candidates = [...stationFreeAt.entries()].map(([stationId, freeAt]) => {
+    let start = freeAt;
+    const ofStation = reservations.filter((r) => r.stationId === stationId).sort((a, b) => a.startMs - b.startMs);
+    for (const block of ofStation) {
+      if (start < block.endMs && block.startMs < start + durationMs) start = block.endMs;
+    }
+    return [stationId, start];
+  });
+  return candidates.reduce((best, current) => (current[1] < best[1] ? current : best));
 }

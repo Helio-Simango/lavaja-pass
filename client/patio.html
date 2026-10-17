@@ -11,10 +11,10 @@
   <header class="topbar">
     <a class="brand" href="/">LavaJá <span>Pass</span></a>
     <nav>
-      <span>Painel</span>
+      <a href="/painel">Painel</a>
       <a href="/patio" aria-current="page">Pátio</a>
-      <span>Catálogo</span>
-      <span>Banco</span>
+      <a href="/catalogo">Catálogo</a>
+      <a href="/banco">Banco</a>
       <a href="/simulador">Simulador</a>
     </nav>
     <span class="demo-flag">DADOS DE DEMONSTRAÇÃO</span>
@@ -35,6 +35,14 @@
     </div>
 
     <div id="board-error" class="error-box" hidden></div>
+
+    <section class="appointments" aria-labelledby="appointments-title">
+      <div class="appointments-head">
+        <h2 id="appointments-title">Marcações de hoje</h2>
+        <span class="muted" id="appointments-count"></span>
+      </div>
+      <ul id="appointments-list" class="appointments-list"></ul>
+    </section>
 
     <section class="board" aria-label="Quadro do pátio">
       <div class="column" data-status="queued">
@@ -69,6 +77,11 @@
       <div id="reg-new-customer" hidden>
         <label for="reg-name">Nome</label>
         <input id="reg-name" maxlength="80" autocomplete="off">
+        <fieldset class="consents">
+          <legend>Consentimentos do cliente (separados)</legend>
+          <label class="check"><input type="checkbox" id="reg-consent-loyalty"><span>Participa no programa de fidelização</span></label>
+          <label class="check"><input type="checkbox" id="reg-consent-marketing"><span>Aceita receber ofertas</span></label>
+        </fieldset>
       </div>
 
       <div id="reg-vehicle-block" hidden>

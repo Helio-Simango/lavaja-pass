@@ -2,6 +2,7 @@
 import { api } from '../core/api-client.js';
 import { $, formatTime, hideMessage, showMessage } from '../core/dom.js';
 import { bindOperatorInput } from '../core/operator.js';
+import { renderAppointments } from './appointments-view.js';
 import { renderBoard, renderStationsLine } from './board-view.js';
 import { createCashDialog } from './cash-dialog.js';
 import { createConfirmDialog } from './confirm-dialog.js';
@@ -20,20 +21,38 @@ const cashDialog = createCashDialog($('#cash-dialog'), { actor, onDeclared: () =
 const state = {
   washes: [],
   stations: [],
+  appointments: [],
   chosenStations: new Map(), // posto escolhido por serviço em fila, preservado entre actualizações
 };
 
 async function refresh() {
   try {
-    const [{ stations }, { washes }] = await Promise.all([api('GET', '/stations'), api('GET', '/washes?active=true')]);
-    Object.assign(state, { stations, washes });
+    const [{ stations }, { washes }, agenda] = await Promise.all([
+      api('GET', '/stations'),
+      api('GET', '/washes?active=true'),
+      loadAgenda(),
+    ]);
+    Object.assign(state, { stations, washes, appointments: agenda.appointments });
     hideMessage(boardError);
+    $('#appointments-title').textContent = agenda.title;
+    renderAppointments($('#appointments-list'), $('#appointments-count'), agenda.appointments, { isToday: agenda.isToday });
     if (isChoosingStation()) return; // redesenhar fecharia a lista aberta
     renderStationsLine(stationsLine, stations);
     renderBoard(board, state);
   } catch (error) {
     showMessage(boardError, `Não foi possível actualizar o pátio: ${error.message}`);
   }
+}
+
+/** Marcações de hoje; se não houver nenhuma activa, as de amanhã (para preparar o dia seguinte). */
+async function loadAgenda() {
+  const today = (await api('GET', '/appointments')).appointments;
+  if (today.some((a) => a.status !== 'cancelled')) return { title: 'Marcações de hoje', appointments: today, isToday: true };
+  const tomorrow = new Date(Date.now() + 86_400_000).toLocaleDateString('en-CA', { timeZone: 'Africa/Maputo' });
+  const next = (await api('GET', `/appointments?date=${tomorrow}`)).appointments;
+  return next.length
+    ? { title: 'Marcações de amanhã', appointments: next, isToday: false }
+    : { title: 'Marcações de hoje', appointments: today, isToday: true };
 }
 
 function isChoosingStation() {
@@ -109,6 +128,25 @@ board.addEventListener('click', (event) => {
   const button = event.target.closest('button[data-action]');
   const wash = button && state.washes.find((w) => w.id === Number(button.dataset.id));
   if (wash) cardActions[button.dataset.action](wash, button);
+});
+
+$('#appointments-list').addEventListener('click', async (event) => {
+  const button = event.target.closest('[data-appointment-action]');
+  if (!button) return;
+  const appointment = state.appointments.find((a) => a.id === Number(button.dataset.id));
+  const to = button.dataset.appointmentAction;
+  const send = (reason) => api('POST', `/appointments/${appointment.id}/transitions`, { to, reason }, { actor: actor() }).then(refresh);
+  if (to === 'cancelled') {
+    confirmDialog.open({
+      title: `Cancelar a marcação das ${formatTime(appointment.startsAt)}`,
+      text: `${appointment.vehicle.plateDisplay} · ${appointment.plan.name}. O horário libertado pode ser proposto a outra marcação (D-14).`,
+      okLabel: 'Cancelar marcação',
+      askReason: true,
+      onConfirm: send,
+    });
+    return;
+  }
+  await runFromButton(button, () => send());
 });
 
 $('#open-register').addEventListener('click', () => registerDialog.open());

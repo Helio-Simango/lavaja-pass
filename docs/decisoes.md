@@ -61,7 +61,60 @@ Limites que se mantêm:
 | IMP-19 | O nível usado para atribuir benefícios é o que o cliente tinha antes de fechar o ciclo | Evita que a mesma lavagem suba o nível e beneficie logo do nível novo |
 | IMP-20 | As regras são versões imutáveis. Uma nova versão vale a partir da publicação; os movimentos guardam a versão aplicada | Auditabilidade (cap. 13.3) |
 | IMP-21 | O progresso é sempre calculado a partir do livro de movimentos; não há tabela `loyalty_progress` | O cap. 11.1 exige que o progresso mostrado resulte dos movimentos; evita duas fontes de verdade |
-| IMP-22 | O consentimento de fidelização (cap. 14.2) ainda não condiciona a acumulação | Os consentimentos são do marco I-9 |
+| IMP-22 | ~~O consentimento de fidelização ainda não condiciona a acumulação~~ Substituída pela IMP-51 | — |
+
+## Decisões de implementação (I-10)
+
+| ID | Decisão | Motivo |
+|---|---|---|
+| IMP-57 | A reposição da demonstração pela API fica desactivada por omissão. Exige token, confirmação "REPOR" e acesso local | Cap. 14.4 |
+| IMP-58 | A reposição apaga as tabelas (DROP TABLE não dispara os triggers de auditoria) e volta a migrar e a semear | É a única forma de repor tabelas que só aceitam novos registos. Só existe para a demonstração |
+
+## Decisões de implementação (I-9)
+
+| ID | Decisão | Motivo |
+|---|---|---|
+| IMP-51 | Sem consentimento de fidelização (o último registo), o cliente não acumula progresso nem usa benefícios; o saldo e o histórico mantêm-se | Cap. 14.2: o consentimento é "para acumular progresso e receber benefícios" |
+| IMP-52 | Um cliente sem nenhum registo de consentimento é tratado como "não consentiu" | Minimização: o consentimento tem de ser explícito |
+| IMP-53 | O fecho de caixa é um registo imutável por operador e dia. Uma diferença exige nota e aparece como inconsistência | Cap. 13.3: correcções registadas, nunca apagadas |
+| IMP-54 | Um pagamento digital pendente há mais de 30 min é uma inconsistência | Proposta para o fecho; o valor é ajustável no código (`STALE_PENDING_MINUTES`) |
+| IMP-55 | Os sinais de fraude (D-08) não foram implementados | Pendentes. Os controlos básicos (idempotência, unicidade, auditoria) existem |
+| IMP-56 | O consentimento de marketing é guardado mas não é usado: o módulo de campanhas continua reservado | DEC-13 |
+
+## Decisões de implementação (I-8)
+
+| ID | Decisão | Motivo |
+|---|---|---|
+| IMP-43 | Política de demonstração, **por validar** (`scheduling.policy`):<ul><li>funcionamento das 07:00 às 18:00, com 3 trabalhadores (declarados);</li><li>margem de 10 min (proposta);</li><li>D-09: confirmação manual;</li><li>D-10: tolerância de 15 min;</li><li>D-12: sem postos reservados para a fila;</li><li>D-14: o horário libertado é proposto à marcação seguinte;</li><li>D-11 e D-13: sem penalizações nem depósitos</li></ul> | Nenhuma política foi escolhida (cap. 12.6). A confirmação manual corresponde ao mock M7 ("Por confirmar") |
+| IMP-44 | Um pedido por confirmar também reserva capacidade | Evita dois pedidos no mesmo bloco enquanto a lavadora não confirma |
+| IMP-45 | A remarcação é um evento auditado sobre a marcação confirmada; não há estado `rescheduled` | O cap. 12.5 propõe o estado. Um evento guarda o horário anterior e o novo sem duplicar a marcação |
+| IMP-46 | A expiração das propostas é calculada (`offerStateOf`) e gravada antes de uma nova proposta | Sem tarefas agendadas no protótipo; o resultado é o mesmo: sem resposta, mantém-se o horário |
+| IMP-47 | A disponibilidade exige uma antecedência mínima de um intervalo (30 min) | A fila já no pátio não é ultrapassada de imediato |
+| IMP-48 | Quem chega com marcação passa à frente da fila sem marcação | Cap. 12.2: as marcações confirmadas reservam capacidade |
+| IMP-49 | Avarias e ausências (D-14) ainda não têm registo próprio; desactivar um posto retira-o da capacidade | O cap. 12.6 deixa a política pendente |
+| IMP-50 | A marcação no Pátio e no Painel (pelo gestor) faz-se pela API; a interface de marcação é a conversa (opção 3) | Prioridade da demonstração |
+
+## Decisões de implementação (I-7)
+
+| ID | Decisão | Motivo |
+|---|---|---|
+| IMP-36 | **D-16**: adoptada a proposta do cap. 9.6, uma vertente Banco demonstrativa, sem autenticação e com aviso visível. **Por confirmar pela equipa** | Rápido e coerente com o protótipo. A matriz de perfis do cap. 7.1 continua proposta |
+| IMP-37 | O período de dados é dado em meses e conta a partir do momento da consulta; o relatório não começa antes do primeiro registo | M15: "dados dos últimos 6 meses" |
+| IMP-38 | Uma autorização não pode ser alterada, só revogada uma vez (triggers). Para mudar o âmbito, cria-se uma nova | Auditabilidade: cada acesso fica ligado a um âmbito que não muda |
+| IMP-39 | O relatório tem sempre a identificação e as notas; as restantes secções só se autorizadas | Cap. 9.3 e menor privilégio (cap. 14.1) |
+| IMP-40 | Os dias de funcionamento são um parâmetro declarado pela lavadora (`business.openWeekdays`, por validar) | Necessário para "dias com registo" (cap. 9.4) |
+| IMP-41 | O Moza Banco é a única instituição de demonstração. Não há logótipo nem identidade visual | Foco da equipa (17/10/2026), sem afirmar parceria (DEC-14) |
+| IMP-42 | Os indicadores de maturidade operacional (D-17) não foram implementados | Pendentes. Nunca combinados numa pontuação |
+
+## Decisões de implementação (I-6)
+
+| ID | Decisão | Motivo |
+|---|---|---|
+| IMP-31 | Os indicadores são calculados por funções puras do domínio (`indicators.js`), usadas pelo Painel e pelo relatório do banco | A mesma definição em todo o lado; testável sem base de dados |
+| IMP-32 | Nos gráficos, o digital e o numerário aparecem lado a lado e nunca empilhados | Uma barra empilhada sugere uma soma, e o DEC-07 proíbe somá-los |
+| IMP-33 | "Por receber" considera os serviços registados no período, não cancelados, com valor e sem pagamento efectivo (inclui os entregues sem pagamento) | Cap. 13.4. O valor aparece sempre com a nota "não é receita" |
+| IMP-34 | Os gráficos são SVG feitos à mão (`client/js/core/charts.js`), sem bibliotecas | Cumpre DEC-12 (sem dependências nem build no frontend) |
+| IMP-35 | O tempo de serviço e a ocupação (cap. 13.4) ficam para o I-8, com a capacidade | Precisam dos postos, horários e trabalhadores declarados |
 
 ## Decisões de implementação (I-5)
 
@@ -70,7 +123,7 @@ Limites que se mantêm:
 | IMP-23 | O assistente fica em `interfaces/chat`, como um canal de entrada ao lado da API HTTP, e chama os mesmos casos de uso | Cap. 15.6: "usa os mesmos serviços e regras do Pátio". Os textos da conversa são apresentação |
 | IMP-24 | Os avisos ao cliente passam por uma porta (`CustomerNotifier`); a implementação escreve mensagens do sistema na conversa | Os casos de uso não dependem do canal. Uma integração real (fora do protótipo) só substitui a implementação |
 | IMP-25 | Os avisos são gravados na mesma transacção da operação que os origina | Uma operação desfeita não deixa avisos falsos |
-| IMP-26 | Os consentimentos de fidelização e de marketing são pedidos no registo pela conversa e guardados com histórico. Ainda não condicionam a acumulação nem as campanhas | Cap. 14.2. A aplicação dos consentimentos e o consentimento de partilha com bancos ficam para o I-9 e o I-7 |
+| IMP-26 | Os consentimentos de fidelização e de marketing são pedidos no registo pela conversa e guardados com histórico | Cap. 14.2. A aplicação está na IMP-51; a partilha com bancos é a autorização do I-7 |
 | IMP-27 | Uma conversa nova começa sempre em `START`: o assistente cumprimenta pelo nome quem já é cliente (por exemplo, registado no Pátio) | Evita pedir o registo a quem já existe |
 | IMP-28 | O pagamento pela conversa é digital simulado e confirmado logo; a chave de idempotência depende da conversa e do serviço | Demonstração do fluxo M5. Repetir a confirmação não paga duas vezes |
 | IMP-29 | As horas na conversa usam o fuso de Maputo (`Africa/Maputo`) | O texto é gerado no servidor e não depende do fuso do browser |

@@ -38,3 +38,17 @@
 .small { font-size: 13px; margin: 4px 0 0; }
 label.check { display: flex; gap: 8px; align-items: flex-start; text-transform: none; letter-spacing: 0; font-size: 14px; font-weight: 400; color: var(--text); margin-top: 14px; }
 label.check input { width: auto; margin-top: 3px; }
+
+.appointments { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 10px 14px; margin-bottom: 12px; }
+.appointments-head { display: flex; justify-content: space-between; align-items: baseline; }
+.appointments-head h2 { font-size: 13px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+.appointments-list { list-style: none; margin: 6px 0 0; padding: 0; }
+.appointments-list li { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; padding: 6px 0; border-top: 1px solid var(--line); font-size: 14px; }
+.appointments-list li:first-child { border-top: 0; }
+.appointments-list .when { font-weight: 700; color: var(--ink); font-variant-numeric: tabular-nums; min-width: 48px; }
+.appointments-list .grow { flex: 1; min-width: 200px; }
+.appointments-list .actions { display: flex; gap: 6px; }
+
+.consents { border: 0; padding: 0; margin: 10px 0 0; }
+.consents legend { font-size: 12px; font-weight: 700; letter-spacing: 0.04em; color: var(--muted); text-transform: uppercase; }
+.consents label.check { margin-top: 6px; }

@@ -71,6 +71,17 @@ export class SqliteLoyaltyRepository {
       .map(toMovement);
   }
 
+  /** Movimentos ligados a estes serviços (efeito de cada lavagem na fidelização). */
+  listByWashIds(washIds) {
+    if (washIds.length === 0) return [];
+    const placeholders = washIds.map(() => '?').join(', ');
+    return this.#db
+      .prepare(`SELECT t.*, c.code AS class_code FROM loyalty_transactions t
+        JOIN vehicle_classes c ON c.id = t.class_id WHERE t.wash_id IN (${placeholders}) ORDER BY t.id`)
+      .all(...washIds)
+      .map(toMovement);
+  }
+
   hasReference(reference) {
     return Boolean(this.#db.prepare('SELECT 1 FROM loyalty_transactions WHERE reference = ?').get(reference));
   }

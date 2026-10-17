@@ -1,18 +1,28 @@
 import { Router } from 'express';
+import { createAdminController } from './controllers/admin-controller.js';
+import { createAppointmentController } from './controllers/appointment-controller.js';
+import { createBankController } from './controllers/bank-controller.js';
 import { createCatalogController } from './controllers/catalog-controller.js';
 import { createCustomerController } from './controllers/customer-controller.js';
+import { createDashboardController } from './controllers/dashboard-controller.js';
+import { createGovernanceController } from './controllers/governance-controller.js';
 import { createLoyaltyController } from './controllers/loyalty-controller.js';
 import { createPaymentController } from './controllers/payment-controller.js';
 import { createSimulatorController } from './controllers/simulator-controller.js';
 import { createWashController } from './controllers/wash-controller.js';
 
-export function createApiRouter({ services, clock }) {
+export function createApiRouter({ services, clock, demoResetToken = null }) {
   const catalog = createCatalogController(services);
   const customers = createCustomerController(services);
   const washes = createWashController({ ...services, clock });
   const payments = createPaymentController(services);
   const loyalty = createLoyaltyController(services);
   const simulator = createSimulatorController(services);
+  const dashboard = createDashboardController(services);
+  const bank = createBankController(services);
+  const appointments = createAppointmentController(services);
+  const governance = createGovernanceController(services);
+  const admin = createAdminController(services, { demoResetToken });
   const router = Router();
 
   router.get('/health', (req, res) => res.json({ status: 'ok', name: 'LavaJá Pass', prototype: true }));
@@ -29,9 +39,11 @@ export function createApiRouter({ services, clock }) {
   router.post('/customers', customers.register);
   router.get('/customers/:id', customers.get);
   router.post('/customers/:id/vehicles', customers.addVehicle);
-  router.get('/vehicles', customers.listVehicles);
+  router.get('/vehicles', dashboard.listVehicles);
   router.get('/vehicles/:id', customers.getVehicle);
   router.patch('/vehicles/:id', customers.reclassifyVehicle);
+  router.get('/vehicles/:id/wash-history/summary', dashboard.historySummary);
+  router.get('/vehicles/:id/wash-history', dashboard.history);
 
   // Serviços, fila e postos
   router.get('/stations', washes.listStations);
@@ -53,10 +65,44 @@ export function createApiRouter({ services, clock }) {
   router.get('/customers/:id/loyalty', loyalty.card);
   router.get('/customers/:id/loyalty/movements', loyalty.movements);
 
+  // Marcações e capacidade
+  router.get('/availability', appointments.availability);
+  router.get('/capacity', appointments.capacity);
+  router.get('/appointments', appointments.list);
+  router.post('/appointments', appointments.book);
+  router.get('/appointments/:id', appointments.get);
+  router.post('/appointments/:id/transitions', appointments.transition);
+  router.post('/appointments/:id/offers', appointments.propose);
+  router.post('/appointment-offers/:id/respond', appointments.respond);
+
+  // Governação: consentimentos, alterações, postos, fecho do dia
+  router.get('/customers/:id/consents', governance.consents);
+  router.post('/customers/:id/consents', governance.recordConsent);
+  router.get('/change-log', governance.changeLog);
+  router.patch('/stations/:id', governance.setStationActive);
+  router.get('/reconciliation', governance.reconciliation);
+  router.post('/reconciliation/closings', governance.closeCash);
+  router.post('/reconciliation/corrections', governance.addCorrection);
+
+  // Painel
+  router.get('/dashboard/summary', dashboard.summary);
+  router.get('/dashboard/weekly', dashboard.weekly);
+
+  // Vertente Lavadora–Banco (demonstrativa, D-16)
+  router.get('/institutions', bank.listInstitutions);
+  router.get('/institutions/:id/reports/activity', bank.activityReport);
+  router.get('/sharing/authorizations', bank.listAuthorizations);
+  router.post('/sharing/authorizations', bank.grant);
+  router.post('/sharing/authorizations/:id/revoke', bank.revoke);
+  router.get('/sharing/access-logs', bank.accessLogs);
+
   // Simulador de WhatsApp
   router.get('/simulator/threads', simulator.listThreads);
   router.get('/simulator/threads/:phone/messages', simulator.listMessages);
   router.post('/simulator/threads/:phone/messages', simulator.sendMessage);
+
+  // Demonstração
+  router.post('/admin/demo/reset', admin.resetDemo);
 
   return router;
 }

@@ -1,5 +1,79 @@
 # Changelog
 
+## [1.0.0] — 2026-10-17
+
+Protótipo completo: marcos **I-6** a **I-10**. Cada marco foi desenvolvido numa branch `feature/…`, integrado em `develop` e depois em `main`.
+
+### I-10 · Documentação e demonstração
+
+- `docs/demo.md`: roteiro da demonstração alinhado com o guião de 5 minutos (cap. 19), perguntas do júri e números de teste.
+- Reposição protegida da demonstração: `POST /api/admin/demo/reset`, desactivada por omissão; exige `DEMO_RESET_TOKEN`, a confirmação "REPOR" e acesso local.
+- README com os comandos reais e a secção "Limitações e pendências"; `CLAUDE.md`, `docs/arquitectura.md` e o README do simulador actualizados.
+
+### I-9 · Consentimentos, registo de alterações e reconciliação
+
+- Consentimentos aplicados (cap. 14.2):
+  - sem consentimento de fidelização não se acumula progresso nem se usa benefício (`NO_LOYALTY_CONSENT`);
+  - pedidos no registo (Pátio, balcão, conversa);
+  - API própria; `ADERIR` na conversa; o cartão mostra o consentimento.
+- Registo de alterações: `GET /api/change-log` (`ChangeLogService`) e secção no Catálogo. Activar ou desactivar postos fica registado e afecta a capacidade.
+- Fecho do dia (migração `009_reconciliation`):
+  - caixa por operador (declarado vs. contado, diferença com nota, um fecho por dia);
+  - inconsistências e correcções registadas, só acrescentam;
+  - as correcções contam na qualidade dos dados do relatório do banco.
+- Demonstração: consentimentos dos clientes registados ao balcão.
+
+### I-8 · Marcações e capacidade
+
+- Migração `008_appointments`:
+  - marcações com bloco num posto;
+  - auditoria e propostas de antecipação (uma pendente por marcação);
+  - ligação do serviço à marcação.
+- Domínio `scheduling.js`:
+  - política por validar: horário, intervalo, margem, trabalhadores, D-09, D-10, D-12, D-14;
+  - capacidade por posto e por pessoas, horários livres e ciclo de vida;
+  - propostas com prazo: uma marcação confirmada só muda se o cliente aceitar (DEC-10).
+- Estimativas da fila: quem chega com marcação passa à frente e a fila não ocupa os blocos reservados.
+- `AppointmentService`:
+  - marcar, confirmar, chegada (cria o serviço), falta, cancelar;
+  - propor e responder;
+  - capacidade do dia;
+  - proposta automática do horário libertado.
+- Avisos na conversa: registada, confirmada, proposta (ACEITAR/MANTER) e remarcada.
+- Assistente: opção 3 (marcar: viatura, plano, dia e horário), ACEITAR e MANTER, e marcações no estado.
+- Pátio: "Marcações de hoje" com acções. Painel: capacidade e agenda por posto (M10).
+- Demonstração: três marcações como no mock M7.
+- `business-time.js`: conversão entre hora local de Maputo e UTC.
+
+### I-7 · Vertente Banco (demonstrativa)
+
+- Migração `007_bank_sharing`:
+  - instituições;
+  - autorizações de partilha, imutáveis e revogáveis uma única vez;
+  - registo de acessos, que só acrescenta.
+- Domínio `sharing.js`:
+  - pedido de autorização com confirmação explícita, estado, período autorizado e revogação;
+  - acesso só para a instituição autorizada e só enquanto a autorização estiver activa (`AccessDeniedError`, 403);
+  - notas fixas do relatório.
+- `indicators.js`: indicadores de qualidade dos dados do cap. 9.4.
+- `BankReportService`: relatório do cap. 9.3 com as secções autorizadas, registando cada consulta e exportação na mesma transacção.
+- API de instituições, autorizações, relatório (JSON e CSV) e registo de acessos.
+- `/banco`: vista da lavadora (M15) e vista do analista (M16), com aviso de demonstração sem autenticação.
+- Demonstração: Moza Banco como instituição de demonstração (sem parceria); AUT-001 revogada; AUT-002 activa e já consultada.
+
+### I-6 · Painel, viaturas por classe, histórico por matrícula e catálogo
+
+- Domínio `indicators.js`, puro e partilhado com a vertente Banco:
+  - indicadores do cap. 13.4, cada um com definição e origem;
+  - concluídos por dia da semana, no fuso de Maputo;
+  - concluídos por classe e por plano;
+  - recebimentos por semana, sempre por origem.
+- `loyalty-effect.js`: efeito de cada serviço na fidelização (contou, revertido, benefício usado ou devolvido, não contou).
+- API: `GET /api/dashboard/summary`, `/api/dashboard/weekly`, `/api/vehicles?classId=` (com as concluídas) e `/api/vehicles/:id/wash-history` (com `/summary`).
+- `/painel`: cartões de indicadores com ⓘ, período de 7, 30 ou 90 dias, gráficos SVG acessíveis (tooltip, legenda, tabela), módulos, viaturas por classe e histórico por matrícula.
+- `/catalogo`: edição de planos e preços por classe, classes e parâmetros de fidelização com a decisão pendente de cada um.
+- `client/js/core/charts.js`: barras lado a lado, nunca empilhadas, com paleta validada para daltonismo e contraste.
+
 ## [0.5.0] — 2026-10-17
 
 Marcos **I-3**, **I-4** e **I-5**. Cada marco foi desenvolvido numa branch `feature/…`, integrado em `develop` e depois em `main`.

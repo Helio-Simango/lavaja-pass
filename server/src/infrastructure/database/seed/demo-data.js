@@ -32,6 +32,27 @@ export const SETTINGS = [
   { key: 'business.name', value: 'Lava Já – Matola', description: 'Lavadora do caso do hackathon (dados de demonstração)' },
   { key: 'business.currency', value: 'MZN', description: 'Moeda dos preços', toValidate: false },
   {
+    key: 'business.openWeekdays',
+    value: [1, 2, 3, 4, 5, 6, 7],
+    description: 'Dias de funcionamento declarados pela lavadora (1 = segunda … 7 = domingo)',
+  },
+  {
+    key: 'scheduling.policy',
+    value: {
+      openingHours: { open: '07:00', close: '18:00' },
+      slotMinutes: 30,
+      safetyMarginMin: 10,
+      workers: 3,
+      confirmation: 'manual',
+      lateToleranceMin: 15,
+      reservedStationsForQueue: 0,
+      offerResponseMinutes: 15,
+      autoOffers: true,
+    },
+    description:
+      'Marcações (por validar): horário e trabalhadores declarados; margem de segurança (proposta); D-09 confirmação manual; D-10 tolerância de 15 min; D-12 sem reserva para a fila; D-14 propor o horário libertado; D-11 e D-13 sem penalizações nem depósitos',
+  },
+  {
     key: 'demo.institution',
     value: 'Moza Banco',
     description:
@@ -41,14 +62,15 @@ export const SETTINGS = [
 
 // Clientes fictícios; matrículas dos mocks do documento de referência.
 export const CUSTOMERS = [
-  { phone: '84 555 0101', name: 'Amélia Macuácua', vehicles: [{ plate: 'ACX 731 MC', classId: 'B', description: 'Toyota Hilux' }] },
-  { phone: '82 555 0102', name: 'Carlos Sitoe', vehicles: [{ plate: 'AHM 482 MP', classId: 'A', description: 'Toyota Corolla' }] },
-  { phone: '85 555 0103', name: 'Fátima Nhantumbo', vehicles: [{ plate: 'ABC 123 MC', classId: 'B', description: 'Toyota RAV4' }] },
-  { phone: '86 555 0104', name: 'Jorge Cossa', vehicles: [{ plate: 'MMC 552 MP', classId: 'C', description: 'Toyota Hiace' }] },
-  { phone: '87 555 0105', name: 'Luísa Tembe', vehicles: [{ plate: 'AGB 550 MP', classId: 'A', description: 'Honda Fit' }] },
+  { phone: '84 555 0101', name: 'Amélia Macuácua', consents: { loyalty: true, marketing: true, source: 'balcão' }, vehicles: [{ plate: 'ACX 731 MC', classId: 'B', description: 'Toyota Hilux' }] },
+  { phone: '82 555 0102', name: 'Carlos Sitoe', consents: { loyalty: true, marketing: false, source: 'balcão' }, vehicles: [{ plate: 'AHM 482 MP', classId: 'A', description: 'Toyota Corolla' }] },
+  { phone: '85 555 0103', name: 'Fátima Nhantumbo', consents: { loyalty: true, marketing: true, source: 'balcão' }, vehicles: [{ plate: 'ABC 123 MC', classId: 'B', description: 'Toyota RAV4' }] },
+  { phone: '86 555 0104', name: 'Jorge Cossa', consents: { loyalty: true, marketing: false, source: 'balcão' }, vehicles: [{ plate: 'MMC 552 MP', classId: 'C', description: 'Toyota Hiace' }] },
+  { phone: '87 555 0105', name: 'Luísa Tembe', consents: { loyalty: true, marketing: false, source: 'balcão' }, vehicles: [{ plate: 'AGB 550 MP', classId: 'A', description: 'Honda Fit' }] },
   {
     phone: '84 555 0106',
     name: 'Paulo Mabunda',
+    consents: { loyalty: true, marketing: true, source: 'balcão' },
     vehicles: [
       { plate: 'AAZ 219 MP', classId: 'A', description: 'Mazda Demio' },
       { plate: 'ANT 145 MC', classId: 'C', description: 'Nissan Caravan' },
@@ -101,3 +123,37 @@ export const YARD_TIMELINE = [
 ];
 
 export const YARD_START_OFFSET_MIN = 90;
+
+// Vertente Banco (I-7): o Moza Banco, dono do desafio e patrocinador do hackathon, como instituição
+// de demonstração. Não existe parceria formal nem compromisso do banco (DEC-14).
+export const DEMO_INSTITUTION = { code: 'MOZA', name: 'Moza Banco' };
+
+export const DEMO_AUTHORIZATIONS = [
+  {
+    daysAgo: 20,
+    purpose: 'Demonstração inicial do relatório de actividade',
+    sections: ['activity', 'receipts'],
+    dataMonths: 3,
+    validDays: 30,
+    revoke: { daysAgo: 12, reason: 'Demonstração concluída' },
+  },
+  {
+    daysAgo: 2,
+    purpose: 'Análise de oportunidade de financiamento de equipamento',
+    sections: ['activity', 'receipts', 'customers', 'data_quality'],
+    dataMonths: 6,
+    validDays: 30,
+    viewedDaysAgo: 1,
+  },
+];
+export const DEMO_ANALYST = 'analista.demo';
+export const DEMO_BUSINESS_OWNER = 'Gestor da lavadora';
+
+// Marcações de demonstração (mock M7/M10), no dia de hoje se ainda for de manhã, senão amanhã.
+// A do Carlos teve uma proposta de antecipação recusada: mantém-se às 15:00 (DEC-10).
+export const DEMO_APPOINTMENTS = [
+  { plate: 'ACX731MC', plan: 'COMPLETA', time: '14:00', confirm: true },
+  { plate: 'AHM482MP', plan: 'COMPLETA', time: '15:00', confirm: true, declinedOffer: '12:00' },
+  { plate: 'ANT145MC', plan: 'SIMPLES', time: '16:30', confirm: false },
+];
+export const LATEST_LOCAL_HOUR_FOR_SAME_DAY = 11;

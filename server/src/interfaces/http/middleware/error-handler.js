@@ -1,9 +1,10 @@
 // Erros centralizados no formato { "error": { "code", "message", "details?" } }.
 // Um 500 nunca expõe detalhes internos.
-import { ConflictError, DomainError, NotFoundError, ValidationError } from '../../../domain/errors.js';
+import { AccessDeniedError, ConflictError, DomainError, NotFoundError, ValidationError } from '../../../domain/errors.js';
 
 const STATUS_BY_ERROR = new Map([
   [ValidationError, 400],
+  [AccessDeniedError, 403],
   [NotFoundError, 404],
   [ConflictError, 409],
 ]);

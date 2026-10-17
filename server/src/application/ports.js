@@ -100,9 +100,43 @@
  */
 
 /**
+ * Leituras agregadas para indicadores e relatórios (sem dados pessoais).
+ * @typedef {object} ReportingRepository
+ * @property {(from: string, to: string) => object[]} washesBetween
+ * @property {(to: string) => object[]} paymentsUpTo
+ * @property {() => Set<number>} earnedWashIds
+ * @property {() => string|null} firstWashAt
+ * @property {(from: string, to: string) => number} correctionsBetween
+ */
+
+/**
+ * @typedef {object} SharingRepository
+ * @property {() => object[]} listInstitutions
+ * @property {(id: number) => object|null} findInstitution
+ * @property {() => number} nextAuthorizationSequence
+ * @property {(authorization: object) => number} insertAuthorization
+ * @property {(id: number) => object|null} findAuthorization
+ * @property {() => object[]} listAuthorizations
+ * @property {(id: number, changes: object) => void} revokeAuthorization
+ * @property {(now: string) => number} countActive
+ * @property {(log: object, now: string) => void} insertAccessLog
+ * @property {(filter: {authorizationId?: number}) => object[]} listAccessLogs
+ */
+
+/**
  * @typedef {object} ChangeLogRepository
  * @property {(entry: object, now: string) => void} append
  * @property {(entity: string, entityId: string|number) => object[]} listFor
+ * @property {(filter: {entity?: string, limit: number}) => object[]} listRecent
+ */
+
+/**
+ * @typedef {object} ReconciliationRepository
+ * @property {(from: string, to: string) => object[]} paymentsBetween
+ * @property {(businessDate: string) => object[]} listClosings
+ * @property {(businessDate: string, closing: object, closedBy: string, now: string) => void} insertClosing
+ * @property {(businessDate: string) => object[]} listNotes
+ * @property {(note: object, now: string) => void} insertNote
  */
 
 /**
@@ -113,12 +147,36 @@
  */
 
 /**
+ * Reposição dos dados de demonstração (cap. 15.5).
+ * @typedef {object} DemoResetService
+ * @property {() => void} reset
+ */
+
+/**
  * Avisos ao cliente (no protótipo, mensagens do sistema na conversa do simulador).
  * @typedef {object} CustomerNotifier
  * @property {(wash: object) => void} washStarted
  * @property {(wash: object) => void} washReady
  * @property {(wash: object, loyaltyMovements: object[]) => void} washCompleted
  * @property {(wash: object, payment: object) => void} paymentReceived
+ * @property {(appointment: object) => void} appointmentBooked
+ * @property {(appointment: object) => void} appointmentConfirmed
+ * @property {(appointment: object, offer: object) => void} appointmentOffer
+ * @property {(appointment: object, previousStartsAt: string) => void} appointmentRescheduled
+ */
+
+/**
+ * @typedef {object} AppointmentRepository
+ * @property {(id: number) => object|null} findById
+ * @property {(from: string, to: string, filter?: object) => object[]} listBetween
+ * @property {(appointment: object, now: string) => number} insert
+ * @property {(id: number, expectedStatus: string, changes: object, now: string) => boolean} update
+ * @property {(appointmentId: number, event: object, now: string) => void} appendEvent
+ * @property {(offer: object, actor: string, now: string) => number} insertOffer
+ * @property {(id: number) => object|null} findOffer
+ * @property {(appointmentId: number) => object[]} listOffers
+ * @property {(filter?: object) => object[]} listPendingOffers
+ * @property {(id: number, changes: object) => void} updateOffer
  */
 
 /** @type {CustomerNotifier} Usado quando não há canal de avisos. */
@@ -127,4 +185,8 @@ export const silentNotifier = Object.freeze({
   washReady() {},
   washCompleted() {},
   paymentReceived() {},
+  appointmentBooked() {},
+  appointmentConfirmed() {},
+  appointmentOffer() {},
+  appointmentRescheduled() {},
 });

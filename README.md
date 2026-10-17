@@ -26,7 +26,13 @@ npm run db:migrate        # aplica só as migrações em falta
 npm run db:seed           # carrega a demonstração numa base vazia
 ```
 
-Configuração opcional num `.env` (ver [.env.example](.env.example)): `PORT`, `HOST` e `DB_PATH`. A base de dados nunca pode ficar dentro de `client/` nem de `simulador/`.
+Configuração opcional num `.env` (ver [.env.example](.env.example)):
+- `PORT`, `HOST` e `DB_PATH`. A base de dados nunca pode ficar dentro de `client/` nem de `simulador/`.
+- `DEMO_RESET_TOKEN`: activa a reposição da demonstração pela API (`POST /api/admin/demo/reset`, com o cabeçalho `X-Demo-Token`, `{ "confirm": "REPOR" }` e acesso local).
+
+## Demonstração
+
+`npm run db:reset && npm start`, e depois seguir o [roteiro da demonstração](docs/demo.md), alinhado com o guião de 5 minutos do pitch, com as perguntas prováveis do júri e os números de teste.
 
 ## Estrutura
 
@@ -48,7 +54,7 @@ Configuração opcional num `.env` (ver [.env.example](.env.example)): `PORT`, `
 │  ├─ scripts/    db-migrate · db-seed · db-reset
 │  ├─ test/       unit/ · integration/
 │  └─ data/       lavaja.db (gerado; não versionado)
-├─ docs/          arquitectura.md · decisoes.md · referencia/ (documento de referência v3)
+├─ docs/          demo.md · arquitectura.md · decisoes.md · referencia/ (documento de referência v3)
 ├─ CLAUDE.md      regras do projecto para o Claude Code
 ├─ changelog.md
 └─ README.md
@@ -66,11 +72,11 @@ A arquitectura e a regra de dependências entre camadas estão em [docs/arquitec
 | I-3 | Pagamentos simulados e numerário declarado | ✅ |
 | I-4 | Motor de fidelização parametrizável (valores por omissão por validar: D-01, D-02) | ✅ |
 | I-5 | Simulador de WhatsApp e assistente | ✅ |
-| I-6 | Painel, viaturas por classe, histórico por matrícula, catálogo | — |
-| I-7 | Vertente Banco, só para demonstração (Moza Banco; depende de D-16) | — |
-| I-8 | Marcações e capacidade | — |
-| I-9 | Consentimentos, registo de alterações, reconciliação | — |
-| I-10 | Documentação e changelog | em curso |
+| I-6 | Painel, viaturas por classe, histórico por matrícula, catálogo | ✅ |
+| I-7 | Vertente Banco, só para demonstração (Moza Banco; D-16: demonstrativo com aviso) | ✅ |
+| I-8 | Marcações e capacidade (políticas D-09 a D-14 por validar) | ✅ |
+| I-9 | Consentimentos, registo de alterações, reconciliação | ✅ |
+| I-10 | Documentação, changelog, roteiro da demonstração, reposição protegida | ✅ |
 
 O histórico de alterações está em [changelog.md](changelog.md).
 
@@ -79,9 +85,11 @@ O histórico de alterações está em [changelog.md](changelog.md).
 | Endereço | Ecrã | Estado |
 |---|---|---|
 | `/` | Início, com os módulos | ✅ |
-| `/patio` | Pátio: fila, em execução, pronto, postos, registo de serviço, numerário declarado (M7, M8, M9) | ✅ |
+| `/patio` | Pátio: marcações de hoje, fila, em execução, pronto, postos, registo de serviço, numerário declarado (M7, M8, M9) | ✅ |
 | `/simulador` · `/simulador/whatsapp/:telefone` | Simulador de WhatsApp: o utilizador faz de cliente (M1–M6) | ✅ |
-| `/painel`, `/catalogo`, `/banco` | — | próximos marcos |
+| `/painel` | Painel: indicadores com definição e origem, gráficos, capacidade e agenda, fecho do dia, viaturas por classe, histórico por matrícula (M10–M13) | ✅ |
+| `/catalogo` | Catálogo: planos e preços por classe, classes, parâmetros de fidelização, postos, registo de alterações (M14) | ✅ |
+| `/banco` | Vertente Banco: autorizações e registo de acessos (lavadora, M15); relatório autorizado e exportação (banco, M16) | ✅ |
 
 O Pátio actualiza-se a cada 3 s. O nome do operador escrito no topo fica registado como autor de cada acção. Como não há autenticação, esse nome é declarado e não verificado.
 
@@ -148,6 +156,52 @@ Fidelização:
 
 `POST /api/washes` aceita `useBenefit: true` para usar um benefício da classe da viatura.
 
+Governação (consentimentos, alterações, postos, fecho do dia):
+
+| Método e rota | Descrição |
+|---|---|
+| `GET /api/customers/:id/consents` · `POST` | Consentimentos de fidelização e de marketing, separados. `{ type, granted }`: vale o último |
+| `GET /api/change-log?entity=` | Registo de alterações de preços, planos, viaturas, regras e postos |
+| `PATCH /api/stations/:id` | `{ active }`: um posto inactivo sai da capacidade (fica registado) |
+| `GET /api/reconciliation?date=` | Fecho do dia: numerário declarado por operador, fechos e inconsistências com correcções |
+| `POST /api/reconciliation/closings` | `{ date, operator, countedCents, note? }`: uma diferença exige nota; um fecho por operador e dia |
+| `POST /api/reconciliation/corrections` | `{ date, washId?, issueCode, note }`: correcção registada, nunca apagada |
+
+`POST /api/customers` aceita `consents: { loyalty, marketing }`.
+
+Marcações e capacidade:
+
+| Método e rota | Descrição |
+|---|---|
+| `GET /api/availability?date=&planId=&classId=` | Horários livres do dia (capacidade por posto e por pessoas, reserva para a fila) |
+| `GET /api/appointments?date=` · `GET /api/appointments/:id` | Marcações do dia (hora de Maputo); detalhe com auditoria e propostas |
+| `POST /api/appointments` | `{ vehicleId, planId, startsAt }`: fica `requested` ou `confirmed` conforme a política D-09 |
+| `POST /api/appointments/:id/transitions` | `{ to: "confirmed" \| "checked_in" \| "cancelled" \| "no_show", reason? }`. A chegada cria o serviço |
+| `POST /api/appointments/:id/offers` | `{ proposedStartsAt }`: propõe um horário mais cedo (só muda se o cliente aceitar) |
+| `POST /api/appointment-offers/:id/respond` | `{ accept }`: resposta do cliente; uma proposta expirada mantém o horário original |
+| `GET /api/capacity?date=` | Agenda por posto (marcações e pátio) e regras de capacidade |
+
+Painel e histórico:
+
+| Método e rota | Descrição |
+|---|---|
+| `GET /api/dashboard/summary?days=30` | Indicadores (valor, definição e origem), concluídos por dia da semana, recebimentos por semana e por origem, pátio agora |
+| `GET /api/dashboard/weekly` | Recebimentos das últimas 4 semanas, por origem |
+| `GET /api/vehicles?classId=` | Viaturas com o número de serviços concluídos e a data do último |
+| `GET /api/vehicles/:id/wash-history` | Histórico por matrícula: valores guardados, origem do pagamento, efeito na fidelização |
+| `GET /api/vehicles/:id/wash-history/summary` | Resumo: concluídas, canceladas, última, contaram para a fidelização |
+
+Vertente Lavadora–Banco (demonstrativa, sem autenticação — D-16):
+
+| Método e rota | Descrição |
+|---|---|
+| `GET /api/institutions` | Instituições (na demonstração, o Moza Banco) |
+| `GET /api/sharing/authorizations` | Autorizações da lavadora, com estado (`active`, `revoked`, `expired`) e número de acessos |
+| `POST /api/sharing/authorizations` | `{ institutionId, purpose, sections, dataMonths, validDays, confirm: true }` |
+| `POST /api/sharing/authorizations/:id/revoke` | `{ reason? }`: termina as novas consultas |
+| `GET /api/institutions/:id/reports/activity?authorizationId=` | Relatório de actividade (só com autorização activa; `?format=csv` exporta). Cada consulta fica registada |
+| `GET /api/sharing/access-logs?authorizationId=` | Registo de consultas e exportações |
+
 Simulador de WhatsApp:
 
 | Método e rota | Descrição |
@@ -184,6 +238,21 @@ Simulador de WhatsApp:
   - um benefício de uma classe não se usa noutra;
   - cancelar devolve o benefício usado; reembolsar reverte o progresso ou regista uma "reversão não aplicada";
   - todos os parâmetros pendentes (D-01 a D-07) são configuráveis em `loyalty_rules`, em versões.
+- **Indicadores:** são sempre calculados a partir dos registos, cada um com a sua definição e origem (cap. 13.4). O digital confirmado e o numerário declarado nunca são somados (também nos gráficos, onde aparecem lado a lado). O valor por receber nunca é receita.
+- **Consentimentos:** fidelização e marketing são separados, com histórico (vale o último). Sem consentimento de fidelização não se acumula progresso nem se usa benefício, mas o histórico mantém-se. Na conversa: `ADERIR` e `PARAR`.
+- **Fecho do dia:** numerário declarado vs. contado por operador (uma diferença exige nota) e inconsistências do dia (concluído sem pagamento, digital pendente antigo, reembolsos, diferenças de caixa). As correcções são registadas, nunca apagadas, e contam na qualidade dos dados.
+- **Marcações:**
+  - uma marcação reserva um bloco (duração + margem de segurança) num posto, respeitando os trabalhadores disponíveis e a reserva para a fila (D-12);
+  - uma marcação confirmada **nunca é antecipada sem aceitação do cliente** (DEC-10): a lavadora propõe, o cliente aceita ou recusa (ACEITAR/MANTER na conversa); sem resposta no prazo, mantém-se o horário;
+  - a falta só se regista depois da tolerância (D-10);
+  - cancelar ou faltar propõe o horário à marcação seguinte (D-14);
+  - quem chega com marcação passa à frente da fila, e a fila não ocupa os blocos reservados.
+- **Partilha com bancos:**
+  - só com autorização explícita da lavadora, para uma instituição, com finalidade, âmbito, período de dados e validade;
+  - a autorização não pode ser alterada, só revogada (triggers);
+  - o relatório tem só as secções autorizadas e dados agregados, sem nomes nem telefones;
+  - cada consulta e exportação fica registada e é visível para a lavadora;
+  - o relatório não é uma avaliação nem uma pontuação de crédito.
 - **Simulador e assistente:**
   - uma conversa por número, guardada e isolada, por ordem estável;
   - o assistente é uma máquina de estados (cap. 15.6) que usa os mesmos casos de uso do Pátio;
@@ -196,9 +265,38 @@ Simulador de WhatsApp:
 - **Dinheiro:** em centavos inteiros.
 - **Registos que só acrescentam:** o registo de alterações e a auditoria de transições não aceitam `UPDATE` nem `DELETE`.
 
+## Limitações e pendências
+
+O que o protótipo **não** é, e o que ainda está por decidir:
+
+- **Sem autenticação nem perfis efectivos (D-16):** o autor das acções é declarado (`X-Actor`). Não usar com dados reais.
+- **Simulações:**
+  - conversas simuladas, sem WhatsApp real;
+  - pagamentos digitais simulados, sem gateway;
+  - numerário declarado, não verificado.
+- **Dados fictícios:** dados de demonstração; os preços, as durações e os parâmetros estão marcados "por validar" (D-19, D-20).
+- **Decisões pendentes, todas configuráveis e com valores por omissão de demonstração:**
+  - fidelização: D-01 a D-07 (`PUT /api/loyalty/rules`);
+  - marcações: D-09 a D-14 (parâmetro `scheduling.policy`);
+  - classificação de pickups: D-21.
+- **Não implementado:**
+  - sinais de fraude (D-08);
+  - indicadores de maturidade (D-17);
+  - registo de avarias e ausências com remarcação (D-14 completo);
+  - duração por classe (D-20);
+  - campanhas (reservadas, DEC-13).
+- **A validar fora do código:**
+  - modelo comercial (D-15);
+  - enquadramento legal da partilha de dados em Moçambique (D-18);
+  - interesse e requisitos dos bancos;
+  - o Moza Banco aparece só como instituição de demonstração, sem parceria.
+
+O registo completo das decisões tomadas durante a implementação está em [docs/decisoes.md](docs/decisoes.md).
+
 ## Documentação
 
 - [Documento de referência v3](docs/referencia/LavaJa-Pass-Documento-Referencia-v3.pdf): especificação completa. Os capítulos 10 a 15 servem o desenvolvimento.
+- [docs/demo.md](docs/demo.md): roteiro da demonstração e perguntas do júri.
 - [docs/arquitectura.md](docs/arquitectura.md): camadas, regra de dependências e onde fica cada coisa.
 - [docs/decisoes.md](docs/decisoes.md): decisões tomadas desde a v3 e decisões pendentes que afectam o código.
 - [CLAUDE.md](CLAUDE.md): regras de arquitectura, de negócio e de código para quem trabalha no repositório.

@@ -20,14 +20,16 @@ export class LoyaltyService {
   #catalog;
   #customers;
   #changeLog;
+  #consents;
   #unitOfWork;
   #clock;
 
-  constructor({ loyaltyRepository, catalogRepository, customerRepository, changeLogRepository, unitOfWork, clock }) {
+  constructor({ loyaltyRepository, catalogRepository, customerRepository, changeLogRepository, consentRepository, unitOfWork, clock }) {
     this.#loyalty = loyaltyRepository;
     this.#catalog = catalogRepository;
     this.#customers = customerRepository;
     this.#changeLog = changeLogRepository;
+    this.#consents = consentRepository;
     this.#unitOfWork = unitOfWork;
     this.#clock = clock;
   }
@@ -70,6 +72,7 @@ export class LoyaltyService {
     return {
       customerId,
       rules,
+      consent: this.#consentOf(customerId),
       classes: this.#catalog.listClasses().map((vehicleClass) => ({
         classId: vehicleClass.id,
         classCode: vehicleClass.code,
@@ -87,6 +90,7 @@ export class LoyaltyService {
 
   /** Valor do benefício para um novo serviço; recusa se não houver saldo na classe da viatura. */
   benefitFor({ customerId, vehicle, priceCents }) {
+    this.#assertConsent(customerId);
     const { params } = this.rulesInForce();
     const progress = classProgress(params, this.#movementsOf(customerId), {
       classId: vehicle.classId,
@@ -104,8 +108,12 @@ export class LoyaltyService {
     this.#record(wash, planRedeem(wash, wash.loyaltyBenefitCents), actor);
   }
 
-  /** Atribui progresso a uma lavagem concluída, se for elegível. @returns movimentos registados */
+  /**
+   * Atribui progresso a uma lavagem concluída, se for elegível e o cliente tiver consentido
+   * (cap. 14.2). @returns movimentos registados
+   */
   recordCompletion(wash, { hasEffectivePayment, actor }) {
+    if (!this.#consentOf(wash.customerId).granted) return [];
     const rules = this.rulesInForce();
     if (!isEligibleForProgress(wash, { hasEffectivePayment, rules: rules.params })) return [];
     const plan = planEarn(rules.params, this.#movementsOf(wash.customerId), { wash, now: this.#clock.nowIso() });
@@ -137,6 +145,18 @@ export class LoyaltyService {
     const accountId = this.#loyalty.findAccountId(wash.customerId) ?? this.#loyalty.createAccount(wash.customerId, now);
     this.#loyalty.insertMovement(accountId, { ...movement, classId: wash.classId, washId: wash.id, rulesVersion, actor }, now);
     return true;
+  }
+
+  /** Consentimento de fidelização em vigor (o último registado). Sem registo: não consentiu. */
+  #consentOf(customerId) {
+    const consent = this.#consents.currentFor(customerId).loyalty;
+    return { granted: consent?.granted === true, at: consent?.at ?? null, source: consent?.source ?? null };
+  }
+
+  #assertConsent(customerId) {
+    if (!this.#consentOf(customerId).granted) {
+      throw new ConflictError('NO_LOYALTY_CONSENT', 'O cliente não deu consentimento para o programa de fidelização.');
+    }
   }
 
   #movementsOf(customerId) {

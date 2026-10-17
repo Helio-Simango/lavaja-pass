@@ -4,7 +4,7 @@ import { ValidationError } from './errors.js';
 export const MessageDirection = Object.freeze({ IN: 'in', OUT: 'out' });
 export const MessageKind = Object.freeze({ TEXT: 'text', SYSTEM: 'system' });
 
-/** Estados do assistente (cap. 15.6). CHOOSE_SLOT e OFFER_RESPONSE chegam com as marcações (I-8). */
+/** Estados do assistente (cap. 15.6). A resposta às propostas de horário é por comando (ACEITAR/MANTER). */
 export const BotState = Object.freeze({
   START: 'START',
   ASK_NAME: 'ASK_NAME',
@@ -15,6 +15,8 @@ export const BotState = Object.freeze({
   ASK_CLASS: 'ASK_CLASS',
   CHOOSE_PLAN: 'CHOOSE_PLAN',
   CONFIRM_BENEFIT: 'CONFIRM_BENEFIT',
+  CHOOSE_DAY: 'CHOOSE_DAY',
+  CHOOSE_SLOT: 'CHOOSE_SLOT',
   CHOOSE_PAY: 'CHOOSE_PAY',
   CONFIRM_PAY: 'CONFIRM_PAY',
 });
@@ -36,6 +38,9 @@ export function globalCommandOf(text) {
   const normalized = text.trim().toUpperCase();
   if (normalized === 'MENU') return 'MENU';
   if (normalized === 'PARAR') return 'STOP_MARKETING';
+  if (normalized === 'ADERIR') return 'JOIN_LOYALTY';
+  if (normalized === 'ACEITAR') return 'ACCEPT_OFFER';
+  if (normalized === 'MANTER') return 'KEEP_OFFER';
   return null;
 }
 

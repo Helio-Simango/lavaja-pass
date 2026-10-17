@@ -1,12 +1,19 @@
 // Carrega a demonstração. Os dados de referência (classes, planos, postos) entram directamente;
 // clientes e serviços passam pelos casos de uso, para respeitarem as mesmas regras do Pátio.
 import { createContainer } from '../../../container.js';
+import { addDays, localDateOf, localTimeOf, localToIso } from '../../../domain/business-time.js';
 import { createFixedClock, systemClock } from '../../clock.js';
 import {
   CASH_OPERATORS,
   CUSTOMERS,
+  DEMO_ANALYST,
+  DEMO_APPOINTMENTS,
+  DEMO_AUTHORIZATIONS,
+  DEMO_BUSINESS_OWNER,
+  DEMO_INSTITUTION,
   DEMO_LOYALTY_RULES,
   HISTORY_DAYS,
+  LATEST_LOCAL_HOUR_FOR_SAME_DAY,
   SETTINGS,
   STATIONS,
   VEHICLE_CLASSES,
@@ -36,8 +43,11 @@ export function seedDemo(db, { clock = systemClock } = {}) {
     services.loyaltyService.publishRules(DEMO_LOYALTY_RULES, { actor: SEED_ACTOR, toValidate: true });
     CUSTOMERS.forEach((customer) => services.customerService.register(customer));
     playHistory(db, services, demoClock, nowMs);
+    seedSharing(repositories.sharingRepository, services, demoClock, nowMs);
     demoClock.set(new Date(nowMs - YARD_START_OFFSET_MIN * MINUTE_MS).toISOString());
     playYardTimeline(db, services, demoClock);
+    demoClock.set(new Date(nowMs).toISOString());
+    seedAppointments(db, services, demoClock);
   });
   return true;
 }
@@ -71,6 +81,45 @@ function insertReferenceData(db, stationRepository, now) {
   });
 
   STATIONS.forEach((code, index) => stationRepository.insert({ code, name: `Posto ${index + 1}`, sortOrder: index + 1 }));
+}
+
+function seedAppointments(db, { appointmentService }, demoClock) {
+  const now = demoClock.nowIso();
+  const sameDay = Number(localTimeOf(now).slice(0, 2)) < LATEST_LOCAL_HOUR_FOR_SAME_DAY;
+  const day = sameDay ? localDateOf(now) : addDays(localDateOf(now), 1);
+  const idOf = (sql, value) => db.prepare(sql).get(value).id;
+  for (const demo of DEMO_APPOINTMENTS) {
+    const appointment = appointmentService.book({
+      vehicleId: idOf('SELECT id FROM vehicles WHERE plate = ?', demo.plate),
+      planId: idOf('SELECT id FROM wash_plans WHERE code = ?', demo.plan),
+      startsAt: localToIso(day, demo.time),
+      source: 'demo',
+      actor: SEED_ACTOR,
+    });
+    if (demo.confirm) appointmentService.transition(appointment.id, { to: 'confirmed', actor: SEED_ACTOR });
+    if (demo.declinedOffer) {
+      const offer = appointmentService.propose(appointment.id, { proposedStartsAt: localToIso(day, demo.declinedOffer), actor: SEED_ACTOR });
+      appointmentService.respondToOffer(offer.id, { accept: false, actor: appointment.customerName });
+    }
+  }
+}
+
+/** Autorizações da lavadora ao Moza Banco: uma revogada e uma activa, já consultada. */
+function seedSharing(sharingRepository, { sharingService, bankReportService }, demoClock, nowMs) {
+  const at = (daysAgo) => demoClock.set(new Date(nowMs - daysAgo * DAY_MS).toISOString());
+  const institutionId = sharingRepository.insertInstitution(DEMO_INSTITUTION, demoClock.nowIso());
+  for (const demo of DEMO_AUTHORIZATIONS) {
+    at(demo.daysAgo);
+    const authorization = sharingService.grant({ institutionId, ...demo, confirmed: true }, DEMO_BUSINESS_OWNER);
+    if (demo.revoke) {
+      at(demo.revoke.daysAgo);
+      sharingService.revoke(authorization.id, { reason: demo.revoke.reason, actor: DEMO_BUSINESS_OWNER });
+    }
+    if (demo.viewedDaysAgo) {
+      at(demo.viewedDaysAgo);
+      bankReportService.activityReport({ institutionId, authorizationId: authorization.id, actor: DEMO_ANALYST });
+    }
+  }
 }
 
 /** Lavagens passadas, uma de cada vez no P1, espalhadas pelos últimos dias de forma determinística. */
