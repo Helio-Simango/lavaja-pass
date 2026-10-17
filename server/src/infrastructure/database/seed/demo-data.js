@@ -37,6 +37,22 @@ export const SETTINGS = [
     description: 'Dias de funcionamento declarados pela lavadora (1 = segunda … 7 = domingo)',
   },
   {
+    key: 'scheduling.policy',
+    value: {
+      openingHours: { open: '07:00', close: '18:00' },
+      slotMinutes: 30,
+      safetyMarginMin: 10,
+      workers: 3,
+      confirmation: 'manual',
+      lateToleranceMin: 15,
+      reservedStationsForQueue: 0,
+      offerResponseMinutes: 15,
+      autoOffers: true,
+    },
+    description:
+      'Marcações (por validar): horário e trabalhadores declarados; margem de segurança (proposta); D-09 confirmação manual; D-10 tolerância de 15 min; D-12 sem reserva para a fila; D-14 propor o horário libertado; D-11 e D-13 sem penalizações nem depósitos',
+  },
+  {
     key: 'demo.institution',
     value: 'Moza Banco',
     description:
@@ -131,3 +147,12 @@ export const DEMO_AUTHORIZATIONS = [
 ];
 export const DEMO_ANALYST = 'analista.demo';
 export const DEMO_BUSINESS_OWNER = 'Gestor da lavadora';
+
+// Marcações de demonstração (mock M7/M10), no dia de hoje se ainda for de manhã, senão amanhã.
+// A do Carlos teve uma proposta de antecipação recusada: mantém-se às 15:00 (DEC-10).
+export const DEMO_APPOINTMENTS = [
+  { plate: 'ACX731MC', plan: 'COMPLETA', time: '14:00', confirm: true },
+  { plate: 'AHM482MP', plan: 'COMPLETA', time: '15:00', confirm: true, declinedOffer: '12:00' },
+  { plate: 'ANT145MC', plan: 'SIMPLES', time: '16:30', confirm: false },
+];
+export const LATEST_LOCAL_HOUR_FOR_SAME_DAY = 11;

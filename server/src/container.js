@@ -1,5 +1,6 @@
 // Raiz de composição: o único ponto que liga as implementações concretas (SQLite, relógio,
 // avisos na conversa) aos casos de uso. Nenhuma outra camada instancia repositórios.
+import { AppointmentService } from './application/appointment-service.js';
 import { BankReportService } from './application/bank-report-service.js';
 import { CatalogService } from './application/catalog-service.js';
 import { ConsentService } from './application/consent-service.js';
@@ -14,6 +15,7 @@ import { StationService } from './application/station-service.js';
 import { VehicleHistoryService } from './application/vehicle-history-service.js';
 import { WashService } from './application/wash-service.js';
 import { systemClock } from './infrastructure/clock.js';
+import { SqliteAppointmentRepository } from './infrastructure/database/repositories/appointment-repository.js';
 import { SqliteCatalogRepository } from './infrastructure/database/repositories/catalog-repository.js';
 import { SqliteChangeLogRepository } from './infrastructure/database/repositories/change-log-repository.js';
 import { SqliteConsentRepository } from './infrastructure/database/repositories/consent-repository.js';
@@ -33,6 +35,7 @@ import { ConversationNotifier } from './interfaces/chat/notifier.js';
 export function createContainer({ db, clock = systemClock }) {
   const unitOfWork = new SqliteUnitOfWork(db);
   const repositories = {
+    appointmentRepository: new SqliteAppointmentRepository(db),
     catalogRepository: new SqliteCatalogRepository(db),
     changeLogRepository: new SqliteChangeLogRepository(db),
     consentRepository: new SqliteConsentRepository(db),
@@ -49,6 +52,7 @@ export function createContainer({ db, clock = systemClock }) {
   };
   const shared = { ...repositories, unitOfWork, clock };
 
+  const settingsService = new SettingsService(shared);
   const catalogService = new CatalogService(shared);
   const customerService = new CustomerService({ ...shared, catalogService });
   const conversationService = new ConversationService(shared);
@@ -57,9 +61,9 @@ export function createContainer({ db, clock = systemClock }) {
   const notifier = new ConversationNotifier({ conversationService, loyaltyService, catalogService });
   const paymentService = new PaymentService({ ...shared, loyaltyService, notifier });
   const washService = new WashService({ ...shared, catalogService, paymentService, loyaltyService, notifier });
+  const appointmentService = new AppointmentService({ ...shared, catalogService, washService, settingsService, notifier });
   const stationService = new StationService(shared);
   const vehicleHistoryService = new VehicleHistoryService({ ...shared, catalogService });
-  const settingsService = new SettingsService(shared);
   const sharingService = new SharingService(shared);
   const bankReportService = new BankReportService({ ...shared, sharingService, settingsService });
   const dashboardService = new DashboardService({ ...shared, sharingService });
@@ -68,6 +72,7 @@ export function createContainer({ db, clock = systemClock }) {
     unitOfWork,
     repositories,
     services: {
+      appointmentService,
       bankReportService,
       catalogService,
       consentService,

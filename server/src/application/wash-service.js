@@ -1,16 +1,20 @@
 import { ConflictError, NotFoundError } from '../domain/errors.js';
 import { estimateQueue } from '../domain/queue-estimates.js';
+import { blockOf, RESERVING_STATUSES } from '../domain/scheduling.js';
 import { isEffective } from '../domain/payment.js';
 import { silentNotifier } from './ports.js';
 import { isActive, newQueuedWash, parseWashSource, paymentStateOf, planTransition, WashStatus } from '../domain/wash.js';
 
 const DEFAULT_LIST_LIMIT = 200;
+const RESERVATION_LOOKBACK_MS = 3 * 3_600_000;
+const RESERVATION_LOOKAHEAD_MS = 24 * 3_600_000;
 
 export class WashService {
   #washes;
   #vehicles;
   #stations;
   #payments;
+  #appointments;
   #catalogService;
   #paymentService;
   #loyaltyService;
@@ -23,6 +27,7 @@ export class WashService {
     vehicleRepository,
     stationRepository,
     paymentRepository,
+    appointmentRepository,
     catalogService,
     paymentService,
     loyaltyService,
@@ -34,6 +39,7 @@ export class WashService {
     this.#vehicles = vehicleRepository;
     this.#stations = stationRepository;
     this.#payments = paymentRepository;
+    this.#appointments = appointmentRepository;
     this.#catalogService = catalogService;
     this.#paymentService = paymentService;
     this.#loyaltyService = loyaltyService;
@@ -46,7 +52,7 @@ export class WashService {
    * Coloca uma viatura na fila. O preço é sempre calculado aqui, a partir da classe actual da viatura.
    * Com useBenefit, usa um benefício de fidelização da classe da viatura (fica no retrato do preço).
    */
-  register({ vehicleId, planId, source, useBenefit = false, actor }) {
+  register({ vehicleId, planId, source, useBenefit = false, appointmentId = null, actor }) {
     const washId = this.#unitOfWork.run(() => {
       const washSource = parseWashSource(source);
       const vehicle = this.#vehicles.findById(vehicleId);
@@ -58,7 +64,7 @@ export class WashService {
         ? this.#loyaltyService.benefitFor({ customerId: vehicle.customerId, vehicle, priceCents: price.priceCents })
         : 0;
       const now = this.#clock.nowIso();
-      const wash = newQueuedWash({ vehicle, plan, price, loyaltyBenefitCents, source: washSource, actor, now });
+      const wash = { ...newQueuedWash({ vehicle, plan, price, loyaltyBenefitCents, source: washSource, actor, now }), appointmentId };
       const id = this.#washes.insert(wash, now);
       this.#washes.appendEvent(id, { from: null, to: WashStatus.QUEUED, actor }, now);
       if (loyaltyBenefitCents > 0) this.#loyaltyService.redeem({ ...wash, id }, actor);
@@ -166,10 +172,15 @@ export class WashService {
   }
 
   #currentEstimates() {
-    return estimateQueue({
-      now: this.#clock.now(),
-      stations: this.#stations.list(),
-      washes: this.#washes.listActive(),
-    });
+    const now = this.#clock.now();
+    return estimateQueue({ now, stations: this.#stations.list(), washes: this.#washes.listActive(), reservations: this.#reservations(now) });
+  }
+
+  /** Blocos das marcações de hoje que ainda não chegaram: a fila sem marcação não os ocupa. */
+  #reservations(now) {
+    if (!this.#appointments) return [];
+    const from = new Date(now.getTime() - RESERVATION_LOOKBACK_MS).toISOString();
+    const to = new Date(now.getTime() + RESERVATION_LOOKAHEAD_MS).toISOString();
+    return this.#appointments.listBetween(from, to, { statuses: [...RESERVING_STATUSES] }).map(blockOf);
   }
 }

@@ -218,4 +218,46 @@ describe('API do simulador de WhatsApp (I-5)', () => {
       assert.match((await systemMessages(carlosPhone)).at(-1), /Fidelização classe A: 0\/10 lavagens\.\n🎁 Ganhou 1 benefício\(s\): lavagem Simples gratuita\./);
     });
   });
+
+  describe('marcações pela conversa (I-8)', () => {
+    const PHONE = '258849990003';
+    const register = async () => {
+      await say(PHONE, 'Olá');
+      await say(PHONE, 'Sónia Pires');
+      await say(PHONE, '1');
+      await say(PHONE, '1');
+    };
+
+    it('marca um horário: viatura, plano, dia e horário livre', async () => {
+      await register();
+      assert.match(await say(PHONE, '3'), /matrícula/);
+      await say(PHONE, 'AKL 300 MP');
+      await say(PHONE, '1'); // classe A
+      assert.match(await say(PHONE, '2'), /Para que dia/); // Completa
+      const slots = await say(PHONE, '2'); // amanhã
+      assert.match(slots, /Horários livres \(23\/10\):\n\*1\* 07:00/);
+      const reply = await say(PHONE, '1');
+      assert.match(reply, /📅 Marcação registada: 23\/10 às 07:00 · AKL 300 MP · Completa\. Aguarda confirmação[\s\S]*Obrigado!/);
+      assert.match(await say(PHONE, '4'), /\*As suas marcações\*\n23\/10 às 07:00 · AKL 300 MP · Completa · por confirmar/);
+    });
+
+    it('responde a uma proposta mais cedo com ACEITAR ou MANTER', async () => {
+      const [appointment] = (await t.api('GET', '/api/appointments?date=2026-10-23')).body.appointments.filter((a) => a.vehicle.plate === 'AKL300MP');
+      await t.api('POST', `/api/appointments/${appointment.id}/transitions`, { to: 'confirmed' });
+      // Remarca para mais tarde só para o teste ter um horário mais cedo a propor: cancelar e marcar de novo.
+      await t.api('POST', `/api/appointments/${appointment.id}/transitions`, { to: 'cancelled', reason: 'Teste: remarcar' });
+      const later = (
+        await t.api('POST', '/api/appointments', { vehicleId: appointment.vehicle.id, planId: appointment.plan.id, startsAt: '2026-10-23T10:00:00.000Z' })
+      ).body.appointment;
+      await t.api('POST', `/api/appointments/${later.id}/transitions`, { to: 'confirmed' });
+
+      await t.api('POST', `/api/appointments/${later.id}/offers`, { proposedStartsAt: '2026-10-23T06:00:00.000Z' });
+      assert.match(await say(PHONE, 'MANTER'), /Mantém-se a marcação às 12:00 de 23\/10/);
+      assert.equal((await t.api('GET', `/api/appointments/${later.id}`)).body.appointment.startsAt, '2026-10-23T10:00:00.000Z');
+
+      await t.api('POST', `/api/appointments/${later.id}/offers`, { proposedStartsAt: '2026-10-23T06:30:00.000Z' });
+      assert.match(await say(PHONE, 'aceitar'), /Marcação alterada a seu pedido: 12:00 → 23\/10 às 08:30[\s\S]*Feito/);
+      assert.match(await say(PHONE, 'ACEITAR'), /⚠️ Não tem propostas de horário/);
+    });
+  });
 });

@@ -2,6 +2,28 @@
 
 ## [Unreleased]
 
+### I-8 · Marcações e capacidade
+
+- Migração `008_appointments`:
+  - marcações com bloco num posto;
+  - auditoria e propostas de antecipação (uma pendente por marcação);
+  - ligação do serviço à marcação.
+- Domínio `scheduling.js`:
+  - política por validar: horário, intervalo, margem, trabalhadores, D-09, D-10, D-12, D-14;
+  - capacidade por posto e por pessoas, horários livres e ciclo de vida;
+  - propostas com prazo: uma marcação confirmada só muda se o cliente aceitar (DEC-10).
+- Estimativas da fila: quem chega com marcação passa à frente e a fila não ocupa os blocos reservados.
+- `AppointmentService`:
+  - marcar, confirmar, chegada (cria o serviço), falta, cancelar;
+  - propor e responder;
+  - capacidade do dia;
+  - proposta automática do horário libertado.
+- Avisos na conversa: registada, confirmada, proposta (ACEITAR/MANTER) e remarcada.
+- Assistente: opção 3 (marcar: viatura, plano, dia e horário), ACEITAR e MANTER, e marcações no estado.
+- Pátio: "Marcações de hoje" com acções. Painel: capacidade e agenda por posto (M10).
+- Demonstração: três marcações como no mock M7.
+- `business-time.js`: conversão entre hora local de Maputo e UTC.
+
 ### I-7 · Vertente Banco (demonstrativa)
 
 - Migração `007_bank_sharing`:

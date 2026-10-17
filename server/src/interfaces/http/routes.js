@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { createAppointmentController } from './controllers/appointment-controller.js';
 import { createBankController } from './controllers/bank-controller.js';
 import { createCatalogController } from './controllers/catalog-controller.js';
 import { createCustomerController } from './controllers/customer-controller.js';
@@ -17,6 +18,7 @@ export function createApiRouter({ services, clock }) {
   const simulator = createSimulatorController(services);
   const dashboard = createDashboardController(services);
   const bank = createBankController(services);
+  const appointments = createAppointmentController(services);
   const router = Router();
 
   router.get('/health', (req, res) => res.json({ status: 'ok', name: 'LavaJá Pass', prototype: true }));
@@ -58,6 +60,16 @@ export function createApiRouter({ services, clock }) {
   router.put('/loyalty/rules', loyalty.publishRules);
   router.get('/customers/:id/loyalty', loyalty.card);
   router.get('/customers/:id/loyalty/movements', loyalty.movements);
+
+  // Marcações e capacidade
+  router.get('/availability', appointments.availability);
+  router.get('/capacity', appointments.capacity);
+  router.get('/appointments', appointments.list);
+  router.post('/appointments', appointments.book);
+  router.get('/appointments/:id', appointments.get);
+  router.post('/appointments/:id/transitions', appointments.transition);
+  router.post('/appointments/:id/offers', appointments.propose);
+  router.post('/appointment-offers/:id/respond', appointments.respond);
 
   // Painel
   router.get('/dashboard/summary', dashboard.summary);

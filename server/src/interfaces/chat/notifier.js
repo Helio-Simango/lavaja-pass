@@ -1,7 +1,7 @@
 // Avisos automáticos ao cliente na conversa (cap. 8.1): aparecem como mensagens do sistema,
 // distintas das respostas do assistente. Implementa a porta CustomerNotifier da aplicação.
 import { WashPaymentState, washCode } from '../../domain/wash.js';
-import { money, plate, time } from './format.js';
+import { date, money, plate, time } from './format.js';
 
 const PAID_STATES = [WashPaymentState.PAID_DIGITAL, WashPaymentState.PAID_CASH, WashPaymentState.NOT_REQUIRED];
 
@@ -41,6 +41,36 @@ export class ConversationNotifier {
     const lines = [`Obrigado! ${washCode(wash.id)} entregue.`];
     if (loyaltyMovements.length > 0) lines.push(...this.#loyaltyLines(wash, loyaltyMovements));
     this.#notify(wash, lines.join('\n'));
+  }
+
+  appointmentBooked(appointment) {
+    const pending = appointment.status === 'requested' ? ' Aguarda confirmação da lavadora.' : '';
+    this.#notifyAppointment(appointment, `📅 Marcação registada: ${this.#slot(appointment)}.${pending}`);
+  }
+
+  appointmentConfirmed(appointment) {
+    this.#notifyAppointment(appointment, `📅 Marcação confirmada: ${this.#slot(appointment)}.`);
+  }
+
+  /** A proposta nunca muda a marcação sozinha: o cliente responde ACEITAR ou MANTER (cap. 12.4). */
+  appointmentOffer(appointment, offer) {
+    this.#notifyAppointment(
+      appointment,
+      `⏰ Temos um horário mais cedo para ${plate(appointment.plate)}: ${time(offer.proposedStartsAt)} em vez de ${time(appointment.startsAt)} (${date(appointment.startsAt)}).
+Responda *ACEITAR* para mudar ou *MANTER* para ficar com o horário actual. Sem resposta até às ${time(offer.expiresAt)}, mantém-se ${time(appointment.startsAt)}.`,
+    );
+  }
+
+  appointmentRescheduled(appointment, previousStartsAt) {
+    this.#notifyAppointment(appointment, `📅 Marcação alterada a seu pedido: ${time(previousStartsAt)} → ${this.#slot(appointment)}.`);
+  }
+
+  #slot(appointment) {
+    return `${date(appointment.startsAt)} às ${time(appointment.startsAt)} · ${plate(appointment.plate)} · ${appointment.planName}`;
+  }
+
+  #notifyAppointment(appointment, text) {
+    this.#conversationService.notifyPhone(appointment.customerPhone, text);
   }
 
   #loyaltyLines(wash, movements) {

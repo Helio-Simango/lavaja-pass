@@ -57,6 +57,35 @@
       </div>
     </section>
 
+    <section id="capacidade" class="section" aria-labelledby="capacity-title">
+      <div class="section-head">
+        <div>
+          <h2 id="capacity-title">Capacidade e agenda</h2>
+          <p class="muted" id="capacity-line"></p>
+        </div>
+        <div class="segmented" role="group" aria-label="Dia" id="capacity-days">
+          <button type="button" data-offset="0" aria-pressed="true">Hoje</button>
+          <button type="button" data-offset="1">Amanhã</button>
+        </div>
+      </div>
+      <div class="panels capacity-panels">
+        <article class="panel">
+          <h3>Agenda por posto</h3>
+          <ul class="chart-legend">
+            <li><span class="swatch" style="background:var(--series-1)"></span>Marcação</li>
+            <li><span class="swatch" style="background:var(--series-2)"></span>Fila e pátio (estimativa)</li>
+          </ul>
+          <div id="agenda" class="agenda"></div>
+          <details><summary>Ver tabela</summary><table class="data-table" id="agenda-table"></table></details>
+        </article>
+        <article class="panel">
+          <h3>Regras de capacidade</h3>
+          <table class="data-table" id="policy-table"></table>
+          <p class="muted small">As marcações confirmadas reservam blocos; a fila preenche o resto. Uma marcação confirmada nunca é antecipada sem aceitação do cliente.</p>
+        </article>
+      </div>
+    </section>
+
     <section id="viaturas" class="section" aria-labelledby="vehicles-title">
       <div class="section-head">
         <div>

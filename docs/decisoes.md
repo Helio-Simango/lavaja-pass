@@ -63,6 +63,19 @@ Limites que se mantêm:
 | IMP-21 | O progresso é sempre calculado a partir do livro de movimentos; não há tabela `loyalty_progress` | O cap. 11.1 exige que o progresso mostrado resulte dos movimentos; evita duas fontes de verdade |
 | IMP-22 | O consentimento de fidelização (cap. 14.2) ainda não condiciona a acumulação | Os consentimentos são do marco I-9 |
 
+## Decisões de implementação (I-8)
+
+| ID | Decisão | Motivo |
+|---|---|---|
+| IMP-43 | Política de demonstração, **por validar** (`scheduling.policy`):<ul><li>funcionamento das 07:00 às 18:00, com 3 trabalhadores (declarados);</li><li>margem de 10 min (proposta);</li><li>D-09: confirmação manual;</li><li>D-10: tolerância de 15 min;</li><li>D-12: sem postos reservados para a fila;</li><li>D-14: o horário libertado é proposto à marcação seguinte;</li><li>D-11 e D-13: sem penalizações nem depósitos</li></ul> | Nenhuma política foi escolhida (cap. 12.6). A confirmação manual corresponde ao mock M7 ("Por confirmar") |
+| IMP-44 | Um pedido por confirmar também reserva capacidade | Evita dois pedidos no mesmo bloco enquanto a lavadora não confirma |
+| IMP-45 | A remarcação é um evento auditado sobre a marcação confirmada; não há estado `rescheduled` | O cap. 12.5 propõe o estado. Um evento guarda o horário anterior e o novo sem duplicar a marcação |
+| IMP-46 | A expiração das propostas é calculada (`offerStateOf`) e gravada antes de uma nova proposta | Sem tarefas agendadas no protótipo; o resultado é o mesmo: sem resposta, mantém-se o horário |
+| IMP-47 | A disponibilidade exige uma antecedência mínima de um intervalo (30 min) | A fila já no pátio não é ultrapassada de imediato |
+| IMP-48 | Quem chega com marcação passa à frente da fila sem marcação | Cap. 12.2: as marcações confirmadas reservam capacidade |
+| IMP-49 | Avarias e ausências (D-14) ainda não têm registo próprio; desactivar um posto retira-o da capacidade | O cap. 12.6 deixa a política pendente |
+| IMP-50 | A marcação no Pátio e no Painel (pelo gestor) faz-se pela API; a interface de marcação é a conversa (opção 3) | Prioridade da demonstração |
+
 ## Decisões de implementação (I-7)
 
 | ID | Decisão | Motivo |
