@@ -26,7 +26,13 @@ npm run db:migrate        # aplica só as migrações em falta
 npm run db:seed           # carrega a demonstração numa base vazia
 ```
 
-Configuração opcional num `.env` (ver [.env.example](.env.example)): `PORT`, `HOST` e `DB_PATH`. A base de dados nunca pode ficar dentro de `client/` nem de `simulador/`.
+Configuração opcional num `.env` (ver [.env.example](.env.example)):
+- `PORT`, `HOST` e `DB_PATH`. A base de dados nunca pode ficar dentro de `client/` nem de `simulador/`.
+- `DEMO_RESET_TOKEN`: activa a reposição da demonstração pela API (`POST /api/admin/demo/reset`, com o cabeçalho `X-Demo-Token`, `{ "confirm": "REPOR" }` e acesso local).
+
+## Demonstração
+
+`npm run db:reset && npm start`, e depois seguir o [roteiro da demonstração](docs/demo.md), alinhado com o guião de 5 minutos do pitch, com as perguntas prováveis do júri e os números de teste.
 
 ## Estrutura
 
@@ -48,7 +54,7 @@ Configuração opcional num `.env` (ver [.env.example](.env.example)): `PORT`, `
 │  ├─ scripts/    db-migrate · db-seed · db-reset
 │  ├─ test/       unit/ · integration/
 │  └─ data/       lavaja.db (gerado; não versionado)
-├─ docs/          arquitectura.md · decisoes.md · referencia/ (documento de referência v3)
+├─ docs/          demo.md · arquitectura.md · decisoes.md · referencia/ (documento de referência v3)
 ├─ CLAUDE.md      regras do projecto para o Claude Code
 ├─ changelog.md
 └─ README.md
@@ -70,7 +76,7 @@ A arquitectura e a regra de dependências entre camadas estão em [docs/arquitec
 | I-7 | Vertente Banco, só para demonstração (Moza Banco; D-16: demonstrativo com aviso) | ✅ |
 | I-8 | Marcações e capacidade (políticas D-09 a D-14 por validar) | ✅ |
 | I-9 | Consentimentos, registo de alterações, reconciliação | ✅ |
-| I-10 | Documentação e changelog | em curso |
+| I-10 | Documentação, changelog, roteiro da demonstração, reposição protegida | ✅ |
 
 O histórico de alterações está em [changelog.md](changelog.md).
 
@@ -259,9 +265,38 @@ Simulador de WhatsApp:
 - **Dinheiro:** em centavos inteiros.
 - **Registos que só acrescentam:** o registo de alterações e a auditoria de transições não aceitam `UPDATE` nem `DELETE`.
 
+## Limitações e pendências
+
+O que o protótipo **não** é, e o que ainda está por decidir:
+
+- **Sem autenticação nem perfis efectivos (D-16):** o autor das acções é declarado (`X-Actor`). Não usar com dados reais.
+- **Simulações:**
+  - conversas simuladas, sem WhatsApp real;
+  - pagamentos digitais simulados, sem gateway;
+  - numerário declarado, não verificado.
+- **Dados fictícios:** dados de demonstração; os preços, as durações e os parâmetros estão marcados "por validar" (D-19, D-20).
+- **Decisões pendentes, todas configuráveis e com valores por omissão de demonstração:**
+  - fidelização: D-01 a D-07 (`PUT /api/loyalty/rules`);
+  - marcações: D-09 a D-14 (parâmetro `scheduling.policy`);
+  - classificação de pickups: D-21.
+- **Não implementado:**
+  - sinais de fraude (D-08);
+  - indicadores de maturidade (D-17);
+  - registo de avarias e ausências com remarcação (D-14 completo);
+  - duração por classe (D-20);
+  - campanhas (reservadas, DEC-13).
+- **A validar fora do código:**
+  - modelo comercial (D-15);
+  - enquadramento legal da partilha de dados em Moçambique (D-18);
+  - interesse e requisitos dos bancos;
+  - o Moza Banco aparece só como instituição de demonstração, sem parceria.
+
+O registo completo das decisões tomadas durante a implementação está em [docs/decisoes.md](docs/decisoes.md).
+
 ## Documentação
 
 - [Documento de referência v3](docs/referencia/LavaJa-Pass-Documento-Referencia-v3.pdf): especificação completa. Os capítulos 10 a 15 servem o desenvolvimento.
+- [docs/demo.md](docs/demo.md): roteiro da demonstração e perguntas do júri.
 - [docs/arquitectura.md](docs/arquitectura.md): camadas, regra de dependências e onde fica cada coisa.
 - [docs/decisoes.md](docs/decisoes.md): decisões tomadas desde a v3 e decisões pendentes que afectam o código.
 - [CLAUDE.md](CLAUDE.md): regras de arquitectura, de negócio e de código para quem trabalha no repositório.

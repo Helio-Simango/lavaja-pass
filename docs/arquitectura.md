@@ -41,13 +41,21 @@ Funções puras, testáveis sem base de dados:
 | `vehicle-class.js` | Classes A, B e C; referência por código ou id |
 | `plan.js` | Regra de aceitação: plano activo e com preço para a classe |
 | `wash.js` | Retrato do preço de um novo serviço e decisão de cada transição (`planTransition`) |
-| `queue-estimates.js` | Estimativas de início e fim da fila |
+| `queue-estimates.js` | Estimativas de início e fim da fila (respeitando os blocos das marcações) |
+| `payment.js` | Pagamentos simulados: aceitação, simulação, numerário declarado, reembolso, idempotência |
+| `loyalty.js` · `loyalty-effect.js` | Motor de fidelização parametrizável e efeito de cada serviço |
+| `conversation.js` | Estados do assistente e leitura das respostas |
+| `indicators.js` | Indicadores com definição e origem; qualidade dos dados |
+| `sharing.js` | Autorizações de partilha, acesso e notas do relatório |
+| `scheduling.js` | Capacidade, horários livres, ciclo de vida das marcações e propostas (DEC-10) |
+| `reconciliation.js` | Fecho de caixa e inconsistências do dia |
+| `business-time.js` | Fuso de Maputo (UTC+2) e conversões de datas |
 
 `planTransition` recebe o serviço e o contexto já carregado (posto, ocupação, hora). Devolve as alterações e o evento de auditoria, ou lança o erro da regra violada. Não grava nada.
 
 ### Aplicação (`server/src/application`)
 
-Um serviço por área (catálogo, clientes, serviços, postos, parâmetros). Cada caso de uso:
+Um serviço por área: catálogo, clientes, serviços, postos, pagamentos, fidelização, conversas, consentimentos, painel, histórico, partilha, relatório do banco, marcações, fecho do dia, registo de alterações e parâmetros. Cada caso de uso:
 
 1. lê o que precisa através dos repositórios (portas);
 2. chama o domínio para decidir;
