@@ -52,6 +52,17 @@ Limites que se mantêm:
 | IMP-15 | Um serviço reembolsado pode voltar a receber um pagamento | O índice de "um efectivo por serviço" exclui os reembolsados |
 | IMP-16 | O reembolso fica, por agora, só na API. O Pátio não o oferece | É uma acção do gestor; o ecrã do gestor é o Painel (I-6) |
 
+## Decisões de implementação (I-4)
+
+| ID | Decisão | Motivo |
+|---|---|---|
+| IMP-17 | Valores por omissão da demonstração, **por validar**:<ul><li>ciclo de 10 lavagens;</li><li>D-01: alternativa C com N = 1 (equivale à B);</li><li>nível máximo activo 2;</li><li>D-02: lavagem gratuita do plano Simples;</li><li>D-03: o serviço gratuito não conta;</li><li>D-04: nível por classe;</li><li>D-06: não acumula</li></ul> | O cap. 11.6 pede parâmetros escolhidos pela equipa. O nível 3 fica inactivo até à análise de custos (cap. 11.5, D-07). **A equipa deve confirmar ou alterar estes valores** com `PUT /api/loyalty/rules` |
+| IMP-18 | A "lavagem gratuita" vale o preço do plano de referência na classe da viatura. Se o cliente escolher um plano mais caro, paga a diferença | Junta as duas leituras da D-02 num só mecanismo: um benefício com valor máximo |
+| IMP-19 | O nível usado para atribuir benefícios é o que o cliente tinha antes de fechar o ciclo | Evita que a mesma lavagem suba o nível e beneficie logo do nível novo |
+| IMP-20 | As regras são versões imutáveis. Uma nova versão vale a partir da publicação; os movimentos guardam a versão aplicada | Auditabilidade (cap. 13.3) |
+| IMP-21 | O progresso é sempre calculado a partir do livro de movimentos; não há tabela `loyalty_progress` | O cap. 11.1 exige que o progresso mostrado resulte dos movimentos; evita duas fontes de verdade |
+| IMP-22 | O consentimento de fidelização (cap. 14.2) ainda não condiciona a acumulação | Os consentimentos são do marco I-9 |
+
 ## Decisões de estrutura e arquitectura (v0.2.0)
 
 | ID | Decisão | Motivo |

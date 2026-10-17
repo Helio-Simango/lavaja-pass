@@ -61,7 +61,7 @@ A arquitectura e a regra de dependências entre camadas estão em [docs/arquitec
 | I-1 | Catálogo, clientes e viaturas | ✅ |
 | I-2 | Serviços, fila, postos e estimativas; ecrã Pátio | ✅ |
 | I-3 | Pagamentos simulados e numerário declarado | ✅ |
-| I-4 | Motor de fidelização parametrizável (depende de D-01, D-02) | — |
+| I-4 | Motor de fidelização parametrizável (valores por omissão por validar: D-01, D-02) | ✅ |
 | I-5 | Simulador de WhatsApp e assistente | — |
 | I-6 | Painel, viaturas por classe, histórico por matrícula, catálogo | — |
 | I-7 | Vertente Banco, só para demonstração (Moza Banco; depende de D-16) | — |
@@ -133,6 +133,17 @@ Pagamentos simulados. Todos os pedidos de criação e de reembolso exigem o cabe
 | `POST /api/washes/:id/payments/cash` | `{ amountCents, declaredBy, confirm: true }`: numerário declarado por um operador |
 | `POST /api/payments/:id/refund` | `{ reason }`: reembolso de um pagamento confirmado ou declarado |
 
+Fidelização:
+
+| Método e rota | Descrição |
+|---|---|
+| `GET /api/loyalty/rules` | Regras em vigor (parâmetros e resumo) e todas as versões |
+| `PUT /api/loyalty/rules` | `{ params, toValidate? }`: publica uma nova versão, em vigor a partir de agora |
+| `GET /api/customers/:id/loyalty` | Cartão do cliente: progresso, nível e benefícios por classe |
+| `GET /api/customers/:id/loyalty/movements` | Livro de movimentos (`earn`, `grant`, `redeem`, `restore`, `revert`, `revert_not_applied`) |
+
+`POST /api/washes` aceita `useBenefit: true` para usar um benefício da classe da viatura.
+
 ## Regras principais já aplicadas
 
 - **Telefone:** normalizado para `2588XXXXXXXX` (móveis 82–87) e único por cliente.
@@ -152,6 +163,15 @@ Pagamentos simulados. Todos os pedidos de criação e de reembolso exigem o cabe
   - o digital confirmado (simulado) e o numerário declarado ficam sempre identificados e separados;
   - o numerário exige o operador e a confirmação explícita, e substitui um digital pendente;
   - um serviço pago só pode ser cancelado depois do reembolso; cancelar deixa sem efeito o digital pendente.
+- **Fidelização:**
+  - uma conta por cliente, com progresso separado por classe;
+  - só contam as lavagens concluídas e com pagamento confirmado ou declarado;
+  - concluir, atribuir progresso e reembolsar acontecem na mesma transacção;
+  - cada movimento tem uma referência única por serviço, por isso repetir um pedido nunca duplica progresso nem benefícios;
+  - o saldo nunca é negativo (trigger);
+  - um benefício de uma classe não se usa noutra;
+  - cancelar devolve o benefício usado; reembolsar reverte o progresso ou regista uma "reversão não aplicada";
+  - todos os parâmetros pendentes (D-01 a D-07) são configuráveis em `loyalty_rules`, em versões.
 - **Entrega sem pagamento efectivo:** exige `allowUnpaid: true`, fica registada e marca o serviço como "entregue sem pagamento".
 - **Estimativas:** usam a duração do plano e os postos ocupados, e são sempre apresentadas como estimativas.
 - **Dinheiro:** em centavos inteiros.
