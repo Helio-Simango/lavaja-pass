@@ -51,3 +51,10 @@ label.check input { width: auto; margin-top: 3px; }
 .agenda .hours { grid-column: 2; display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); }
 .panel details { font-size: 13px; margin-top: 8px; }
 .panel details summary { cursor: pointer; color: var(--muted); }
+
+.issue { border-top: 1px solid var(--line); padding: 8px 0; font-size: 14px; }
+.issue:first-child { border-top: 0; }
+.issue .corrections { margin: 4px 0 0; padding-left: 18px; font-size: 13px; color: var(--muted); }
+.issue form { display: flex; gap: 6px; margin-top: 6px; }
+.issue input { padding: 5px 8px; font-size: 13px; }
+.counted { width: 110px; padding: 5px 8px; font-size: 13px; }

@@ -2,9 +2,12 @@
 import { api } from '../core/api-client.js';
 import { renderBarChart } from '../core/charts.js';
 import { $, escapeHtml } from '../core/dom.js';
+import { bindOperatorInput } from '../core/operator.js';
 import { renderCapacity } from './capacity-view.js';
+import { createClosingView } from './closing-view.js';
 
 const state = { days: 30, classCode: 'A', classes: [], dayOffset: 0 };
+const closingView = createClosingView({ actor: bindOperatorInput($('#manager')) });
 
 const formatCount = (value) => new Intl.NumberFormat('pt-PT').format(value);
 const formatMzn = (cents) => `${new Intl.NumberFormat('pt-PT', { maximumFractionDigits: 0 }).format(cents / 100)} MZN`;
@@ -157,5 +160,5 @@ $('#vehicles-table').addEventListener('click', async (event) => {
 
 // ---------- Arranque ----------
 
-await Promise.all([loadDashboard(), loadClasses(), loadCapacity()]);
+await Promise.all([loadDashboard(), loadClasses(), loadCapacity(), closingView.load()]);
 await loadVehicles();

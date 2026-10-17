@@ -2,6 +2,19 @@
 
 ## [Unreleased]
 
+### I-9 · Consentimentos, registo de alterações e reconciliação
+
+- Consentimentos aplicados (cap. 14.2):
+  - sem consentimento de fidelização não se acumula progresso nem se usa benefício (`NO_LOYALTY_CONSENT`);
+  - pedidos no registo (Pátio, balcão, conversa);
+  - API própria; `ADERIR` na conversa; o cartão mostra o consentimento.
+- Registo de alterações: `GET /api/change-log` (`ChangeLogService`) e secção no Catálogo. Activar ou desactivar postos fica registado e afecta a capacidade.
+- Fecho do dia (migração `009_reconciliation`):
+  - caixa por operador (declarado vs. contado, diferença com nota, um fecho por dia);
+  - inconsistências e correcções registadas, só acrescentam;
+  - as correcções contam na qualidade dos dados do relatório do banco.
+- Demonstração: consentimentos dos clientes registados ao balcão.
+
 ### I-8 · Marcações e capacidade
 
 - Migração `008_appointments`:

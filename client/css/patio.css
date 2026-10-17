@@ -48,3 +48,7 @@ label.check input { width: auto; margin-top: 3px; }
 .appointments-list .when { font-weight: 700; color: var(--ink); font-variant-numeric: tabular-nums; min-width: 48px; }
 .appointments-list .grow { flex: 1; min-width: 200px; }
 .appointments-list .actions { display: flex; gap: 6px; }
+
+.consents { border: 0; padding: 0; margin: 10px 0 0; }
+.consents legend { font-size: 12px; font-weight: 700; letter-spacing: 0.04em; color: var(--muted); text-transform: uppercase; }
+.consents label.check { margin-top: 6px; }

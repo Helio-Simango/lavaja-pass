@@ -62,14 +62,15 @@ export const SETTINGS = [
 
 // Clientes fictícios; matrículas dos mocks do documento de referência.
 export const CUSTOMERS = [
-  { phone: '84 555 0101', name: 'Amélia Macuácua', vehicles: [{ plate: 'ACX 731 MC', classId: 'B', description: 'Toyota Hilux' }] },
-  { phone: '82 555 0102', name: 'Carlos Sitoe', vehicles: [{ plate: 'AHM 482 MP', classId: 'A', description: 'Toyota Corolla' }] },
-  { phone: '85 555 0103', name: 'Fátima Nhantumbo', vehicles: [{ plate: 'ABC 123 MC', classId: 'B', description: 'Toyota RAV4' }] },
-  { phone: '86 555 0104', name: 'Jorge Cossa', vehicles: [{ plate: 'MMC 552 MP', classId: 'C', description: 'Toyota Hiace' }] },
-  { phone: '87 555 0105', name: 'Luísa Tembe', vehicles: [{ plate: 'AGB 550 MP', classId: 'A', description: 'Honda Fit' }] },
+  { phone: '84 555 0101', name: 'Amélia Macuácua', consents: { loyalty: true, marketing: true, source: 'balcão' }, vehicles: [{ plate: 'ACX 731 MC', classId: 'B', description: 'Toyota Hilux' }] },
+  { phone: '82 555 0102', name: 'Carlos Sitoe', consents: { loyalty: true, marketing: false, source: 'balcão' }, vehicles: [{ plate: 'AHM 482 MP', classId: 'A', description: 'Toyota Corolla' }] },
+  { phone: '85 555 0103', name: 'Fátima Nhantumbo', consents: { loyalty: true, marketing: true, source: 'balcão' }, vehicles: [{ plate: 'ABC 123 MC', classId: 'B', description: 'Toyota RAV4' }] },
+  { phone: '86 555 0104', name: 'Jorge Cossa', consents: { loyalty: true, marketing: false, source: 'balcão' }, vehicles: [{ plate: 'MMC 552 MP', classId: 'C', description: 'Toyota Hiace' }] },
+  { phone: '87 555 0105', name: 'Luísa Tembe', consents: { loyalty: true, marketing: false, source: 'balcão' }, vehicles: [{ plate: 'AGB 550 MP', classId: 'A', description: 'Honda Fit' }] },
   {
     phone: '84 555 0106',
     name: 'Paulo Mabunda',
+    consents: { loyalty: true, marketing: true, source: 'balcão' },
     vehicles: [
       { plate: 'AAZ 219 MP', classId: 'A', description: 'Mazda Demio' },
       { plate: 'ANT 145 MC', classId: 'C', description: 'Nissan Caravan' },

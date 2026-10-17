@@ -31,6 +31,8 @@ export function createRegisterDialog(dialog, { actor, onRegistered }) {
   function reset() {
     Object.assign(state, { customer: null, loyalty: null, planId: null });
     for (const id of ['reg-phone', 'reg-name', 'reg-plate']) field(id).value = '';
+    field('reg-consent-loyalty').checked = false;
+    field('reg-consent-marketing').checked = false;
     field('reg-customer').textContent = '';
     field('reg-new-customer').hidden = true;
     field('reg-vehicle-block').hidden = true;
@@ -144,7 +146,8 @@ export function createRegisterDialog(dialog, { actor, onRegistered }) {
     const who = { actor: actor() };
     const newVehicle = { plate: field('reg-plate').value, classId: field('reg-class').value };
     if (!state.customer) {
-      const body = { phone: field('reg-phone').value, name: field('reg-name').value, vehicles: [newVehicle] };
+      const consents = { loyalty: field('reg-consent-loyalty').checked, marketing: field('reg-consent-marketing').checked };
+      const body = { phone: field('reg-phone').value, name: field('reg-name').value, vehicles: [newVehicle], consents };
       state.customer = (await api('POST', '/customers', body, who)).customer;
       return state.customer.vehicles[0].id;
     }

@@ -10,14 +10,16 @@ export class CustomerService {
   #vehicles;
   #catalogService;
   #changeLog;
+  #consentService;
   #unitOfWork;
   #clock;
 
-  constructor({ customerRepository, vehicleRepository, catalogService, changeLogRepository, unitOfWork, clock }) {
+  constructor({ customerRepository, vehicleRepository, catalogService, consentService, changeLogRepository, unitOfWork, clock }) {
     this.#customers = customerRepository;
     this.#vehicles = vehicleRepository;
     this.#catalogService = catalogService;
     this.#changeLog = changeLogRepository;
+    this.#consentService = consentService;
     this.#unitOfWork = unitOfWork;
     this.#clock = clock;
   }
@@ -38,8 +40,11 @@ export class CustomerService {
     return this.#customers.list({ limit }).map((customer) => this.#withVehicles(customer));
   }
 
-  /** Regista um cliente e, opcionalmente, as suas viaturas, tudo ou nada. */
-  register({ phone: rawPhone, name: rawName, vehicles = [] }) {
+  /**
+   * Regista um cliente e, opcionalmente, as suas viaturas e consentimentos, tudo ou nada.
+   * @param consents { loyalty?: boolean, marketing?: boolean, source? } — separados (cap. 14.2)
+   */
+  register({ phone: rawPhone, name: rawName, vehicles = [], consents }) {
     return this.#unitOfWork.run(() => {
       const phone = parsePhone(rawPhone);
       const name = parseCustomerName(rawName);
@@ -49,6 +54,7 @@ export class CustomerService {
       }
       const customerId = this.#customers.insert({ phone, name }, this.#clock.nowIso());
       for (const vehicle of vehicles) this.addVehicle(customerId, vehicle ?? {});
+      this.#recordConsents(customerId, consents);
       return this.get(customerId);
     });
   }
@@ -106,6 +112,15 @@ export class CustomerService {
       }
       return this.getVehicle(id);
     });
+  }
+
+  #recordConsents(customerId, consents) {
+    if (!consents || !this.#consentService) return;
+    for (const type of ['loyalty', 'marketing']) {
+      if (typeof consents[type] === 'boolean') {
+        this.#consentService.record(customerId, { type, granted: consents[type], source: consents.source ?? 'patio' });
+      }
+    }
   }
 
   #withVehicles(customer) {

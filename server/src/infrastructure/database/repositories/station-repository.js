@@ -36,6 +36,10 @@ export class SqliteStationRepository {
       }));
   }
 
+  setActive(id, active) {
+    this.#db.prepare('UPDATE stations SET active = ? WHERE id = ?').run(active ? 1 : 0, id);
+  }
+
   insert({ code, name, sortOrder }) {
     this.#db.prepare('INSERT INTO stations (code, name, sort_order) VALUES (?, ?, ?)').run(code, name, sortOrder);
   }
