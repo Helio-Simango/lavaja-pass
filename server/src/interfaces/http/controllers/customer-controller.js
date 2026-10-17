@@ -1,4 +1,4 @@
-import { presentCustomer, presentVehicle, presentVehicleWithOwner } from '../presenters.js';
+import { presentCustomer, presentVehicle } from '../presenters.js';
 import { actorOf, bodyOf, optionalQuery, parseId } from '../request.js';
 
 export function createCustomerController({ customerService }) {
@@ -24,11 +24,6 @@ export function createCustomerController({ customerService }) {
     addVehicle(req, res) {
       const { vehicle, created } = customerService.addVehicle(parseId(req.params.id), bodyOf(req));
       res.status(created ? 201 : 200).json({ vehicle: presentVehicle(vehicle), created });
-    },
-
-    listVehicles(req, res) {
-      const vehicles = customerService.listVehicles({ classRef: optionalQuery(req, 'classId') });
-      res.json({ vehicles: vehicles.map(presentVehicleWithOwner) });
     },
 
     getVehicle(req, res) {

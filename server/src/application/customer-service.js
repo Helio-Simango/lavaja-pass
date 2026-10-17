@@ -91,11 +91,6 @@ export class CustomerService {
     return vehicle;
   }
 
-  listVehicles({ classRef } = {}) {
-    const classId = classRef === undefined ? undefined : this.#catalogService.getClass(classRef).id;
-    return this.#vehicles.list({ classId });
-  }
-
   /** Reclassificação permitida; os serviços já registados guardam a classe usada no momento. */
   reclassifyVehicle(id, classRef, actor) {
     return this.#unitOfWork.run(() => {

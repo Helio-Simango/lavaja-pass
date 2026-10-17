@@ -4,10 +4,12 @@ import { CatalogService } from './application/catalog-service.js';
 import { ConsentService } from './application/consent-service.js';
 import { ConversationService } from './application/conversation-service.js';
 import { CustomerService } from './application/customer-service.js';
+import { DashboardService } from './application/dashboard-service.js';
 import { LoyaltyService } from './application/loyalty-service.js';
 import { PaymentService } from './application/payment-service.js';
 import { SettingsService } from './application/settings-service.js';
 import { StationService } from './application/station-service.js';
+import { VehicleHistoryService } from './application/vehicle-history-service.js';
 import { WashService } from './application/wash-service.js';
 import { systemClock } from './infrastructure/clock.js';
 import { SqliteCatalogRepository } from './infrastructure/database/repositories/catalog-repository.js';
@@ -17,6 +19,7 @@ import { SqliteConversationRepository } from './infrastructure/database/reposito
 import { SqliteCustomerRepository } from './infrastructure/database/repositories/customer-repository.js';
 import { SqliteLoyaltyRepository } from './infrastructure/database/repositories/loyalty-repository.js';
 import { SqlitePaymentRepository } from './infrastructure/database/repositories/payment-repository.js';
+import { SqliteReportingRepository } from './infrastructure/database/repositories/reporting-repository.js';
 import { SqliteSettingsRepository } from './infrastructure/database/repositories/settings-repository.js';
 import { SqliteStationRepository } from './infrastructure/database/repositories/station-repository.js';
 import { SqliteVehicleRepository } from './infrastructure/database/repositories/vehicle-repository.js';
@@ -34,6 +37,7 @@ export function createContainer({ db, clock = systemClock }) {
     customerRepository: new SqliteCustomerRepository(db),
     loyaltyRepository: new SqliteLoyaltyRepository(db),
     paymentRepository: new SqlitePaymentRepository(db),
+    reportingRepository: new SqliteReportingRepository(db),
     settingsRepository: new SqliteSettingsRepository(db),
     stationRepository: new SqliteStationRepository(db),
     vehicleRepository: new SqliteVehicleRepository(db),
@@ -50,6 +54,8 @@ export function createContainer({ db, clock = systemClock }) {
   const paymentService = new PaymentService({ ...shared, loyaltyService, notifier });
   const washService = new WashService({ ...shared, catalogService, paymentService, loyaltyService, notifier });
   const stationService = new StationService(shared);
+  const dashboardService = new DashboardService(shared);
+  const vehicleHistoryService = new VehicleHistoryService({ ...shared, catalogService });
   const settingsService = new SettingsService(shared);
 
   return {
@@ -60,11 +66,13 @@ export function createContainer({ db, clock = systemClock }) {
       consentService,
       conversationService,
       customerService,
+      dashboardService,
       loyaltyService,
       paymentService,
       washService,
       stationService,
       settingsService,
+      vehicleHistoryService,
     },
   };
 }

@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { createCatalogController } from './controllers/catalog-controller.js';
 import { createCustomerController } from './controllers/customer-controller.js';
+import { createDashboardController } from './controllers/dashboard-controller.js';
 import { createLoyaltyController } from './controllers/loyalty-controller.js';
 import { createPaymentController } from './controllers/payment-controller.js';
 import { createSimulatorController } from './controllers/simulator-controller.js';
@@ -13,6 +14,7 @@ export function createApiRouter({ services, clock }) {
   const payments = createPaymentController(services);
   const loyalty = createLoyaltyController(services);
   const simulator = createSimulatorController(services);
+  const dashboard = createDashboardController(services);
   const router = Router();
 
   router.get('/health', (req, res) => res.json({ status: 'ok', name: 'LavaJá Pass', prototype: true }));
@@ -29,9 +31,11 @@ export function createApiRouter({ services, clock }) {
   router.post('/customers', customers.register);
   router.get('/customers/:id', customers.get);
   router.post('/customers/:id/vehicles', customers.addVehicle);
-  router.get('/vehicles', customers.listVehicles);
+  router.get('/vehicles', dashboard.listVehicles);
   router.get('/vehicles/:id', customers.getVehicle);
   router.patch('/vehicles/:id', customers.reclassifyVehicle);
+  router.get('/vehicles/:id/wash-history/summary', dashboard.historySummary);
+  router.get('/vehicles/:id/wash-history', dashboard.history);
 
   // Serviços, fila e postos
   router.get('/stations', washes.listStations);
@@ -52,6 +56,10 @@ export function createApiRouter({ services, clock }) {
   router.put('/loyalty/rules', loyalty.publishRules);
   router.get('/customers/:id/loyalty', loyalty.card);
   router.get('/customers/:id/loyalty/movements', loyalty.movements);
+
+  // Painel
+  router.get('/dashboard/summary', dashboard.summary);
+  router.get('/dashboard/weekly', dashboard.weekly);
 
   // Simulador de WhatsApp
   router.get('/simulator/threads', simulator.listThreads);
