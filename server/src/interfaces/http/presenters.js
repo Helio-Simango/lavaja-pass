@@ -169,3 +169,80 @@ export function presentWashEvent(event) {
     createdAt: event.createdAt,
   };
 }
+
+// ---------- Fidelização ----------
+
+const LEVEL_UP_LABELS = Object.freeze({
+  literal: 'Sobe de nível a cada 10 ciclos completos (D-01 A)',
+  cycles: 'Sobe de nível a cada N ciclos completos (D-01 B/C)',
+  period: 'Nível segundo as lavagens num período móvel (D-01 D)',
+});
+
+/** Texto do benefício, que depende da D-02 (lavagem gratuita ou crédito). */
+function benefitLabel(params, plans, classCode) {
+  if (params.benefit.type === 'free_wash') {
+    const plan = plans.find((candidate) => candidate.code === params.benefit.planCode);
+    return `1 lavagem ${plan?.name ?? params.benefit.planCode} gratuita`;
+  }
+  return `Crédito até ${formatMoney(params.benefit.creditCapCents[classCode])}`;
+}
+
+export function presentLoyaltyRules(rules, plans) {
+  const { params } = rules;
+  return {
+    version: rules.version,
+    effectiveFrom: rules.effectiveFrom,
+    toValidate: rules.toValidate,
+    createdBy: rules.createdBy,
+    params,
+    summary: {
+      cycle: `${params.cycleSize} lavagens elegíveis por ciclo`,
+      levels: params.levels.map((level) => ({
+        level: level.level,
+        benefitsPerCycle: level.benefitsPerCycle,
+        active: level.level <= params.maxActiveLevel,
+      })),
+      levelUp: LEVEL_UP_LABELS[params.levelUp.mode],
+      benefit: params.benefit.type === 'free_wash' ? benefitLabel(params, plans) : 'Crédito com limite por classe',
+    },
+  };
+}
+
+export function presentLoyaltyCard(card, plans) {
+  const { params } = card.rules;
+  return {
+    customerId: card.customerId,
+    rulesVersion: card.rules.version,
+    toValidate: card.rules.toValidate,
+    classes: card.classes.map((progress) => ({
+      classId: progress.classId,
+      classCode: progress.classCode,
+      eligibleWashes: progress.eligibleWashes,
+      progressInCycle: progress.progressInCycle,
+      cycleSize: progress.cycleSize,
+      completedCycles: progress.completedCycles,
+      level: progress.level,
+      benefitsPerCycle: progress.benefitsPerCycle,
+      benefitsAvailable: progress.benefitsAvailable,
+      benefit: benefitLabel(params, plans, progress.classCode),
+    })),
+  };
+}
+
+export function presentLoyaltyMovement(movement) {
+  return {
+    id: movement.id,
+    classCode: movement.classCode,
+    type: movement.type,
+    washId: movement.washId,
+    washCode: movement.washId ? washCode(movement.washId) : null,
+    reference: movement.reference,
+    washesDelta: movement.washesDelta,
+    benefitsDelta: movement.benefitsDelta,
+    benefitValueCents: movement.benefitValueCents,
+    rulesVersion: movement.rulesVersion,
+    actor: movement.actor,
+    details: movement.details,
+    createdAt: movement.createdAt,
+  };
+}

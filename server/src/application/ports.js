@@ -72,6 +72,18 @@
  */
 
 /**
+ * @typedef {object} LoyaltyRepository
+ * @property {(now: string) => object|null} findRulesInForce
+ * @property {() => object[]} listRuleVersions
+ * @property {(rules: object, now: string) => number} insertRules  devolve a versão criada
+ * @property {(customerId: number) => number|null} findAccountId
+ * @property {(customerId: number, now: string) => number} createAccount
+ * @property {(accountId: number) => object[]} listMovements
+ * @property {(reference: string) => boolean} hasReference
+ * @property {(accountId: number, movement: object, now: string) => void} insertMovement
+ */
+
+/**
  * @typedef {object} ChangeLogRepository
  * @property {(entry: object, now: string) => void} append
  * @property {(entity: string, entityId: string|number) => object[]} listFor

@@ -56,6 +56,37 @@ export const CUSTOMERS = [
   },
 ];
 
+// Parâmetros de demonstração do programa de fidelização, por validar (D-01 a D-07):
+// - D-01: alternativa C com N = 1 ciclo por nível (equivale à B);
+// - nível 3 inactivo (maxActiveLevel 2) até à análise de custos (cap. 11.5, D-07);
+// - D-02: lavagem gratuita do plano Simples (o cliente paga a diferença se escolher outro plano);
+// - D-03: o serviço gratuito não conta para o progresso; D-04: nível por classe; D-06: não acumula.
+export const DEMO_LOYALTY_RULES = {
+  cycleSize: 10,
+  levels: [{ benefitsPerCycle: 1 }, { benefitsPerCycle: 2 }, { benefitsPerCycle: 3 }],
+  maxActiveLevel: 2,
+  levelUp: { mode: 'cycles', cyclesPerLevel: 1 },
+  levelScope: 'class',
+  benefit: { type: 'free_wash', planCode: 'SIMPLES' },
+  freeWashCountsTowardsProgress: false,
+  stacksWithPromotions: false,
+};
+
+// Histórico dos últimos 30 dias: lavagens concluídas e pagas (contam para a fidelização) e
+// algumas entregues sem pagamento (não contam). A Amélia fecha um ciclo na classe B (1 benefício);
+// o Carlos fica a uma lavagem de fechar o ciclo na classe A.
+export const HISTORY_DAYS = 30;
+export const WASH_HISTORY_PLAN = [
+  { plate: 'ACX731MC', plan: 'COMPLETA', paid: 10, unpaid: 0 },
+  { plate: 'AHM482MP', plan: 'SIMPLES', paid: 9, unpaid: 1 },
+  { plate: 'ABC123MC', plan: 'COMPLETA', paid: 4, unpaid: 0 },
+  { plate: 'AAZ219MP', plan: 'SIMPLES', paid: 5, unpaid: 1 },
+  { plate: 'MMC552MP', plan: 'COMPLETA_MOTOR', paid: 3, unpaid: 0 },
+  { plate: 'AGB550MP', plan: 'COMPLETA', paid: 2, unpaid: 0 },
+  { plate: 'ANT145MC', plan: 'SIMPLES', paid: 1, unpaid: 0 },
+];
+export const CASH_OPERATORS = ['Amílcar', 'Bento'];
+
 // Pátio coerente com o mock M7, construído ao longo de 90 min antes de "agora":
 // P1 em execução, P2 pronto (por pagar), dois serviços em fila, um deles já pago em digital (simulado).
 export const YARD_TIMELINE = [

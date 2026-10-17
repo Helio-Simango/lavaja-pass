@@ -17,12 +17,14 @@ import {
 export class PaymentService {
   #payments;
   #washes;
+  #loyaltyService;
   #unitOfWork;
   #clock;
 
-  constructor({ paymentRepository, washRepository, unitOfWork, clock }) {
+  constructor({ paymentRepository, washRepository, loyaltyService, unitOfWork, clock }) {
     this.#payments = paymentRepository;
     this.#washes = washRepository;
+    this.#loyaltyService = loyaltyService;
     this.#unitOfWork = unitOfWork;
     this.#clock = clock;
   }
@@ -60,12 +62,16 @@ export class PaymentService {
     });
   }
 
+  /** Reembolsa e, na mesma transacção, reverte o progresso de fidelização que a lavagem tenha dado. */
   refund(paymentId, { reason, idempotencyKey, actor }) {
     return this.#unitOfWork.run(() => {
       const payment = this.#getPayment(paymentId);
       const now = this.#clock.nowIso();
       const decision = planRefund(payment, { reason, idempotencyKey: parseIdempotencyKey(idempotencyKey), actor, now });
-      if (decision.changed) this.#applyOrFail(payment, decision.changes, now);
+      if (decision.changed) {
+        this.#applyOrFail(payment, decision.changes, now);
+        this.#loyaltyService.revertForRefund(this.#getWash(payment.washId), actor);
+      }
       return { payment: this.#getPayment(paymentId), changed: decision.changed };
     });
   }

@@ -2,12 +2,11 @@ import assert from 'node:assert/strict';
 import { after, before, describe, it } from 'node:test';
 import { demoIds, startTestServer } from '../helpers.js';
 
-// LJ-0001 (AGB 550 MP, Completa A, 450,00) está pronto no P2; LJ-0003 (ABC 123 MC, Completa B, 600,00) em fila.
-const READY_WASH = 1;
-const QUEUED_WASH = 3;
-
+// AGB 550 MP (Completa A, 450,00) está pronto no P2; ABC 123 MC (Completa B, 600,00) está em fila.
 describe('API de pagamentos simulados (I-3)', () => {
   let t;
+  let READY_WASH;
+  let QUEUED_WASH;
   const withKey = (key, actor = 'Teste') => ({ 'Idempotency-Key': key, 'X-Actor': actor });
   const payDigital = (washId, amountCents, key) =>
     t.api('POST', `/api/washes/${washId}/payments/digital`, { amountCents }, withKey(key));
@@ -18,6 +17,8 @@ describe('API de pagamentos simulados (I-3)', () => {
 
   before(async () => {
     t = await startTestServer();
+    READY_WASH = demoIds(t.db).yardWash('AGB550MP');
+    QUEUED_WASH = demoIds(t.db).yardWash('ABC123MC');
   });
   after(() => t.close());
 
@@ -134,7 +135,7 @@ describe('API de pagamentos simulados (I-3)', () => {
   it('a base garante no máximo um pagamento efectivo por serviço', () => {
     assert.throws(() =>
       t.db.prepare(`INSERT INTO payments (wash_id, method, status, amount_cents, currency, idempotency_key, declared_by,
-        created_by, created_at, updated_at) VALUES (1, 'cash', 'declared', 45000, 'MZN', 'raw', 'x', 'x', 'now', 'now')`).run(),
+        created_by, created_at, updated_at) VALUES (?, 'cash', 'declared', 45000, 'MZN', 'raw', 'x', 'x', 'now', 'now')`).run(READY_WASH),
     );
   });
 

@@ -52,7 +52,7 @@ function cardHeader(wash) {
       <span>${escapeHtml(wash.plan.name)} · <strong>${escapeHtml(withoutCurrency(wash.price.final.display))}</strong></span>
       <span class="pill ${paymentTone}">${escapeHtml(wash.payment.label)}</span>
     </div>
-    <div class="card-meta">${escapeHtml(wash.code)} · ${escapeHtml(wash.customer.name)}</div>`;
+    <div class="card-meta">${escapeHtml(wash.code)} · ${escapeHtml(wash.customer.name)}${benefitNote(wash)}</div>`;
 }
 
 function queuedBody(wash, { freeStations, chosenStation }) {
@@ -71,6 +71,11 @@ function queuedBody(wash, { freeStations, chosenStation }) {
       ${cashButton(wash)}
       <button class="btn small ghost" data-action="cancel" data-id="${wash.id}">Cancelar</button>
     </div>`;
+}
+
+function benefitNote(wash) {
+  const benefit = wash.price.loyaltyBenefit;
+  return benefit.cents > 0 ? ` · <span class="pill green">Fidelização −${escapeHtml(withoutCurrency(benefit.display))}</span>` : '';
 }
 
 function cashButton(wash) {

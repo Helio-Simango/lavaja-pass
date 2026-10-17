@@ -2,6 +2,30 @@
 
 ## [Unreleased]
 
+### I-4 · Motor de fidelização parametrizável
+
+- Migração `005_loyalty`:
+  - regras versionadas com data de vigência (`loyalty_rules`);
+  - conta única por cliente;
+  - livro de movimentos com referência única, saldo nunca negativo (trigger) e registos que só acrescentam.
+- Domínio `loyalty.js`, com todas as decisões pendentes como parâmetros:
+  - D-01: literal, N ciclos ou período móvel;
+  - nível máximo activo;
+  - D-04: nível por classe ou por cliente;
+  - D-02: lavagem gratuita ou crédito com limite por classe;
+  - D-03: o serviço gratuito conta ou não;
+  - D-06: acumula ou não com promoções.
+- Elegibilidade: concluído e com pagamento confirmado ou declarado (DEC-06). A entrega sem pagamento não conta.
+- Na mesma transacção:
+  - concluir atribui progresso e, ao fechar um ciclo, os benefícios do nível;
+  - cancelar devolve o benefício usado;
+  - reembolsar reverte o progresso ou regista uma "reversão não aplicada".
+- API: `GET`/`PUT /api/loyalty/rules`, `GET /api/customers/:id/loyalty`, `GET /api/customers/:id/loyalty/movements` e `useBenefit` em `POST /api/washes`.
+- Pátio: oferta do benefício no registo, quando há saldo na classe, e desconto visível no cartão.
+- Demonstração:
+  - regras por validar (ciclo de 10; D-01 C com N = 1; nível 3 inactivo; lavagem Simples gratuita);
+  - histórico de 30 dias, em que a Amélia tem 1 benefício na classe B e o Carlos está a uma lavagem de fechar o ciclo na classe A.
+
 ### I-3 · Pagamentos simulados e numerário declarado
 
 - Migração `004_payments`:
