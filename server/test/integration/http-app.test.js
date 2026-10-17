@@ -39,9 +39,19 @@ describe('aplicação HTTP', () => {
     assert.equal(home.status, 200);
     assert.match(await home.text(), /LavaJá/);
     assert.equal((await fetch(`${t.base}/patio`)).status, 200);
-    for (const path of ['/server/data/lavaja.db', '/data/lavaja.db', '/server/src/main.js', '/package.json', '/CLAUDE.md', '/simulador/README.md']) {
+    for (const path of ['/server/data/lavaja.db', '/data/lavaja.db', '/server/src/main.js', '/package.json', '/CLAUDE.md', '/simulador/README.md', '/test/cash-amount.test.js']) {
       assert.notEqual((await fetch(`${t.base}${path}`)).status, 200, path);
     }
+  });
+
+  it('serve o simulador num endereço por número, mas não os seus ficheiros internos', async () => {
+    for (const path of ['/simulador', '/simulador/whatsapp/258841234567']) {
+      const res = await fetch(`${t.base}${path}`);
+      assert.equal(res.status, 200, path);
+      assert.match(await res.text(), /Simulador de WhatsApp/);
+    }
+    assert.equal((await fetch(`${t.base}/simulador/js/main.js`)).status, 200);
+    assert.equal((await fetch(`${t.base}/simulador/test/whatsapp-format.test.js`)).status, 404);
   });
 
   it('não expõe o cabeçalho X-Powered-By', async () => {

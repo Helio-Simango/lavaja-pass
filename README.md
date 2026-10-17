@@ -18,7 +18,8 @@ npm install               # Express (única dependência de execução)
 npm run db:reset          # apaga server/data/lavaja.db, aplica as migrações e carrega a demonstração
 npm start                 # http://localhost:3000
 npm run dev               # o mesmo, reiniciando quando o código muda
-npm test                  # suite completa (base em memória)
+npm test                  # suite completa (servidor, cliente e simulador)
+npm run test:client       # só a lógica pura do cliente e do simulador
 npm run test:unit         # só domínio e arquitectura
 npm run test:integration  # base de dados e API HTTP
 npm run db:migrate        # aplica só as migrações em falta
@@ -32,14 +33,16 @@ Configuração opcional num `.env` (ver [.env.example](.env.example)): `PORT`, `
 ```
 ├─ client/        páginas web (HTML, CSS, JS puro em módulos ES), servidas em /
 │  ├─ css/
-│  └─ js/         core/ (API, DOM, operador) · patio/ (quadro, diálogos)
-├─ simulador/     simulador de WhatsApp (marco I-5), servido em /simulador
+│  ├─ js/         core/ (API, DOM, operador) · patio/ (quadro, diálogos)
+│  └─ test/       testes da lógica pura do cliente
+├─ simulador/     simulador de WhatsApp (I-5), servido em /simulador · js/ · css/ · test/
 ├─ server/
 │  ├─ src/
 │  │  ├─ domain/          regras puras: valores, ciclo de vida do serviço, estimativas, erros
 │  │  ├─ application/     casos de uso e portas (contratos dos repositórios)
 │  │  ├─ infrastructure/  SQLite: ligação, migrações, unidade de trabalho, repositórios, seed · relógio
 │  │  ├─ interfaces/http/ Express: rotas, controladores, presenters, erros
+│  │  ├─ interfaces/chat/ assistente da conversa e avisos ao cliente
 │  │  ├─ container.js     raiz de composição
 │  │  └─ main.js          arranque
 │  ├─ scripts/    db-migrate · db-seed · db-reset
@@ -60,9 +63,9 @@ A arquitectura e a regra de dependências entre camadas estão em [docs/arquitec
 | I-0 | Monorepositório, Express, SQLite, migrações, dados de demonstração, testes | ✅ |
 | I-1 | Catálogo, clientes e viaturas | ✅ |
 | I-2 | Serviços, fila, postos e estimativas; ecrã Pátio | ✅ |
-| I-3 | Pagamentos simulados e numerário declarado | — |
-| I-4 | Motor de fidelização parametrizável (depende de D-01, D-02) | — |
-| I-5 | Simulador de WhatsApp e assistente | — |
+| I-3 | Pagamentos simulados e numerário declarado | ✅ |
+| I-4 | Motor de fidelização parametrizável (valores por omissão por validar: D-01, D-02) | ✅ |
+| I-5 | Simulador de WhatsApp e assistente | ✅ |
 | I-6 | Painel, viaturas por classe, histórico por matrícula, catálogo | — |
 | I-7 | Vertente Banco, só para demonstração (Moza Banco; depende de D-16) | — |
 | I-8 | Marcações e capacidade | — |
@@ -76,8 +79,9 @@ O histórico de alterações está em [changelog.md](changelog.md).
 | Endereço | Ecrã | Estado |
 |---|---|---|
 | `/` | Início, com os módulos | ✅ |
-| `/patio` | Pátio: fila, em execução, pronto, postos, registo de serviço (M7, M8) | ✅ |
-| `/painel`, `/catalogo`, `/banco`, `/simulador/whatsapp/:tel` | — | próximos marcos |
+| `/patio` | Pátio: fila, em execução, pronto, postos, registo de serviço, numerário declarado (M7, M8, M9) | ✅ |
+| `/simulador` · `/simulador/whatsapp/:telefone` | Simulador de WhatsApp: o utilizador faz de cliente (M1–M6) | ✅ |
+| `/painel`, `/catalogo`, `/banco` | — | próximos marcos |
 
 O Pátio actualiza-se a cada 3 s. O nome do operador escrito no topo fica registado como autor de cada acção. Como não há autenticação, esse nome é declarado e não verificado.
 
@@ -123,6 +127,35 @@ Corpo de cada transição:
 | Concluir | `{ to: "completed", allowUnpaid? }` |
 | Cancelar | `{ to: "cancelled", reason }` |
 
+Pagamentos simulados. Todos os pedidos de criação e de reembolso exigem o cabeçalho `Idempotency-Key`: repetir o pedido com a mesma chave devolve o mesmo pagamento (200) e não cria outro.
+
+| Método e rota | Descrição |
+|---|---|
+| `GET /api/washes/:id/payments` | Pagamentos do serviço, com a origem de cada um |
+| `POST /api/washes/:id/payments/digital` | `{ amountCents }`: inicia um pagamento digital simulado (fica `pending`) |
+| `POST /api/payments/:id/simulate` | `{ outcome: "confirmed" \| "failed" }`: resultado da simulação |
+| `POST /api/washes/:id/payments/cash` | `{ amountCents, declaredBy, confirm: true }`: numerário declarado por um operador |
+| `POST /api/payments/:id/refund` | `{ reason }`: reembolso de um pagamento confirmado ou declarado |
+
+Fidelização:
+
+| Método e rota | Descrição |
+|---|---|
+| `GET /api/loyalty/rules` | Regras em vigor (parâmetros e resumo) e todas as versões |
+| `PUT /api/loyalty/rules` | `{ params, toValidate? }`: publica uma nova versão, em vigor a partir de agora |
+| `GET /api/customers/:id/loyalty` | Cartão do cliente: progresso, nível e benefícios por classe |
+| `GET /api/customers/:id/loyalty/movements` | Livro de movimentos (`earn`, `grant`, `redeem`, `restore`, `revert`, `revert_not_applied`) |
+
+`POST /api/washes` aceita `useBenefit: true` para usar um benefício da classe da viatura.
+
+Simulador de WhatsApp:
+
+| Método e rota | Descrição |
+|---|---|
+| `GET /api/simulator/threads` | Conversas, com a última mensagem |
+| `GET /api/simulator/threads/:phone/messages?after=` | Mensagens de um número (só as novas com `after`) e o número normalizado |
+| `POST /api/simulator/threads/:phone/messages` | `{ text }`: mensagem do cliente; devolve-a com as respostas do assistente e os avisos gerados |
+
 ## Regras principais já aplicadas
 
 - **Telefone:** normalizado para `2588XXXXXXXX` (móveis 82–87) e único por cliente.
@@ -136,7 +169,29 @@ Corpo de cada transição:
   - repetir um pedido para o estado actual não tem efeitos;
   - todas as transições ficam auditadas.
 - **Postos:** um posto só tem um serviço activo (em execução ou pronto). Uma viatura só pode estar uma vez no pátio.
-- **Entrega sem pagamento:** exige `allowUnpaid: true`, fica registada e marca o serviço como "entregue sem pagamento". Os pagamentos chegam no I-3.
+- **Pagamentos:**
+  - o valor tem de ser igual ao valor final em dívida;
+  - no máximo um pagamento pendente e um efectivo por serviço (garantido também por índices únicos);
+  - o digital confirmado (simulado) e o numerário declarado ficam sempre identificados e separados;
+  - o numerário exige o operador e a confirmação explícita, e substitui um digital pendente;
+  - um serviço pago só pode ser cancelado depois do reembolso; cancelar deixa sem efeito o digital pendente.
+- **Fidelização:**
+  - uma conta por cliente, com progresso separado por classe;
+  - só contam as lavagens concluídas e com pagamento confirmado ou declarado;
+  - concluir, atribuir progresso e reembolsar acontecem na mesma transacção;
+  - cada movimento tem uma referência única por serviço, por isso repetir um pedido nunca duplica progresso nem benefícios;
+  - o saldo nunca é negativo (trigger);
+  - um benefício de uma classe não se usa noutra;
+  - cancelar devolve o benefício usado; reembolsar reverte o progresso ou regista uma "reversão não aplicada";
+  - todos os parâmetros pendentes (D-01 a D-07) são configuráveis em `loyalty_rules`, em versões.
+- **Simulador e assistente:**
+  - uma conversa por número, guardada e isolada, por ordem estável;
+  - o assistente é uma máquina de estados (cap. 15.6) que usa os mesmos casos de uso do Pátio;
+  - `MENU` e `PARAR` valem em qualquer ponto;
+  - os consentimentos de fidelização e de marketing ficam separados e com histórico;
+  - os avisos automáticos (iniciado, pronto, pagamento, entregue com progresso de fidelização) são mensagens do sistema, criadas na mesma transacção da operação;
+  - não há mensagens nem pagamentos reais.
+- **Entrega sem pagamento efectivo:** exige `allowUnpaid: true`, fica registada e marca o serviço como "entregue sem pagamento".
 - **Estimativas:** usam a duração do plano e os postos ocupados, e são sempre apresentadas como estimativas.
 - **Dinheiro:** em centavos inteiros.
 - **Registos que só acrescentam:** o registo de alterações e a auditoria de transições não aceitam `UPDATE` nem `DELETE`.
@@ -147,4 +202,4 @@ Corpo de cada transição:
 - [docs/arquitectura.md](docs/arquitectura.md): camadas, regra de dependências e onde fica cada coisa.
 - [docs/decisoes.md](docs/decisoes.md): decisões tomadas desde a v3 e decisões pendentes que afectam o código.
 - [CLAUDE.md](CLAUDE.md): regras de arquitectura, de negócio e de código para quem trabalha no repositório.
-- [simulador/README.md](simulador/README.md): âmbito do simulador de WhatsApp (I-5).
+- [simulador/README.md](simulador/README.md): como usar o simulador de WhatsApp e o que o assistente faz.

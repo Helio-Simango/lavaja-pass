@@ -1,6 +1,6 @@
 {
   "name": "lavaja-pass",
-  "version": "0.2.0",
+  "version": "0.5.0",
   "private": true,
   "description": "LavaJá Pass — protótipo para o Hackathon Moza xLab – UEM (caso Lava Já – Matola)",
   "type": "module",
@@ -14,7 +14,8 @@
     "db:migrate": "node --env-file-if-exists=.env --disable-warning=ExperimentalWarning server/scripts/db-migrate.js",
     "db:seed": "node --env-file-if-exists=.env --disable-warning=ExperimentalWarning server/scripts/db-seed.js",
     "db:reset": "node --env-file-if-exists=.env --disable-warning=ExperimentalWarning server/scripts/db-reset.js",
-    "test": "node --disable-warning=ExperimentalWarning --test \"server/test/**/*.test.js\"",
+    "test": "node --disable-warning=ExperimentalWarning --test \"server/test/**/*.test.js\" \"client/test/**/*.test.js\" \"simulador/test/**/*.test.js\"",
+    "test:client": "node --test \"client/test/**/*.test.js\" \"simulador/test/**/*.test.js\"",
     "test:unit": "node --disable-warning=ExperimentalWarning --test \"server/test/unit/**/*.test.js\"",
     "test:integration": "node --disable-warning=ExperimentalWarning --test \"server/test/integration/**/*.test.js\""
   },

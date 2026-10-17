@@ -62,6 +62,44 @@
  */
 
 /**
+ * @typedef {object} PaymentRepository
+ * @property {(id: number) => object|null} findById
+ * @property {(key: string) => object|null} findByIdempotencyKey
+ * @property {(washId: number) => object[]} listByWash
+ * @property {(washIds: number[]) => Map<number, object[]>} listByWashes
+ * @property {(payment: object, now: string) => number} insert
+ * @property {(id: number, expectedStatus: string, changes: object, now: string) => boolean} update
+ */
+
+/**
+ * @typedef {object} LoyaltyRepository
+ * @property {(now: string) => object|null} findRulesInForce
+ * @property {() => object[]} listRuleVersions
+ * @property {(rules: object, now: string) => number} insertRules  devolve a versão criada
+ * @property {(customerId: number) => number|null} findAccountId
+ * @property {(customerId: number, now: string) => number} createAccount
+ * @property {(accountId: number) => object[]} listMovements
+ * @property {(reference: string) => boolean} hasReference
+ * @property {(accountId: number, movement: object, now: string) => void} insertMovement
+ */
+
+/**
+ * @typedef {object} ConversationRepository
+ * @property {(phone: string) => object|null} findThreadByPhone
+ * @property {(thread: object, now: string) => number} insertThread
+ * @property {(id: number, state: object, now: string) => void} updateThread
+ * @property {() => object[]} listThreads
+ * @property {(threadId: number, message: object, now: string) => number} insertMessage
+ * @property {(threadId: number, options: {afterId?: number}) => object[]} listMessages
+ */
+
+/**
+ * @typedef {object} ConsentRepository
+ * @property {(consent: object, now: string) => void} insert
+ * @property {(customerId: number) => object} currentFor
+ */
+
+/**
  * @typedef {object} ChangeLogRepository
  * @property {(entry: object, now: string) => void} append
  * @property {(entity: string, entityId: string|number) => object[]} listFor
@@ -74,4 +112,19 @@
  * @property {(setting: object, now: string) => void} insertIfMissing
  */
 
-export {};
+/**
+ * Avisos ao cliente (no protótipo, mensagens do sistema na conversa do simulador).
+ * @typedef {object} CustomerNotifier
+ * @property {(wash: object) => void} washStarted
+ * @property {(wash: object) => void} washReady
+ * @property {(wash: object, loyaltyMovements: object[]) => void} washCompleted
+ * @property {(wash: object, payment: object) => void} paymentReceived
+ */
+
+/** @type {CustomerNotifier} Usado quando não há canal de avisos. */
+export const silentNotifier = Object.freeze({
+  washStarted() {},
+  washReady() {},
+  washCompleted() {},
+  paymentReceived() {},
+});

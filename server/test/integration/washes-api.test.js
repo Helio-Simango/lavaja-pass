@@ -2,9 +2,8 @@ import assert from 'node:assert/strict';
 import { after, before, describe, it } from 'node:test';
 import { demoIds, startTestServer } from '../helpers.js';
 
-// Estado da demonstração (relógio fixo em 2026-10-22 08:00 UTC):
-// LJ-0001 AGB 550 MP pronto no P2 · LJ-0002 MMC 552 MP em execução no P1 ·
-// LJ-0003 ABC 123 MC e LJ-0004 AAZ 219 MP em fila · P3 e P4 livres.
+// Pátio da demonstração (relógio fixo em 2026-10-22 08:00 UTC):
+// AGB 550 MP pronto no P2 · MMC 552 MP em execução no P1 · ABC 123 MC e AAZ 219 MP em fila · P3 e P4 livres.
 
 describe('API de serviços, fila e postos (I-2)', () => {
   let t;
@@ -24,14 +23,15 @@ describe('API de serviços, fila e postos (I-2)', () => {
     const res = await t.api('GET', '/api/washes?active=true');
     assert.equal(res.status, 200);
     assert.deepEqual(
-      res.body.washes.map((w) => [w.code, w.status, w.station?.code ?? null]),
+      res.body.washes.map((w) => [w.vehicle.plate, w.status, w.station?.code ?? null]),
       [
-        ['LJ-0001', 'ready', 'P2'],
-        ['LJ-0002', 'in_progress', 'P1'],
-        ['LJ-0003', 'queued', null],
-        ['LJ-0004', 'queued', null],
+        ['AGB550MP', 'ready', 'P2'],
+        ['MMC552MP', 'in_progress', 'P1'],
+        ['ABC123MC', 'queued', null],
+        ['AAZ219MP', 'queued', null],
       ],
     );
+    assert.match(res.body.washes[0].code, /^LJ-\d{4}$/);
     const queued = res.body.washes.filter((w) => w.status === 'queued');
     assert.deepEqual(queued.map((w) => w.estimate.position), [1, 2]);
     assert.ok(queued.every((w) => w.estimate.estimatedStartAt));

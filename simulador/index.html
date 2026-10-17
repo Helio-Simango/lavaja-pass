@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="pt">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Simulador WhatsApp · LavaJá Pass</title>
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/simulador/css/simulador.css">
+</head>
+<body class="simulator">
+  <header class="topbar">
+    <a class="brand" href="/">LavaJá <span>Pass</span></a>
+    <nav>
+      <span>Painel</span>
+      <a href="/patio">Pátio</a>
+      <span>Catálogo</span>
+      <span>Banco</span>
+      <a href="/simulador" aria-current="page">Simulador</a>
+    </nav>
+    <span class="demo-flag">SIMULAÇÃO · SEM MENSAGENS REAIS</span>
+  </header>
+
+  <div class="wa-app">
+    <aside class="wa-sidebar" aria-label="Conversas">
+      <form id="open-form" class="wa-open">
+        <label for="open-phone">Conversar como o número</label>
+        <div class="inline">
+          <input id="open-phone" inputmode="tel" placeholder="84 123 4567" autocomplete="off">
+          <button class="btn primary" type="submit">Abrir</button>
+        </div>
+        <p id="open-error" class="error-box" hidden></p>
+      </form>
+      <ul id="threads" class="wa-threads"></ul>
+    </aside>
+
+    <main class="wa-chat" id="chat" hidden>
+      <header class="wa-chat-head">
+        <button class="wa-back" id="back" type="button" aria-label="Voltar às conversas">←</button>
+        <div class="wa-avatar" aria-hidden="true">LJ</div>
+        <div>
+          <strong id="business-name">Lava Já – Matola</strong>
+          <span id="chat-subtitle" class="wa-subtitle"></span>
+        </div>
+      </header>
+      <div class="wa-messages" id="messages" aria-live="polite"></div>
+      <div class="wa-quick" id="quick" aria-label="Respostas rápidas"></div>
+      <form class="wa-composer" id="composer">
+        <input id="text" placeholder="Escreva uma mensagem" autocomplete="off" maxlength="1000">
+        <button class="wa-send" type="submit" aria-label="Enviar">➤</button>
+      </form>
+    </main>
+
+    <section class="wa-empty" id="empty">
+      <h1>Simulador de WhatsApp</h1>
+      <p>Abra a conversa de um número para fazer de cliente da lavadora: registo, fila, estado, pagamento simulado e fidelização.</p>
+      <p class="muted">Cada número tem o seu endereço, por exemplo <span class="mono">/simulador/whatsapp/258841234567</span>. As conversas ficam guardadas e isoladas por número.</p>
+    </section>
+  </div>
+
+  <script type="module" src="/simulador/js/main.js"></script>
+</body>
+</html>

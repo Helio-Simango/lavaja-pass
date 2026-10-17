@@ -9,7 +9,7 @@ describe('base de dados', () => {
     const db = createTestDb({ seed: false });
     assert.deepEqual(migrate(db), []);
     const versions = db.prepare('SELECT version FROM schema_migrations ORDER BY version').all().map((r) => r.version);
-    assert.deepEqual(versions, ['001_foundation.sql', '002_catalog_customers.sql', '003_washes.sql']);
+    assert.deepEqual(versions, ['001_foundation.sql', '002_catalog_customers.sql', '003_washes.sql', '004_payments.sql', '005_loyalty.sql', '006_conversations.sql']);
     db.close();
   });
 
@@ -39,8 +39,12 @@ describe('base de dados', () => {
     const db = createTestDb();
     db.prepare(`INSERT INTO change_log (entity, entity_id, field, actor, created_at)
       VALUES ('x', '1', 'f', 'teste', '2026-10-22')`).run();
-    for (const table of ['change_log', 'wash_status_events']) {
-      assert.throws(() => db.prepare(`UPDATE ${table} SET actor = 'outro'`).run(), /só aceita novos registos/);
+    db.prepare(`INSERT INTO message_threads (phone, bot_state, created_at, updated_at)
+      VALUES ('258849990000', 'START', 'now', 'now')`).run();
+    db.prepare(`INSERT INTO messages (thread_id, direction, kind, body, created_at) VALUES (1, 'in', 'text', 'Olá', 'now')`).run();
+    db.prepare(`INSERT INTO consents (customer_id, type, granted, source, created_at) VALUES (1, 'loyalty', 1, 'teste', 'now')`).run();
+    for (const table of ['change_log', 'wash_status_events', 'loyalty_transactions', 'loyalty_rules', 'messages', 'consents']) {
+      assert.throws(() => db.prepare(`UPDATE ${table} SET created_at = 'outro'`).run(), /só aceita novos registos/);
       assert.throws(() => db.prepare(`DELETE FROM ${table}`).run(), /só aceita novos registos/);
     }
     db.close();
@@ -48,14 +52,16 @@ describe('base de dados', () => {
 
   it('o preço final tem de ser base − desconto − benefício', () => {
     const db = createTestDb();
-    assert.throws(() => db.prepare('UPDATE washes SET final_price_cents = final_price_cents + 1 WHERE id = 1').run());
+    assert.throws(() =>
+      db.prepare("UPDATE washes SET final_price_cents = final_price_cents + 1 WHERE status = 'queued'").run(),
+    );
     db.close();
   });
 
   it('um serviço em estado final não volta a um estado activo', () => {
     const db = createTestDb();
-    db.prepare("UPDATE washes SET status = 'cancelled', cancelled_at = 'x', cancel_reason = 'teste' WHERE id = 3").run();
-    assert.throws(() => db.prepare("UPDATE washes SET status = 'queued' WHERE id = 3").run(), /estado final/);
+    const { id } = db.prepare("SELECT id FROM washes WHERE status = 'completed' LIMIT 1").get();
+    assert.throws(() => db.prepare("UPDATE washes SET status = 'queued' WHERE id = ?").run(id), /estado final/);
     db.close();
   });
 

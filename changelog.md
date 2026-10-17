@@ -1,5 +1,77 @@
 # Changelog
 
+## [0.5.0] — 2026-10-17
+
+Marcos **I-3**, **I-4** e **I-5**. Cada marco foi desenvolvido numa branch `feature/…`, integrado em `develop` e depois em `main`.
+
+### I-5 · Simulador de WhatsApp e assistente
+
+- Migração `006_conversations`:
+  - `message_threads`: uma por telefone, com o estado do assistente;
+  - `messages`: ordem estável por id, avisos do sistema distintos;
+  - `consents`: fidelização e marketing, com histórico;
+  - todas só acrescentam registos.
+- `ConversationService.handleIncoming`: a mensagem, as respostas e o estado ficam numa só transacção.
+- Assistente (`interfaces/chat/assistant.js`), uma máquina de estados do cap. 15.6:
+  - registo com nome e consentimentos separados;
+  - menu com planos e preços, entrar na fila (viatura nova ou existente, com benefício), estado com estimativas, pagamento digital simulado e idempotente, histórico e cartão de fidelização;
+  - `MENU` e `PARAR` em qualquer ponto; as regras violadas são respondidas na conversa, sem perder o passo;
+  - a opção "marcar horário" informa que as marcações chegam no I-8.
+- Avisos automáticos:
+  - porta `CustomerNotifier`, implementada por `ConversationNotifier`;
+  - avisa quando o serviço começa, fica pronto, é pago e é entregue (com o progresso de fidelização e o benefício ganho).
+- Interface estilo WhatsApp Web em `/simulador/whatsapp/:telefone`: lista de conversas, avisos destacados, respostas rápidas, responsiva.
+- API:
+  - `GET /api/simulator/threads`;
+  - `GET` e `POST /api/simulator/threads/:phone/messages`.
+- Correcção: `[hidden]` passa a esconder sempre os elementos (ganha às regras de `display`).
+
+### I-4 · Motor de fidelização parametrizável
+
+- Migração `005_loyalty`:
+  - regras versionadas com data de vigência (`loyalty_rules`);
+  - conta única por cliente;
+  - livro de movimentos com referência única, saldo nunca negativo (trigger) e registos que só acrescentam.
+- Domínio `loyalty.js`, com todas as decisões pendentes como parâmetros:
+  - D-01: literal, N ciclos ou período móvel;
+  - nível máximo activo;
+  - D-04: nível por classe ou por cliente;
+  - D-02: lavagem gratuita ou crédito com limite por classe;
+  - D-03: o serviço gratuito conta ou não;
+  - D-06: acumula ou não com promoções.
+- Elegibilidade: concluído e com pagamento confirmado ou declarado (DEC-06). A entrega sem pagamento não conta.
+- Na mesma transacção:
+  - concluir atribui progresso e, ao fechar um ciclo, os benefícios do nível;
+  - cancelar devolve o benefício usado;
+  - reembolsar reverte o progresso ou regista uma "reversão não aplicada".
+- API: `GET`/`PUT /api/loyalty/rules`, `GET /api/customers/:id/loyalty`, `GET /api/customers/:id/loyalty/movements` e `useBenefit` em `POST /api/washes`.
+- Pátio: oferta do benefício no registo, quando há saldo na classe, e desconto visível no cartão.
+- Demonstração:
+  - regras por validar (ciclo de 10; D-01 C com N = 1; nível 3 inactivo; lavagem Simples gratuita);
+  - histórico de 30 dias, em que a Amélia tem 1 benefício na classe B e o Carlos está a uma lavagem de fechar o ciclo na classe A.
+
+### I-3 · Pagamentos simulados e numerário declarado
+
+- Migração `004_payments`:
+  - métodos `digital` e `cash`;
+  - estados `pending`, `confirmed`, `declared`, `failed` e `refunded`;
+  - índices únicos parciais: um pagamento pendente e um efectivo por serviço;
+  - o numerário tem sempre um operador e o digital nunca tem.
+- Domínio `payment.js`:
+  - aceitação: valor exacto, serviço não cancelado, sem pagamento efectivo;
+  - simulação do digital;
+  - declaração de numerário com operador e confirmação explícita;
+  - reembolso com motivo e autor.
+- Idempotência obrigatória (`Idempotency-Key`) ao pagar e ao reembolsar. Uma chave reutilizada noutro pedido é recusada (`IDEMPOTENCY_KEY_REUSED`).
+- Ciclo de vida do serviço:
+  - concluir com pagamento efectivo dispensa `allowUnpaid`;
+  - cancelar um serviço pago exige reembolso (`REFUND_REQUIRED`);
+  - cancelar deixa sem efeito o digital pendente.
+- O estado do pagamento de cada serviço fica disponível na API: `unpaid`, `pending`, `paid_digital`, `paid_cash`, `refunded`, `delivered_unpaid` ou `not_required`.
+- Pátio: diálogo "Declarar numerário" (M9) e origem do pagamento em cada cartão.
+- Demonstração: um serviço em fila já pago em digital (simulado), como no mock M7.
+- Testes do cliente em `client/test` (`npm run test:client`), incluídos no `npm test`.
+
 ## [0.2.0] — 2026-10-17
 
 Refactor de estrutura e de arquitectura. **Sem alterações de comportamento:** a API, as regras e o ecrã do Pátio mantêm-se.

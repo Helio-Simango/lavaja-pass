@@ -1,12 +1,18 @@
 import { Router } from 'express';
 import { createCatalogController } from './controllers/catalog-controller.js';
 import { createCustomerController } from './controllers/customer-controller.js';
+import { createLoyaltyController } from './controllers/loyalty-controller.js';
+import { createPaymentController } from './controllers/payment-controller.js';
+import { createSimulatorController } from './controllers/simulator-controller.js';
 import { createWashController } from './controllers/wash-controller.js';
 
 export function createApiRouter({ services, clock }) {
   const catalog = createCatalogController(services);
   const customers = createCustomerController(services);
   const washes = createWashController({ ...services, clock });
+  const payments = createPaymentController(services);
+  const loyalty = createLoyaltyController(services);
+  const simulator = createSimulatorController(services);
   const router = Router();
 
   router.get('/health', (req, res) => res.json({ status: 'ok', name: 'LavaJá Pass', prototype: true }));
@@ -33,6 +39,24 @@ export function createApiRouter({ services, clock }) {
   router.post('/washes', washes.register);
   router.get('/washes/:id', washes.get);
   router.post('/washes/:id/transitions', washes.transition);
+
+  // Pagamentos simulados (com Idempotency-Key)
+  router.get('/washes/:id/payments', payments.listForWash);
+  router.post('/washes/:id/payments/digital', payments.startDigital);
+  router.post('/washes/:id/payments/cash', payments.declareCash);
+  router.post('/payments/:id/simulate', payments.simulate);
+  router.post('/payments/:id/refund', payments.refund);
+
+  // Fidelização
+  router.get('/loyalty/rules', loyalty.getRules);
+  router.put('/loyalty/rules', loyalty.publishRules);
+  router.get('/customers/:id/loyalty', loyalty.card);
+  router.get('/customers/:id/loyalty/movements', loyalty.movements);
+
+  // Simulador de WhatsApp
+  router.get('/simulator/threads', simulator.listThreads);
+  router.get('/simulator/threads/:phone/messages', simulator.listMessages);
+  router.post('/simulator/threads/:phone/messages', simulator.sendMessage);
 
   return router;
 }

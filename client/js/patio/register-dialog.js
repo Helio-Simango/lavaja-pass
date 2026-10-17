@@ -7,7 +7,7 @@ const NEW_VEHICLE = 'new';
 
 export function createRegisterDialog(dialog, { actor, onRegistered }) {
   const field = (id) => $(`#${id}`, dialog);
-  const state = { customer: null, classesLoaded: false, planId: null };
+  const state = { customer: null, loyalty: null, classesLoaded: false, planId: null };
 
   enableCloseButtons(dialog);
   field('reg-lookup').addEventListener('click', lookupCustomer);
@@ -29,7 +29,7 @@ export function createRegisterDialog(dialog, { actor, onRegistered }) {
   }
 
   function reset() {
-    Object.assign(state, { customer: null, planId: null });
+    Object.assign(state, { customer: null, loyalty: null, planId: null });
     for (const id of ['reg-phone', 'reg-name', 'reg-plate']) field(id).value = '';
     field('reg-customer').textContent = '';
     field('reg-new-customer').hidden = true;
@@ -53,6 +53,7 @@ export function createRegisterDialog(dialog, { actor, onRegistered }) {
     if (!phone) return;
     try {
       state.customer = (await api('GET', `/customers?phone=${encodeURIComponent(phone)}`)).customer;
+      state.loyalty = (await api('GET', `/customers/${state.customer.id}/loyalty`)).loyalty;
       field('reg-customer').textContent = `Cliente encontrado: ${state.customer.name} (${state.customer.phoneDisplay})`;
       field('reg-new-customer').hidden = true;
     } catch (error) {
@@ -60,7 +61,7 @@ export function createRegisterDialog(dialog, { actor, onRegistered }) {
         showMessage(field('reg-error'), error.message);
         return;
       }
-      state.customer = null;
+      Object.assign(state, { customer: null, loyalty: null });
       field('reg-customer').textContent = 'Cliente novo: indique o nome e a viatura.';
       field('reg-new-customer').hidden = false;
     }
@@ -90,6 +91,18 @@ export function createRegisterDialog(dialog, { actor, onRegistered }) {
     if (!plans.some((plan) => plan.id === state.planId && plan.available)) state.planId = null;
     field('reg-plans').innerHTML = plans.map(planOptionHtml).join('');
     field('reg-submit').disabled = state.planId === null;
+    renderBenefitOption(classCode);
+  }
+
+  /** O benefício é por classe: só aparece se o cliente tiver saldo na classe da viatura escolhida. */
+  function renderBenefitOption(classCode) {
+    const progress = state.loyalty?.classes.find((c) => c.classCode === classCode);
+    const available = progress?.benefitsAvailable ?? 0;
+    field('reg-benefit-block').hidden = available === 0;
+    field('reg-benefit').checked = false;
+    if (available > 0) {
+      field('reg-benefit-text').textContent = `Usar benefício de fidelização: ${progress.benefit} (${available} disponível na classe ${classCode})`;
+    }
   }
 
   function planOptionHtml(plan) {
@@ -116,7 +129,8 @@ export function createRegisterDialog(dialog, { actor, onRegistered }) {
     field('reg-submit').disabled = true;
     try {
       const vehicleId = await ensureVehicle();
-      const { wash } = await api('POST', '/washes', { vehicleId, planId: state.planId }, { actor: actor() });
+      const useBenefit = !field('reg-benefit-block').hidden && field('reg-benefit').checked;
+      const { wash } = await api('POST', '/washes', { vehicleId, planId: state.planId, useBenefit }, { actor: actor() });
       dialog.close();
       onRegistered(wash);
     } catch (error) {

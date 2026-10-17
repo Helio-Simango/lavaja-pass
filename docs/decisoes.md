@@ -36,10 +36,45 @@ Limites que se mantêm:
 | IMP-04 | Postos numa tabela `stations` (P1–P4 na demonstração) | O I-2 precisa de postos. Trabalhadores, pausas e indisponibilidades ficam para o I-8 (`capacity_resources`) |
 | IMP-05 | Uma viatura só pode ter um serviço activo (índice único parcial) | Evita registos duplicados no pátio (relacionado com D-08) |
 | IMP-06 | Um serviço "pronto" ocupa o posto até à entrega. Para a estimativa, considera-se que liberta o posto já | Coerente com a regra "ocupado = em execução ou pronto" sem penalizar a fila |
-| IMP-07 | Até ao I-3, concluir exige `allowUnpaid: true`, excepto se o valor final for 0 | Ainda não há pagamentos. A regra do cap. 10.3 aplica-se desde já |
+| IMP-07 | ~~Até ao I-3, concluir exige `allowUnpaid: true`, excepto se o valor final for 0~~ Substituída pela IMP-11 | — |
 | IMP-08 | O autor das acções vem do cabeçalho `X-Actor` (ou do campo `actor`) | Não há autenticação (D-16). O autor é declarado e fica registado |
 | IMP-09 | Os registos de alterações e de transições são protegidos por triggers contra `UPDATE` e `DELETE` | "Só acrescenta registos" é garantido na base de dados, não só no código |
 | IMP-10 | O aviso ao cliente em `in_progress → ready` fica para o I-5 (simulador) | Ainda não existe o canal de conversa |
+
+## Decisões de implementação (I-3)
+
+| ID | Decisão | Motivo |
+|---|---|---|
+| IMP-11 | Concluir sem `allowUnpaid` só com um pagamento efectivo (`confirmed` ou `declared`) ou com valor final 0 | Cap. 10.3 |
+| IMP-12 | Um serviço com pagamento efectivo só é cancelado depois do reembolso (`REFUND_REQUIRED`) | Cap. 10.3: o cancelamento é "sem pagamento efectivo"; o reembolso fica registado com motivo e autor |
+| IMP-13 | O numerário declarado substitui um digital pendente, que passa a `failed` ("Substituído por numerário") | Cap. 10.4: `failed` inclui o "pagamento pendente substituído por numerário" |
+| IMP-14 | A chave de idempotência é obrigatória e única. A mesma chave noutro pedido (serviço, método ou valor diferentes) é recusada | Evita que um erro do cliente apague a protecção contra duplicados |
+| IMP-15 | Um serviço reembolsado pode voltar a receber um pagamento | O índice de "um efectivo por serviço" exclui os reembolsados |
+| IMP-16 | O reembolso fica, por agora, só na API. O Pátio não o oferece | É uma acção do gestor; o ecrã do gestor é o Painel (I-6) |
+
+## Decisões de implementação (I-4)
+
+| ID | Decisão | Motivo |
+|---|---|---|
+| IMP-17 | Valores por omissão da demonstração, **por validar**:<ul><li>ciclo de 10 lavagens;</li><li>D-01: alternativa C com N = 1 (equivale à B);</li><li>nível máximo activo 2;</li><li>D-02: lavagem gratuita do plano Simples;</li><li>D-03: o serviço gratuito não conta;</li><li>D-04: nível por classe;</li><li>D-06: não acumula</li></ul> | O cap. 11.6 pede parâmetros escolhidos pela equipa. O nível 3 fica inactivo até à análise de custos (cap. 11.5, D-07). **A equipa deve confirmar ou alterar estes valores** com `PUT /api/loyalty/rules` |
+| IMP-18 | A "lavagem gratuita" vale o preço do plano de referência na classe da viatura. Se o cliente escolher um plano mais caro, paga a diferença | Junta as duas leituras da D-02 num só mecanismo: um benefício com valor máximo |
+| IMP-19 | O nível usado para atribuir benefícios é o que o cliente tinha antes de fechar o ciclo | Evita que a mesma lavagem suba o nível e beneficie logo do nível novo |
+| IMP-20 | As regras são versões imutáveis. Uma nova versão vale a partir da publicação; os movimentos guardam a versão aplicada | Auditabilidade (cap. 13.3) |
+| IMP-21 | O progresso é sempre calculado a partir do livro de movimentos; não há tabela `loyalty_progress` | O cap. 11.1 exige que o progresso mostrado resulte dos movimentos; evita duas fontes de verdade |
+| IMP-22 | O consentimento de fidelização (cap. 14.2) ainda não condiciona a acumulação | Os consentimentos são do marco I-9 |
+
+## Decisões de implementação (I-5)
+
+| ID | Decisão | Motivo |
+|---|---|---|
+| IMP-23 | O assistente fica em `interfaces/chat`, como um canal de entrada ao lado da API HTTP, e chama os mesmos casos de uso | Cap. 15.6: "usa os mesmos serviços e regras do Pátio". Os textos da conversa são apresentação |
+| IMP-24 | Os avisos ao cliente passam por uma porta (`CustomerNotifier`); a implementação escreve mensagens do sistema na conversa | Os casos de uso não dependem do canal. Uma integração real (fora do protótipo) só substitui a implementação |
+| IMP-25 | Os avisos são gravados na mesma transacção da operação que os origina | Uma operação desfeita não deixa avisos falsos |
+| IMP-26 | Os consentimentos de fidelização e de marketing são pedidos no registo pela conversa e guardados com histórico. Ainda não condicionam a acumulação nem as campanhas | Cap. 14.2. A aplicação dos consentimentos e o consentimento de partilha com bancos ficam para o I-9 e o I-7 |
+| IMP-27 | Uma conversa nova começa sempre em `START`: o assistente cumprimenta pelo nome quem já é cliente (por exemplo, registado no Pátio) | Evita pedir o registo a quem já existe |
+| IMP-28 | O pagamento pela conversa é digital simulado e confirmado logo; a chave de idempotência depende da conversa e do serviço | Demonstração do fluxo M5. Repetir a confirmação não paga duas vezes |
+| IMP-29 | As horas na conversa usam o fuso de Maputo (`Africa/Maputo`) | O texto é gerado no servidor e não depende do fuso do browser |
+| IMP-30 | A opção 3 (marcar horário) responde que as marcações ainda não estão disponíveis | As marcações e as suas políticas são do I-8 (D-09 a D-14) |
 
 ## Decisões de estrutura e arquitectura (v0.2.0)
 

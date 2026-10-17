@@ -19,6 +19,7 @@ export function createHttpApp({ services, clock = systemClock, logger = console 
 
   app.use('/api', createApiRouter({ services, clock }), apiNotFound);
   mountSimulator(app);
+  app.use('/test', (req, res) => res.sendStatus(404)); // os testes do cliente não são públicos
   app.use(express.static(CLIENT_DIR, { extensions: ['html'] })); // /patio -> patio.html
 
   app.use(createErrorHandler({ logger }));
@@ -32,5 +33,5 @@ function mountSimulator(app) {
   for (const assets of ['css', 'js']) {
     app.use(`/simulador/${assets}`, express.static(path.join(SIMULATOR_DIR, assets)));
   }
-  app.get('/simulador/whatsapp/:phone', (req, res, next) => (fs.existsSync(page) ? res.sendFile(page) : next()));
+  app.get(['/simulador', '/simulador/whatsapp/:phone'], (req, res, next) => (fs.existsSync(page) ? res.sendFile(page) : next()));
 }

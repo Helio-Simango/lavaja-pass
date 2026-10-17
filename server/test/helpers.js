@@ -68,5 +68,9 @@ export function demoIds(db) {
     vehicle: (plate) => idOf('SELECT id FROM vehicles WHERE plate = ?', plate),
     plan: (code) => idOf('SELECT id FROM wash_plans WHERE code = ?', code),
     station: (code) => idOf('SELECT id FROM stations WHERE code = ?', code),
+    /** Serviço activo (em fila, em execução ou pronto) de uma viatura do pátio de demonstração. */
+    yardWash: (plate) =>
+      idOf("SELECT id FROM washes WHERE plate = ? AND status IN ('queued', 'in_progress', 'ready')", plate),
+    customer: (phone) => idOf('SELECT id FROM customers WHERE phone = ?', phone),
   };
 }

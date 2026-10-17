@@ -41,6 +41,9 @@
 
 * { box-sizing: border-box; }
 
+/* O atributo hidden ganha sempre a regras de display das classes. */
+[hidden] { display: none !important; }
+
 body {
   margin: 0;
   font-family: var(--sans);

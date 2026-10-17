@@ -30,3 +30,11 @@
 .plan-option[aria-checked='true'] { border-color: var(--red); background: var(--red-soft); color: var(--red); font-weight: 600; }
 .plan-option:disabled { opacity: 0.45; cursor: not-allowed; text-decoration: line-through; }
 .small-print { font-size: 13px; margin-top: 16px; }
+
+.facts { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; margin: 12px 0 0; font-size: 14px; }
+.facts dt { color: var(--muted); }
+.facts dd { margin: 0; }
+.strong { font-weight: 700; color: var(--ink); }
+.small { font-size: 13px; margin: 4px 0 0; }
+label.check { display: flex; gap: 8px; align-items: flex-start; text-transform: none; letter-spacing: 0; font-size: 14px; font-weight: 400; color: var(--text); margin-top: 14px; }
+label.check input { width: auto; margin-top: 3px; }

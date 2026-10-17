@@ -15,7 +15,7 @@
       <a href="/patio" aria-current="page">Pátio</a>
       <span>Catálogo</span>
       <span>Banco</span>
-      <span>Simulador</span>
+      <a href="/simulador">Simulador</a>
     </nav>
     <span class="demo-flag">DADOS DE DEMONSTRAÇÃO</span>
   </header>
@@ -51,7 +51,7 @@
       </div>
     </section>
 
-    <p class="muted small-print">As horas de início e conclusão são estimativas (duração do plano e postos ocupados), nunca garantias. Os pagamentos chegam no marco I-3.</p>
+    <p class="muted small-print">As horas de início e conclusão são estimativas (duração do plano e postos ocupados), nunca garantias. O numerário é declarado pelo operador; o digital é simulado.</p>
   </main>
 
   <dialog id="register-dialog">
@@ -89,6 +89,11 @@
 
         <label>Plano <span id="reg-plan-class"></span></label>
         <div id="reg-plans" class="plans" role="radiogroup"></div>
+
+        <label class="check" id="reg-benefit-block" hidden>
+          <input type="checkbox" id="reg-benefit">
+          <span id="reg-benefit-text"></span>
+        </label>
       </div>
 
       <div id="reg-error" class="error-box" hidden></div>
@@ -112,6 +117,35 @@
       <div class="dialog-actions">
         <button type="button" class="btn ghost" data-close>Voltar</button>
         <button type="submit" class="btn primary" id="confirm-ok">Confirmar</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="cash-dialog">
+    <form method="dialog" novalidate>
+      <h2>Declarar numerário · <span id="cash-plate" class="mono"></span></h2>
+      <dl class="facts">
+        <dt>Serviço</dt><dd id="cash-wash"></dd>
+        <dt>Valor em dívida</dt><dd id="cash-due" class="strong"></dd>
+      </dl>
+
+      <label for="cash-amount">Valor recebido (MZN)</label>
+      <input id="cash-amount" inputmode="decimal" autocomplete="off">
+      <p id="cash-amount-hint" class="muted small"></p>
+
+      <label for="cash-declared-by">Declarado por</label>
+      <input id="cash-declared-by" maxlength="60" autocomplete="off" placeholder="Nome do operador">
+
+      <label class="check">
+        <input type="checkbox" id="cash-confirm">
+        <span>Confirmo que recebi este valor em numerário. Fica registado como declarado em meu nome, com data e hora.</span>
+      </label>
+
+      <p class="muted small">Fica separado do digital confirmado. Repetir o pedido não cria um segundo registo.</p>
+      <div id="cash-error" class="error-box" hidden></div>
+      <div class="dialog-actions">
+        <button type="button" class="btn ghost" data-close>Voltar</button>
+        <button type="submit" class="btn primary" id="cash-submit">Declarar</button>
       </div>
     </form>
   </dialog>
