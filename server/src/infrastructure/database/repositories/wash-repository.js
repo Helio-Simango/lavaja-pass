@@ -47,6 +47,7 @@ const toWash = (row) => ({
   cancelReason: row.cancel_reason,
   completedUnpaid: row.completed_unpaid === 1,
   createdBy: row.created_by,
+  appointmentId: row.appointment_id,
 });
 
 const toEvent = (row) => ({
@@ -117,8 +118,8 @@ export class SqliteWashRepository {
     const { lastInsertRowid } = this.#db
       .prepare(`INSERT INTO washes (customer_id, vehicle_id, plate, class_id, class_code, plan_id, plan_name,
           duration_min, base_price_cents, discount_cents, loyalty_benefit_cents, final_price_cents, currency,
-          status, source, queued_at, created_by, created_at, updated_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
+          status, source, queued_at, created_by, created_at, updated_at, appointment_id)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
       .run(
         wash.customerId,
         wash.vehicleId,
@@ -139,6 +140,7 @@ export class SqliteWashRepository {
         wash.createdBy,
         now,
         now,
+        wash.appointmentId ?? null,
       );
     return Number(lastInsertRowid);
   }

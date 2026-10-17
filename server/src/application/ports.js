@@ -143,6 +143,24 @@
  * @property {(wash: object) => void} washReady
  * @property {(wash: object, loyaltyMovements: object[]) => void} washCompleted
  * @property {(wash: object, payment: object) => void} paymentReceived
+ * @property {(appointment: object) => void} appointmentBooked
+ * @property {(appointment: object) => void} appointmentConfirmed
+ * @property {(appointment: object, offer: object) => void} appointmentOffer
+ * @property {(appointment: object, previousStartsAt: string) => void} appointmentRescheduled
+ */
+
+/**
+ * @typedef {object} AppointmentRepository
+ * @property {(id: number) => object|null} findById
+ * @property {(from: string, to: string, filter?: object) => object[]} listBetween
+ * @property {(appointment: object, now: string) => number} insert
+ * @property {(id: number, expectedStatus: string, changes: object, now: string) => boolean} update
+ * @property {(appointmentId: number, event: object, now: string) => void} appendEvent
+ * @property {(offer: object, actor: string, now: string) => number} insertOffer
+ * @property {(id: number) => object|null} findOffer
+ * @property {(appointmentId: number) => object[]} listOffers
+ * @property {(filter?: object) => object[]} listPendingOffers
+ * @property {(id: number, changes: object) => void} updateOffer
  */
 
 /** @type {CustomerNotifier} Usado quando não há canal de avisos. */
@@ -151,4 +169,8 @@ export const silentNotifier = Object.freeze({
   washReady() {},
   washCompleted() {},
   paymentReceived() {},
+  appointmentBooked() {},
+  appointmentConfirmed() {},
+  appointmentOffer() {},
+  appointmentRescheduled() {},
 });

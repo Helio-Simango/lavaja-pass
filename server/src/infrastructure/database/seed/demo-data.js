@@ -37,6 +37,22 @@ export const SETTINGS = [
     description: 'Dias de funcionamento declarados pela lavadora (1 = segunda … 7 = domingo)',
   },
   {
+    key: 'scheduling.policy',
+    value: {
+      openingHours: { open: '07:00', close: '18:00' },
+      slotMinutes: 30,
+      safetyMarginMin: 10,
+      workers: 3,
+      confirmation: 'manual',
+      lateToleranceMin: 15,
+      reservedStationsForQueue: 0,
+      offerResponseMinutes: 15,
+      autoOffers: true,
+    },
+    description:
+      'Marcações (por validar): horário e trabalhadores declarados; margem de segurança (proposta); D-09 confirmação manual; D-10 tolerância de 15 min; D-12 sem reserva para a fila; D-14 propor o horário libertado; D-11 e D-13 sem penalizações nem depósitos',
+  },
+  {
     key: 'demo.institution',
     value: 'Moza Banco',
     description:

@@ -1,5 +1,6 @@
 // Conversão dos dados da aplicação para o formato JSON da API (inclui textos de apresentação).
 import { DATA_QUALITY_INDICATORS, INDICATORS } from '../../domain/indicators.js';
+import { APPOINTMENT_STATUS_LABELS } from '../../domain/scheduling.js';
 import { SECTION_LABELS } from '../../domain/sharing.js';
 import { formatMoney } from '../../domain/money.js';
 import { formatPhone } from '../../domain/phone.js';
@@ -488,4 +489,65 @@ export function activityReportToCsv(presented) {
 function csvCell(value) {
   const text = String(value ?? '');
   return /[;"\r\n]/.test(text) ? `"${text.replaceAll('"', '""')}"` : text;
+}
+
+// ---------- Marcações e capacidade ----------
+
+const OFFER_STATUS_LABELS = Object.freeze({ pending: 'À espera de resposta', accepted: 'Aceite', declined: 'Recusada', expired: 'Expirada' });
+
+export const appointmentCode = (id) => `MC-${String(id).padStart(4, '0')}`;
+
+export function presentOffer(offer) {
+  return {
+    id: offer.id,
+    originalStartsAt: offer.originalStartsAt,
+    proposedStartsAt: offer.proposedStartsAt,
+    status: offer.status,
+    statusLabel: OFFER_STATUS_LABELS[offer.status],
+    expiresAt: offer.expiresAt,
+    respondedAt: offer.respondedAt,
+  };
+}
+
+export function presentAppointment(appointment) {
+  return {
+    id: appointment.id,
+    code: appointmentCode(appointment.id),
+    status: appointment.status,
+    statusLabel: APPOINTMENT_STATUS_LABELS[appointment.status],
+    customer: { id: appointment.customerId, name: appointment.customerName, phoneDisplay: formatPhone(appointment.customerPhone) },
+    vehicle: { id: appointment.vehicleId, plate: appointment.plate, plateDisplay: formatPlate(appointment.plate), classCode: appointment.classCode },
+    plan: { id: appointment.planId, name: appointment.planName },
+    durationMin: appointment.durationMin,
+    startsAt: appointment.startsAt,
+    endsAt: appointment.endsAt,
+    station: { id: appointment.stationId, code: appointment.stationCode },
+    source: appointment.source,
+    washId: appointment.washId,
+    washCode: appointment.washId ? washCode(appointment.washId) : null,
+    cancelReason: appointment.cancelReason,
+    offers: (appointment.offers ?? []).map(presentOffer),
+  };
+}
+
+export function presentCapacity(capacity) {
+  return {
+    date: capacity.date,
+    policy: capacity.policy,
+    stations: capacity.stations.map((station) => ({
+      id: station.id,
+      code: station.code,
+      active: station.active,
+      appointments: station.appointments.map(presentAppointment),
+      yard: station.yard.map((wash) => ({
+        id: wash.id,
+        code: washCode(wash.id),
+        plateDisplay: formatPlate(wash.plate),
+        status: wash.status,
+        startsAt: wash.startedAt ?? wash.estimate?.estimatedStartAt ?? null,
+        endsAt: wash.status === 'in_progress' ? wash.estimate?.estimatedEndAt : wash.estimate?.estimatedEndAt ?? null,
+        isEstimate: true,
+      })),
+    })),
+  };
 }
