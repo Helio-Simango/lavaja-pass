@@ -260,7 +260,8 @@ export class WhatsAppAssistant {
       actor: customer.name,
     });
     paymentService.simulate(payment.id, 'confirmed');
-    return outcome(BotState.MENU, {}, 'Pedido de pagamento enviado (simulação).');
+    // A confirmação chega como aviso do sistema (antes desta resposta).
+    return outcome(BotState.MENU, {}, 'Obrigado! Escreva *MENU* para voltar ao menu.');
   }
 
   #payableWashes(customerId) {

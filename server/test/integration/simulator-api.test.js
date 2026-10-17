@@ -83,7 +83,7 @@ describe('API do simulador de WhatsApp (I-5)', () => {
     it('paga em digital simulado, com confirmação', async () => {
       assert.match(await say(NEW_PHONE, '5'), /Pagar \*250,00 MZN\*[\s\S]*simulado/);
       assert.equal(await threadState(NEW_PHONE), 'CONFIRM_PAY');
-      assert.match(await say(NEW_PHONE, '1'), /Pedido de pagamento enviado/);
+      assert.match(await say(NEW_PHONE, '1'), /💳 Pagamento digital confirmado \(simulado\): 250,00 MZN[\s\S]*Obrigado!/);
       const [wash] = t.services.washService.list({ customerId: demoIds(t.db).customer(NEW_PHONE) });
       assert.equal(wash.paymentState, 'paid_digital');
       assert.match(await say(NEW_PHONE, '5'), /Não tem serviços por pagar/);
@@ -139,6 +139,78 @@ describe('API do simulador de WhatsApp (I-5)', () => {
     it('recusa mensagens vazias', async () => {
       const res = await t.api('POST', `/api/simulator/threads/${NEW_PHONE}/messages`, { text: '   ' });
       assert.equal(res.status, 400);
+    });
+  });
+
+  describe('avisos automáticos (cap. 8.1)', () => {
+    const PHONE = '258869990002';
+    const systemMessages = async (phone, after) =>
+      (await messages(phone, after)).body.messages.filter((m) => m.kind === 'system').map((m) => m.body);
+    const lastId = async (phone) => (await messages(phone)).body.messages.at(-1).id;
+
+    it('acompanha um serviço do Pátio até à entrega, com progresso de fidelização', async () => {
+      // Cliente e serviço registados no Pátio; a conversa é criada pelo primeiro aviso.
+      const { customer } = (
+        await t.api('POST', '/api/customers', { phone: PHONE, name: 'Rui Bila', vehicles: [{ plate: 'AFR 100 MP', classId: 'A' }] })
+      ).body;
+      const { wash } = (await t.api('POST', '/api/washes', { vehicleId: customer.vehicles[0].id, planId: demoIds(t.db).plan('SIMPLES') })).body;
+      const station = demoIds(t.db).station('P3');
+
+      await t.api('POST', `/api/washes/${wash.id}/transitions`, { to: 'in_progress', stationId: station });
+      assert.match((await systemMessages(PHONE)).at(-1), new RegExp(`🚿 AFR 100 MP começou a ser lavado no posto P3 \\(${wash.code}\\)\\. Conclusão estimada: \\d{2}:\\d{2}`));
+
+      await t.api('POST', `/api/washes/${wash.id}/transitions`, { to: 'ready' });
+      assert.match((await systemMessages(PHONE)).at(-1), /✅ AFR 100 MP está pronto! Valor: 250,00 MZN\. Pode pagar aqui/);
+
+      await t.api(
+        'POST',
+        `/api/washes/${wash.id}/payments/cash`,
+        { amountCents: 25000, declaredBy: 'Bento', confirm: true },
+        { 'Idempotency-Key': 'aviso-cash' },
+      );
+      assert.equal((await systemMessages(PHONE)).at(-1), `💵 Numerário declarado por Bento: 250,00 MZN · ${wash.code}.`);
+
+      await t.api('POST', `/api/washes/${wash.id}/transitions`, { to: 'completed' });
+      assert.equal((await systemMessages(PHONE)).at(-1), `Obrigado! ${wash.code} entregue.\nFidelização classe A: 1/10 lavagens.`);
+    });
+
+    it('os avisos são mensagens do sistema, distintas das respostas', async () => {
+      const all = (await messages(PHONE)).body.messages;
+      assert.ok(all.length >= 4);
+      assert.ok(all.every((m) => m.kind === 'system' && m.direction === 'out'));
+      assert.equal((await messages(PHONE)).body.thread.state, 'START');
+    });
+
+    it('o cliente que chega por um aviso é cumprimentado pelo nome', async () => {
+      assert.match(await say(PHONE, 'Olá'), /Olá, Rui Bila!/);
+    });
+
+    it('o pagamento feito na conversa também é avisado, uma única vez', async () => {
+      const { customer } = (await t.api('GET', `/api/customers?phone=${PHONE}`)).body;
+      await t.api('POST', '/api/washes', { vehicleId: customer.vehicles[0].id, planId: demoIds(t.db).plan('SIMPLES') });
+      const before = await lastId(PHONE);
+      await say(PHONE, '5');
+      const reply = await say(PHONE, '1');
+      assert.match(reply, /💳 Pagamento digital confirmado \(simulado\): 250,00 MZN[\s\S]*Obrigado!/);
+      const confirmations = (await systemMessages(PHONE, before)).filter((body) => body.startsWith('💳'));
+      assert.equal(confirmations.length, 1);
+    });
+
+    it('a lavagem que fecha um ciclo anuncia o benefício ganho', async () => {
+      const ids = demoIds(t.db);
+      const carlosPhone = '258825550102';
+      const { wash } = (await t.api('POST', '/api/washes', { vehicleId: ids.vehicle('AHM482MP'), planId: ids.plan('SIMPLES') })).body;
+      const free = (await t.api('GET', '/api/stations')).body.stations.find((s) => s.state === 'free').id;
+      await t.api('POST', `/api/washes/${wash.id}/transitions`, { to: 'in_progress', stationId: free });
+      await t.api('POST', `/api/washes/${wash.id}/transitions`, { to: 'ready' });
+      await t.api(
+        'POST',
+        `/api/washes/${wash.id}/payments/cash`,
+        { amountCents: 25000, declaredBy: 'Amílcar', confirm: true },
+        { 'Idempotency-Key': 'aviso-carlos' },
+      );
+      await t.api('POST', `/api/washes/${wash.id}/transitions`, { to: 'completed' });
+      assert.match((await systemMessages(carlosPhone)).at(-1), /Fidelização classe A: 0\/10 lavagens\.\n🎁 Ganhou 1 benefício\(s\): lavagem Simples gratuita\./);
     });
   });
 });

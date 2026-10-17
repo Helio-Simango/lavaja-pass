@@ -1,5 +1,5 @@
-// Raiz de composição: o único ponto que liga as implementações concretas (SQLite, relógio)
-// aos casos de uso. Nenhuma outra camada instancia repositórios.
+// Raiz de composição: o único ponto que liga as implementações concretas (SQLite, relógio,
+// avisos na conversa) aos casos de uso. Nenhuma outra camada instancia repositórios.
 import { CatalogService } from './application/catalog-service.js';
 import { ConsentService } from './application/consent-service.js';
 import { ConversationService } from './application/conversation-service.js';
@@ -22,6 +22,7 @@ import { SqliteStationRepository } from './infrastructure/database/repositories/
 import { SqliteVehicleRepository } from './infrastructure/database/repositories/vehicle-repository.js';
 import { SqliteWashRepository } from './infrastructure/database/repositories/wash-repository.js';
 import { SqliteUnitOfWork } from './infrastructure/database/unit-of-work.js';
+import { ConversationNotifier } from './interfaces/chat/notifier.js';
 
 export function createContainer({ db, clock = systemClock }) {
   const unitOfWork = new SqliteUnitOfWork(db);
@@ -45,8 +46,9 @@ export function createContainer({ db, clock = systemClock }) {
   const conversationService = new ConversationService(shared);
   const consentService = new ConsentService(shared);
   const loyaltyService = new LoyaltyService(shared);
-  const paymentService = new PaymentService({ ...shared, loyaltyService });
-  const washService = new WashService({ ...shared, catalogService, paymentService, loyaltyService });
+  const notifier = new ConversationNotifier({ conversationService, loyaltyService, catalogService });
+  const paymentService = new PaymentService({ ...shared, loyaltyService, notifier });
+  const washService = new WashService({ ...shared, catalogService, paymentService, loyaltyService, notifier });
   const stationService = new StationService(shared);
   const settingsService = new SettingsService(shared);
 

@@ -112,4 +112,19 @@
  * @property {(setting: object, now: string) => void} insertIfMissing
  */
 
-export {};
+/**
+ * Avisos ao cliente (no protótipo, mensagens do sistema na conversa do simulador).
+ * @typedef {object} CustomerNotifier
+ * @property {(wash: object) => void} washStarted
+ * @property {(wash: object) => void} washReady
+ * @property {(wash: object, loyaltyMovements: object[]) => void} washCompleted
+ * @property {(wash: object, payment: object) => void} paymentReceived
+ */
+
+/** @type {CustomerNotifier} Usado quando não há canal de avisos. */
+export const silentNotifier = Object.freeze({
+  washStarted() {},
+  washReady() {},
+  washCompleted() {},
+  paymentReceived() {},
+});
