@@ -35,7 +35,7 @@ async function refresh() {
     Object.assign(state, { stations, washes, appointments: agenda.appointments });
     hideMessage(boardError);
     $('#appointments-title').textContent = agenda.title;
-    renderAppointments($('#appointments-list'), $('#appointments-count'), agenda.appointments);
+    renderAppointments($('#appointments-list'), $('#appointments-count'), agenda.appointments, { isToday: agenda.isToday });
     if (isChoosingStation()) return; // redesenhar fecharia a lista aberta
     renderStationsLine(stationsLine, stations);
     renderBoard(board, state);
@@ -47,10 +47,12 @@ async function refresh() {
 /** Marcações de hoje; se não houver nenhuma activa, as de amanhã (para preparar o dia seguinte). */
 async function loadAgenda() {
   const today = (await api('GET', '/appointments')).appointments;
-  if (today.some((a) => a.status !== 'cancelled')) return { title: 'Marcações de hoje', appointments: today };
+  if (today.some((a) => a.status !== 'cancelled')) return { title: 'Marcações de hoje', appointments: today, isToday: true };
   const tomorrow = new Date(Date.now() + 86_400_000).toLocaleDateString('en-CA', { timeZone: 'Africa/Maputo' });
   const next = (await api('GET', `/appointments?date=${tomorrow}`)).appointments;
-  return next.length ? { title: 'Marcações de amanhã', appointments: next } : { title: 'Marcações de hoje', appointments: today };
+  return next.length
+    ? { title: 'Marcações de amanhã', appointments: next, isToday: false }
+    : { title: 'Marcações de hoje', appointments: today, isToday: true };
 }
 
 function isChoosingStation() {
