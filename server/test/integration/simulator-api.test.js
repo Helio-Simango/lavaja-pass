@@ -29,6 +29,11 @@ describe('API do simulador de WhatsApp (I-5)', () => {
       assert.deepEqual(res.body.messages, []);
     });
 
+    it('normaliza o número do endereço', async () => {
+      const res = await t.api('GET', `/api/simulator/threads/${encodeURIComponent('84 999 0001')}/messages`);
+      assert.equal(res.body.phone, '258849990001');
+    });
+
     it('recusa um número inválido', async () => {
       const res = await messages('12345');
       assert.equal(res.status, 400);

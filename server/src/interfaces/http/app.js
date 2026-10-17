@@ -33,5 +33,5 @@ function mountSimulator(app) {
   for (const assets of ['css', 'js']) {
     app.use(`/simulador/${assets}`, express.static(path.join(SIMULATOR_DIR, assets)));
   }
-  app.get('/simulador/whatsapp/:phone', (req, res, next) => (fs.existsSync(page) ? res.sendFile(page) : next()));
+  app.get(['/simulador', '/simulador/whatsapp/:phone'], (req, res, next) => (fs.existsSync(page) ? res.sendFile(page) : next()));
 }
