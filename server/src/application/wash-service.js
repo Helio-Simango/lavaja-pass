@@ -96,8 +96,8 @@ export class WashService {
     return this.#withDetails([this.#getWash(id)])[0];
   }
 
-  list({ statuses, date, limit = DEFAULT_LIST_LIMIT } = {}) {
-    return this.#withDetails(this.#washes.list({ statuses, date, limit }));
+  list({ statuses, date, customerId, limit = DEFAULT_LIST_LIMIT } = {}) {
+    return this.#withDetails(this.#washes.list({ statuses, date, customerId, limit }));
   }
 
   history(id) {

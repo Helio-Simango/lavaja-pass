@@ -39,6 +39,12 @@ export function globalCommandOf(text) {
   return null;
 }
 
+const GREETINGS = /^(ol[aá]|oi|bom dia|boa tarde|boa noite|hello|hi)(?=$|[\s!,.?])/i;
+
+export function isGreeting(text) {
+  return GREETINGS.test(text.trim());
+}
+
 /** "2" -> 2; devolve null se não for uma opção entre 1 e max. */
 export function optionNumber(text, max) {
   if (!/^\d{1,2}$/.test(text.trim())) return null;

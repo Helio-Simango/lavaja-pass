@@ -56,6 +56,7 @@ export function createApiRouter({ services, clock }) {
   // Simulador de WhatsApp
   router.get('/simulator/threads', simulator.listThreads);
   router.get('/simulator/threads/:phone/messages', simulator.listMessages);
+  router.post('/simulator/threads/:phone/messages', simulator.sendMessage);
 
   return router;
 }
