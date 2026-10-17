@@ -9,7 +9,7 @@ export function renderAppointments(list, countElement, appointments) {
   countElement.textContent = active.length ? `${confirmed} confirmada(s) · ${active.length} no total` : '';
   list.innerHTML = active.length
     ? active.map(appointmentHtml).join('')
-    : '<li class="muted">Sem marcações para hoje. As marcações reservam capacidade nos postos.</li>';
+    : '<li class="muted">Sem marcações. As marcações reservam capacidade nos postos.</li>';
 }
 
 function appointmentHtml(appointment) {
