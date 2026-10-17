@@ -1,0 +1,17 @@
+.notice strong { color: var(--amber); }
+.scope { border: 0; padding: 0; margin: 12px 0 0; }
+.scope legend { font-size: 12px; font-weight: 700; letter-spacing: 0.04em; color: var(--muted); text-transform: uppercase; margin-bottom: 4px; }
+.checks { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 12px; }
+.checks label { margin: 0; text-transform: none; letter-spacing: 0; font-weight: 400; font-size: 14px; color: var(--text); display: flex; gap: 6px; align-items: center; }
+.checks input { width: auto; }
+.two-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.authorization { border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; margin-bottom: 8px; }
+.authorization header { display: flex; justify-content: space-between; gap: 8px; align-items: center; }
+.authorization p { margin: 4px 0 0; font-size: 13px; }
+.subhead { font-size: 14px; margin: 16px 0 6px; }
+.report-picker .inline { display: flex; gap: 8px; }
+.report-picker .btn { text-decoration: none; white-space: nowrap; display: inline-flex; align-items: center; }
+.report-head h2 { font-size: 20px; }
+.report-head p { margin: 4px 0 0; }
+.notes { font-size: 13px; color: var(--muted); padding-left: 18px; margin: 0; }
+.notes li + li { margin-top: 4px; }

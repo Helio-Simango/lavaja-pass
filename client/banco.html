@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="pt">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Banco · LavaJá Pass</title>
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/painel.css">
+  <link rel="stylesheet" href="/css/banco.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="/">LavaJá <span>Pass</span></a>
+    <nav>
+      <a href="/painel">Painel</a>
+      <a href="/patio">Pátio</a>
+      <a href="/catalogo">Catálogo</a>
+      <a href="/banco" aria-current="page">Banco</a>
+      <a href="/simulador">Simulador</a>
+    </nav>
+    <span class="demo-flag">DADOS DE DEMONSTRAÇÃO</span>
+  </header>
+
+  <main>
+    <p class="notice"><strong>Demonstração sem autenticação (D-16).</strong> As duas vistas abaixo (lavadora e banco) estão abertas a quem acede ao servidor. O Moza Banco aparece como instituição de demonstração, por ser o dono do desafio: não existe parceria nem compromisso do banco.</p>
+
+    <div class="section-head">
+      <div>
+        <h1 id="view-title">Partilha com instituições</h1>
+        <p class="muted" id="view-subtitle"></p>
+      </div>
+      <div class="segmented" role="tablist" aria-label="Vista">
+        <button type="button" role="tab" data-view="autorizacoes">Lavadora · autorizações</button>
+        <button type="button" role="tab" data-view="relatorio">Banco · relatório</button>
+      </div>
+    </div>
+
+    <section id="autorizacoes" class="bank-view" hidden>
+      <div class="panels two">
+        <form class="panel" id="grant-form" novalidate>
+          <h2>Nova autorização</h2>
+          <label for="grant-institution">Instituição</label>
+          <select id="grant-institution"></select>
+          <label for="grant-purpose">Finalidade</label>
+          <input id="grant-purpose" maxlength="200" value="Análise de oportunidade de financiamento de equipamento">
+          <fieldset class="scope">
+            <legend>Âmbito</legend>
+            <div id="grant-sections" class="checks"></div>
+          </fieldset>
+          <div class="two-cols">
+            <div>
+              <label for="grant-months">Dados de</label>
+              <select id="grant-months">
+                <option value="3">últimos 3 meses</option>
+                <option value="6" selected>últimos 6 meses</option>
+                <option value="12">últimos 12 meses</option>
+              </select>
+            </div>
+            <div>
+              <label for="grant-days">Validade</label>
+              <select id="grant-days">
+                <option value="15">15 dias</option>
+                <option value="30" selected>30 dias</option>
+                <option value="90">90 dias</option>
+              </select>
+            </div>
+          </div>
+          <label class="check"><input type="checkbox" id="grant-confirm"><span>Autorizo a partilha destes indicadores agregados. Os dados pessoais dos meus clientes não são partilhados.</span></label>
+          <div id="grant-error" class="error-box" hidden></div>
+          <div class="dialog-actions"><button class="btn primary" type="submit">Autorizar</button></div>
+        </form>
+
+        <article class="panel">
+          <h2>Autorizações e acessos</h2>
+          <div id="authorizations"></div>
+          <h3 class="subhead">Registo de acessos</h3>
+          <div class="table-scroll"><table class="data-table" id="access-logs"></table></div>
+        </article>
+      </div>
+    </section>
+
+    <section id="relatorio" class="bank-view" hidden>
+      <div class="panel report-picker">
+        <label for="report-authorization">Relatório autorizado</label>
+        <div class="inline">
+          <select id="report-authorization"></select>
+          <a class="btn" id="export-csv" href="#" download>Exportar CSV</a>
+        </div>
+        <p class="muted small">Cada consulta e exportação fica registada e é visível para a lavadora.</p>
+      </div>
+      <div id="report"></div>
+    </section>
+  </main>
+
+  <dialog id="revoke-dialog">
+    <form method="dialog" novalidate>
+      <h2 id="revoke-title">Revogar autorização</h2>
+      <p>A partir da revogação não há novas consultas. Os relatórios já emitidos não são apagados.</p>
+      <label for="revoke-reason">Motivo (opcional)</label>
+      <input id="revoke-reason" maxlength="200" autocomplete="off">
+      <div class="dialog-actions">
+        <button type="button" class="btn ghost" data-close>Voltar</button>
+        <button type="submit" class="btn primary">Revogar</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script type="module" src="/js/banco/main.js"></script>
+</body>
+</html>
