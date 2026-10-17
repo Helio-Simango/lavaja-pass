@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="pt">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pátio · LavaJá Pass</title>
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/patio.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="/">LavaJá <span>Pass</span></a>
+    <nav>
+      <span>Painel</span>
+      <a href="/patio" aria-current="page">Pátio</a>
+      <span>Catálogo</span>
+      <span>Banco</span>
+      <span>Simulador</span>
+    </nav>
+    <span class="demo-flag">DADOS DE DEMONSTRAÇÃO</span>
+  </header>
+
+  <main>
+    <div class="patio-head">
+      <div>
+        <h1>Pátio</h1>
+        <p class="muted" id="stations-line">A carregar…</p>
+      </div>
+      <div class="head-actions">
+        <label class="operator">Operador
+          <input id="operator" placeholder="O seu nome" maxlength="40" autocomplete="off">
+        </label>
+        <button class="btn primary" id="open-register">+ Registar serviço</button>
+      </div>
+    </div>
+
+    <div id="board-error" class="error-box" hidden></div>
+
+    <section class="board" aria-label="Quadro do pátio">
+      <div class="column" data-status="queued">
+        <h2>Em fila <span class="count" data-count="queued">0</span></h2>
+        <div class="cards" data-list="queued"></div>
+      </div>
+      <div class="column" data-status="in_progress">
+        <h2>Em execução <span class="count" data-count="in_progress">0</span></h2>
+        <div class="cards" data-list="in_progress"></div>
+      </div>
+      <div class="column" data-status="ready">
+        <h2>Pronto <span class="count" data-count="ready">0</span></h2>
+        <div class="cards" data-list="ready"></div>
+      </div>
+    </section>
+
+    <p class="muted small-print">As horas de início e conclusão são estimativas (duração do plano e postos ocupados), nunca garantias. Os pagamentos chegam no marco I-3.</p>
+  </main>
+
+  <dialog id="register-dialog">
+    <form id="register-form" method="dialog" novalidate>
+      <h2>Registar serviço</h2>
+      <p class="muted">O preço é sempre calculado pelo servidor.</p>
+
+      <label for="reg-phone">Telefone do cliente</label>
+      <div class="inline">
+        <input id="reg-phone" inputmode="tel" placeholder="84 123 4567" autocomplete="off">
+        <button type="button" class="btn" id="reg-lookup">Procurar</button>
+      </div>
+      <p id="reg-customer" class="muted"></p>
+
+      <div id="reg-new-customer" hidden>
+        <label for="reg-name">Nome</label>
+        <input id="reg-name" maxlength="80" autocomplete="off">
+      </div>
+
+      <div id="reg-vehicle-block" hidden>
+        <label for="reg-vehicle">Viatura</label>
+        <select id="reg-vehicle"></select>
+        <div id="reg-new-vehicle" hidden>
+          <div class="two">
+            <div>
+              <label for="reg-plate">Matrícula</label>
+              <input id="reg-plate" placeholder="ABC 123 MC" autocomplete="off">
+            </div>
+            <div>
+              <label for="reg-class">Classe</label>
+              <select id="reg-class"></select>
+            </div>
+          </div>
+        </div>
+
+        <label>Plano <span id="reg-plan-class"></span></label>
+        <div id="reg-plans" class="plans" role="radiogroup"></div>
+      </div>
+
+      <div id="reg-error" class="error-box" hidden></div>
+
+      <div class="dialog-actions">
+        <button type="button" class="btn ghost" data-close>Cancelar</button>
+        <button type="submit" class="btn primary" id="reg-submit" disabled>Entrar na fila</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="confirm-dialog">
+    <form method="dialog" id="confirm-form">
+      <h2 id="confirm-title"></h2>
+      <p id="confirm-text"></p>
+      <div id="confirm-reason-block" hidden>
+        <label for="confirm-reason">Motivo</label>
+        <input id="confirm-reason" maxlength="200" autocomplete="off">
+      </div>
+      <div id="confirm-error" class="error-box" hidden></div>
+      <div class="dialog-actions">
+        <button type="button" class="btn ghost" data-close>Voltar</button>
+        <button type="submit" class="btn primary" id="confirm-ok">Confirmar</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script type="module" src="/js/patio/main.js"></script>
+</body>
+</html>

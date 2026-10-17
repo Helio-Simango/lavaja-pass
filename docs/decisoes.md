@@ -41,6 +41,17 @@ Limites que se mantêm:
 | IMP-09 | Os registos de alterações e de transições são protegidos por triggers contra `UPDATE` e `DELETE` | "Só acrescenta registos" é garantido na base de dados, não só no código |
 | IMP-10 | O aviso ao cliente em `in_progress → ready` fica para o I-5 (simulador) | Ainda não existe o canal de conversa |
 
+## Decisões de estrutura e arquitectura (v0.2.0)
+
+| ID | Decisão | Motivo |
+|---|---|---|
+| ARQ-01 | Repositório em `client/`, `server/`, `simulador/` e `docs/`, em vez da estrutura do cap. 15.7 (`src/` e `public/`) | Separação clara entre o que corre no browser, o servidor e o simulador. Continua a ser um monorepositório e cumpre o cap. 15.1 (DEC-12) |
+| ARQ-02 | Clean architecture no servidor: `domain` ← `application` ← `infrastructure` / `interfaces` ← `container` | Regras testáveis sem base de dados; o SQLite e o Express podem ser trocados sem tocar nas regras |
+| ARQ-03 | A regra de dependências é verificada por um teste (`server/test/unit/architecture.test.js`) | Evita que a arquitectura se degrade com a pressa do hackathon |
+| ARQ-04 | Erros de domínio sem códigos HTTP; a tradução para 400, 404 e 409 está só em `interfaces/http` | O domínio não conhece o transporte |
+| ARQ-05 | A formatação para o ecrã (`display`, rótulos) fica nos presenters, não nos casos de uso | Os casos de uso devolvem dados; o mesmo caso de uso serve o Pátio e o simulador |
+| ARQ-06 | A base de dados passa para `server/data/lavaja.db` | É um recurso do servidor; continua fora das pastas servidas ao browser |
+
 ## Pendentes que bloqueiam os próximos marcos
 
 | ID | Questão | Bloqueia |

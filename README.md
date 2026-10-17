@@ -14,16 +14,44 @@ O LavaJá Pass organiza a actividade das pequenas lavadoras: clientes, viaturas,
 ## Comandos
 
 ```bash
-npm install        # Express (única dependência de execução)
-npm run db:reset   # apaga data/lavaja.db, aplica as migrações e carrega os dados de demonstração
-npm start          # http://localhost:3000
-npm run dev        # o mesmo, reiniciando quando o código muda
-npm test           # suite completa (base em memória)
-npm run db:migrate # aplica só as migrações em falta
-npm run db:seed    # carrega a demonstração numa base vazia
+npm install               # Express (única dependência de execução)
+npm run db:reset          # apaga server/data/lavaja.db, aplica as migrações e carrega a demonstração
+npm start                 # http://localhost:3000
+npm run dev               # o mesmo, reiniciando quando o código muda
+npm test                  # suite completa (base em memória)
+npm run test:unit         # só domínio e arquitectura
+npm run test:integration  # base de dados e API HTTP
+npm run db:migrate        # aplica só as migrações em falta
+npm run db:seed           # carrega a demonstração numa base vazia
 ```
 
-Configuração opcional num `.env` (ver [.env.example](.env.example)): `PORT`, `HOST` e `DB_PATH`. A base de dados nunca pode ficar dentro de `public/`.
+Configuração opcional num `.env` (ver [.env.example](.env.example)): `PORT`, `HOST` e `DB_PATH`. A base de dados nunca pode ficar dentro de `client/` nem de `simulador/`.
+
+## Estrutura
+
+```
+├─ client/        páginas web (HTML, CSS, JS puro em módulos ES), servidas em /
+│  ├─ css/
+│  └─ js/         core/ (API, DOM, operador) · patio/ (quadro, diálogos)
+├─ simulador/     simulador de WhatsApp (marco I-5), servido em /simulador
+├─ server/
+│  ├─ src/
+│  │  ├─ domain/          regras puras: valores, ciclo de vida do serviço, estimativas, erros
+│  │  ├─ application/     casos de uso e portas (contratos dos repositórios)
+│  │  ├─ infrastructure/  SQLite: ligação, migrações, unidade de trabalho, repositórios, seed · relógio
+│  │  ├─ interfaces/http/ Express: rotas, controladores, presenters, erros
+│  │  ├─ container.js     raiz de composição
+│  │  └─ main.js          arranque
+│  ├─ scripts/    db-migrate · db-seed · db-reset
+│  ├─ test/       unit/ · integration/
+│  └─ data/       lavaja.db (gerado; não versionado)
+├─ docs/          arquitectura.md · decisoes.md · referencia/ (documento de referência v3)
+├─ CLAUDE.md      regras do projecto para o Claude Code
+├─ changelog.md
+└─ README.md
+```
+
+A arquitectura e a regra de dependências entre camadas estão em [docs/arquitectura.md](docs/arquitectura.md).
 
 ## Estado da implementação
 
@@ -41,7 +69,7 @@ Configuração opcional num `.env` (ver [.env.example](.env.example)): `PORT`, `
 | I-9 | Consentimentos, registo de alterações, reconciliação | — |
 | I-10 | Documentação e changelog | em curso |
 
-O histórico de alterações está em [changelogs.md](changelogs.md).
+O histórico de alterações está em [changelog.md](changelog.md).
 
 ## Ecrãs
 
@@ -113,25 +141,10 @@ Corpo de cada transição:
 - **Dinheiro:** em centavos inteiros.
 - **Registos que só acrescentam:** o registo de alterações e a auditoria de transições não aceitam `UPDATE` nem `DELETE`.
 
-## Estrutura
-
-```
-├─ package.json · README.md · changelogs.md · .env.example
-├─ src/
-│  ├─ server.js · app.js · config.js
-│  ├─ db/           connection · migrate · tx · seed-demo · reset · migrations/*.sql
-│  ├─ lib/          errors · money · phone · plate · clock · validate
-│  ├─ services/     catalog · customers · stations · washes · estimates · history · settings
-│  ├─ controllers/  catalog · customers · washes
-│  ├─ routes/       api
-│  └─ middleware/   errors
-├─ public/          index.html · patio.html · css/ · js/
-├─ data/            lavaja.db (gerado; fora de public/; não versionado)
-├─ test/            *.test.js (node:test)
-└─ docs/            decisoes.md · referencia/ (documento de referência v3, HTML e PDF)
-```
-
 ## Documentação
 
 - [Documento de referência v3](docs/referencia/LavaJa-Pass-Documento-Referencia-v3.pdf): especificação completa. Os capítulos 10 a 15 servem o desenvolvimento.
+- [docs/arquitectura.md](docs/arquitectura.md): camadas, regra de dependências e onde fica cada coisa.
 - [docs/decisoes.md](docs/decisoes.md): decisões tomadas desde a v3 e decisões pendentes que afectam o código.
+- [CLAUDE.md](CLAUDE.md): regras de arquitectura, de negócio e de código para quem trabalha no repositório.
+- [simulador/README.md](simulador/README.md): âmbito do simulador de WhatsApp (I-5).
