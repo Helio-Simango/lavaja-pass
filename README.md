@@ -66,7 +66,7 @@ A arquitectura e a regra de dependências entre camadas estão em [docs/arquitec
 | I-3 | Pagamentos simulados e numerário declarado | ✅ |
 | I-4 | Motor de fidelização parametrizável (valores por omissão por validar: D-01, D-02) | ✅ |
 | I-5 | Simulador de WhatsApp e assistente | ✅ |
-| I-6 | Painel, viaturas por classe, histórico por matrícula, catálogo | — |
+| I-6 | Painel, viaturas por classe, histórico por matrícula, catálogo | ✅ |
 | I-7 | Vertente Banco, só para demonstração (Moza Banco; depende de D-16) | — |
 | I-8 | Marcações e capacidade | — |
 | I-9 | Consentimentos, registo de alterações, reconciliação | — |
@@ -81,7 +81,9 @@ O histórico de alterações está em [changelog.md](changelog.md).
 | `/` | Início, com os módulos | ✅ |
 | `/patio` | Pátio: fila, em execução, pronto, postos, registo de serviço, numerário declarado (M7, M8, M9) | ✅ |
 | `/simulador` · `/simulador/whatsapp/:telefone` | Simulador de WhatsApp: o utilizador faz de cliente (M1–M6) | ✅ |
-| `/painel`, `/catalogo`, `/banco` | — | próximos marcos |
+| `/painel` | Painel: indicadores com definição e origem, gráficos, viaturas por classe, histórico por matrícula (M11–M13) | ✅ |
+| `/catalogo` | Catálogo: planos e preços por classe, classes, parâmetros de fidelização (M14) | ✅ |
+| `/banco` | — | próximo marco |
 
 O Pátio actualiza-se a cada 3 s. O nome do operador escrito no topo fica registado como autor de cada acção. Como não há autenticação, esse nome é declarado e não verificado.
 
@@ -148,6 +150,16 @@ Fidelização:
 
 `POST /api/washes` aceita `useBenefit: true` para usar um benefício da classe da viatura.
 
+Painel e histórico:
+
+| Método e rota | Descrição |
+|---|---|
+| `GET /api/dashboard/summary?days=30` | Indicadores (valor, definição e origem), concluídos por dia da semana, recebimentos por semana e por origem, pátio agora |
+| `GET /api/dashboard/weekly` | Recebimentos das últimas 4 semanas, por origem |
+| `GET /api/vehicles?classId=` | Viaturas com o número de serviços concluídos e a data do último |
+| `GET /api/vehicles/:id/wash-history` | Histórico por matrícula: valores guardados, origem do pagamento, efeito na fidelização |
+| `GET /api/vehicles/:id/wash-history/summary` | Resumo: concluídas, canceladas, última, contaram para a fidelização |
+
 Simulador de WhatsApp:
 
 | Método e rota | Descrição |
@@ -184,6 +196,7 @@ Simulador de WhatsApp:
   - um benefício de uma classe não se usa noutra;
   - cancelar devolve o benefício usado; reembolsar reverte o progresso ou regista uma "reversão não aplicada";
   - todos os parâmetros pendentes (D-01 a D-07) são configuráveis em `loyalty_rules`, em versões.
+- **Indicadores:** são sempre calculados a partir dos registos, cada um com a sua definição e origem (cap. 13.4). O digital confirmado e o numerário declarado nunca são somados (também nos gráficos, onde aparecem lado a lado). O valor por receber nunca é receita.
 - **Simulador e assistente:**
   - uma conversa por número, guardada e isolada, por ordem estável;
   - o assistente é uma máquina de estados (cap. 15.6) que usa os mesmos casos de uso do Pátio;
