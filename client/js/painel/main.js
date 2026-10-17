@@ -2,8 +2,9 @@
 import { api } from '../core/api-client.js';
 import { renderBarChart } from '../core/charts.js';
 import { $, escapeHtml } from '../core/dom.js';
+import { renderCapacity } from './capacity-view.js';
 
-const state = { days: 30, classCode: 'A', classes: [] };
+const state = { days: 30, classCode: 'A', classes: [], dayOffset: 0 };
 
 const formatCount = (value) => new Intl.NumberFormat('pt-PT').format(value);
 const formatMzn = (cents) => `${new Intl.NumberFormat('pt-PT', { maximumFractionDigits: 0 }).format(cents / 100)} MZN`;
@@ -79,6 +80,30 @@ document.querySelector('#indicadores .segmented').addEventListener('click', (eve
   loadDashboard();
 });
 
+// ---------- Capacidade e agenda (M10) ----------
+
+function localDate(offsetDays) {
+  const date = new Date(Date.now() + offsetDays * 86_400_000);
+  return date.toLocaleDateString('en-CA', { timeZone: 'Africa/Maputo' });
+}
+
+async function loadCapacity() {
+  const capacity = await api('GET', `/capacity?date=${localDate(state.dayOffset)}`);
+  renderCapacity(
+    { agenda: $('#agenda'), table: $('#agenda-table'), policyTable: $('#policy-table'), line: $('#capacity-line') },
+    capacity,
+    new Date().toISOString(),
+  );
+}
+
+$('#capacity-days').addEventListener('click', (event) => {
+  const button = event.target.closest('[data-offset]');
+  if (!button) return;
+  state.dayOffset = Number(button.dataset.offset);
+  for (const b of $('#capacity-days').querySelectorAll('button')) b.setAttribute('aria-pressed', String(b === button));
+  loadCapacity();
+});
+
 // ---------- Viaturas por classe e histórico ----------
 
 async function loadClasses() {
@@ -132,5 +157,5 @@ $('#vehicles-table').addEventListener('click', async (event) => {
 
 // ---------- Arranque ----------
 
-await Promise.all([loadDashboard(), loadClasses()]);
+await Promise.all([loadDashboard(), loadClasses(), loadCapacity()]);
 await loadVehicles();

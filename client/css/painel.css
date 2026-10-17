@@ -37,3 +37,17 @@
 .operator input { margin-top: 4px; width: 160px; }
 label.check { display: flex; gap: 8px; align-items: flex-start; text-transform: none; letter-spacing: 0; font-size: 14px; font-weight: 400; color: var(--text); margin-top: 14px; }
 label.check input { width: auto; margin-top: 3px; }
+
+.capacity-panels { grid-template-columns: 2fr 1fr; }
+@media (max-width: 980px) { .capacity-panels { grid-template-columns: 1fr; } }
+.agenda { display: grid; grid-template-columns: 40px 1fr; gap: 8px 10px; align-items: center; margin-top: 6px; }
+.agenda .station { font-weight: 700; color: var(--ink); font-size: 13px; }
+.agenda .track { position: relative; height: 30px; background: var(--soft); border-radius: 6px; }
+.agenda .block { position: absolute; top: 3px; bottom: 3px; border-radius: 4px; color: #fff; font-size: 11px; line-height: 24px; padding: 0 5px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; box-shadow: 0 0 0 2px var(--surface); }
+.agenda .block.appointment { background: var(--series-1); }
+.agenda .block.yard { background: var(--series-2); }
+.agenda .block.requested { opacity: 0.6; }
+.agenda .now { position: absolute; top: 0; bottom: 0; width: 2px; background: var(--ink); opacity: 0.6; }
+.agenda .hours { grid-column: 2; display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); }
+.panel details { font-size: 13px; margin-top: 8px; }
+.panel details summary { cursor: pointer; color: var(--muted); }

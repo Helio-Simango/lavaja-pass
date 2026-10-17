@@ -147,3 +147,12 @@ export const DEMO_AUTHORIZATIONS = [
 ];
 export const DEMO_ANALYST = 'analista.demo';
 export const DEMO_BUSINESS_OWNER = 'Gestor da lavadora';
+
+// Marcações de demonstração (mock M7/M10), no dia de hoje se ainda for de manhã, senão amanhã.
+// A do Carlos teve uma proposta de antecipação recusada: mantém-se às 15:00 (DEC-10).
+export const DEMO_APPOINTMENTS = [
+  { plate: 'ACX731MC', plan: 'COMPLETA', time: '14:00', confirm: true },
+  { plate: 'AHM482MP', plan: 'COMPLETA', time: '15:00', confirm: true, declinedOffer: '12:00' },
+  { plate: 'ANT145MC', plan: 'SIMPLES', time: '16:30', confirm: false },
+];
+export const LATEST_LOCAL_HOUR_FOR_SAME_DAY = 11;
