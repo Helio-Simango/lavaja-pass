@@ -38,6 +38,7 @@ export function globalCommandOf(text) {
   const normalized = text.trim().toUpperCase();
   if (normalized === 'MENU') return 'MENU';
   if (normalized === 'PARAR') return 'STOP_MARKETING';
+  if (normalized === 'ADERIR') return 'JOIN_LOYALTY';
   if (normalized === 'ACEITAR') return 'ACCEPT_OFFER';
   if (normalized === 'MANTER') return 'KEEP_OFFER';
   return null;

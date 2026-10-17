@@ -29,6 +29,14 @@ export class SqliteChangeLogRepository {
       .run(entity, String(entityId), field, asText(oldValue), asText(newValue), actor, reason, now);
   }
 
+  /** Alterações mais recentes primeiro; opcionalmente de uma só entidade. */
+  listRecent({ entity, limit }) {
+    return this.#db
+      .prepare('SELECT * FROM change_log WHERE (:entity IS NULL OR entity = :entity) ORDER BY id DESC LIMIT :limit')
+      .all({ entity: entity ?? null, limit })
+      .map(toEntry);
+  }
+
   listFor(entity, entityId) {
     return this.#db
       .prepare('SELECT * FROM change_log WHERE entity = ? AND entity_id = ? ORDER BY id')

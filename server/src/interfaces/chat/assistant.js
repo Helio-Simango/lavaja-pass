@@ -48,6 +48,7 @@ export class WhatsAppAssistant {
   #dispatch(session) {
     const command = globalCommandOf(session.text);
     if (command === 'STOP_MARKETING' && session.customer) return this.#stopMarketing(session);
+    if (command === 'JOIN_LOYALTY' && session.customer) return this.#joinLoyalty(session);
     if (command === 'MENU' && session.customer) return this.#menu();
     if ((command === 'ACCEPT_OFFER' || command === 'KEEP_OFFER') && session.customer) {
       return this.#answerOffer(session, command === 'ACCEPT_OFFER');
@@ -103,16 +104,23 @@ export class WhatsAppAssistant {
     if (context.step === ConsentType.LOYALTY) {
       return outcome(BotState.ASK_CONSENTS, { ...context, loyalty: answer, step: ConsentType.MARKETING }, this.#consentQuestion(ConsentType.MARKETING));
     }
-    const { customerService, consentService } = this.#services;
-    const customer = customerService.register({ phone: thread.phone, name: context.name });
-    consentService.record(customer.id, { type: ConsentType.LOYALTY, granted: context.loyalty, source: CHANNEL });
-    consentService.record(customer.id, { type: ConsentType.MARKETING, granted: answer, source: CHANNEL });
+    const { customerService } = this.#services;
+    const customer = customerService.register({
+      phone: thread.phone,
+      name: context.name,
+      consents: { loyalty: context.loyalty, marketing: answer, source: CHANNEL },
+    });
     return { ...outcome(BotState.MENU, {}, `Obrigado, ${customer.name}! O seu registo está feito.`, MENU_TEXT), customerId: customer.id };
   }
 
   #stopMarketing({ thread, customer, context }) {
     this.#services.consentService.record(customer.id, { type: ConsentType.MARKETING, granted: false, source: CHANNEL });
     return outcome(thread.botState, context, 'Não vai receber mais ofertas. Pode continuar a usar o menu normalmente.');
+  }
+
+  #joinLoyalty({ thread, customer, context }) {
+    this.#services.consentService.record(customer.id, { type: ConsentType.LOYALTY, granted: true, source: CHANNEL });
+    return outcome(thread.botState, context, 'Bem-vindo ao programa de fidelização! As próximas lavagens pagas já contam.');
   }
 
   // ---------- Menu ----------
@@ -206,7 +214,8 @@ export class WhatsAppAssistant {
     if (context.intent === Intent.APPOINTMENT) {
       return outcome(BotState.CHOOSE_DAY, chosen, `Para que dia?\n${numberedList(['Hoje', 'Amanhã'])}`);
     }
-    const progress = this.#loyaltyClass(customer.id, context.classCode);
+    const card = this.#services.loyaltyService.card(customer.id);
+    const progress = card.consent.granted ? card.classes.find((c) => c.classCode === context.classCode) : null;
     if (progress?.benefitsAvailable > 0) {
       return outcome(
         BotState.CONFIRM_BENEFIT,
@@ -349,6 +358,9 @@ export class WhatsAppAssistant {
 
   #loyalty({ customer }) {
     const card = this.#services.loyaltyService.card(customer.id);
+    if (!card.consent.granted) {
+      return outcome(BotState.MENU, {}, 'Não participa no programa de fidelização. Para aderir, escreva *ADERIR*.');
+    }
     const classesInUse = new Set(customer.vehicles.map((v) => v.classCode));
     const lines = card.classes
       .filter((c) => classesInUse.has(c.classCode) || c.eligibleWashes > 0 || c.benefitsAvailable > 0)
@@ -375,7 +387,4 @@ export class WhatsAppAssistant {
     return [BotState.ASK_NAME, BotState.ASK_CONSENTS].includes(thread.botState);
   }
 
-  #loyaltyClass(customerId, classCode) {
-    return this.#services.loyaltyService.card(customerId).classes.find((c) => c.classCode === classCode);
-  }
 }

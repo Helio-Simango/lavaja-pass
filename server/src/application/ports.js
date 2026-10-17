@@ -127,6 +127,16 @@
  * @typedef {object} ChangeLogRepository
  * @property {(entry: object, now: string) => void} append
  * @property {(entity: string, entityId: string|number) => object[]} listFor
+ * @property {(filter: {entity?: string, limit: number}) => object[]} listRecent
+ */
+
+/**
+ * @typedef {object} ReconciliationRepository
+ * @property {(from: string, to: string) => object[]} paymentsBetween
+ * @property {(businessDate: string) => object[]} listClosings
+ * @property {(businessDate: string, closing: object, closedBy: string, now: string) => void} insertClosing
+ * @property {(businessDate: string) => object[]} listNotes
+ * @property {(note: object, now: string) => void} insertNote
  */
 
 /**

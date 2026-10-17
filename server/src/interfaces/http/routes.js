@@ -4,6 +4,7 @@ import { createBankController } from './controllers/bank-controller.js';
 import { createCatalogController } from './controllers/catalog-controller.js';
 import { createCustomerController } from './controllers/customer-controller.js';
 import { createDashboardController } from './controllers/dashboard-controller.js';
+import { createGovernanceController } from './controllers/governance-controller.js';
 import { createLoyaltyController } from './controllers/loyalty-controller.js';
 import { createPaymentController } from './controllers/payment-controller.js';
 import { createSimulatorController } from './controllers/simulator-controller.js';
@@ -19,6 +20,7 @@ export function createApiRouter({ services, clock }) {
   const dashboard = createDashboardController(services);
   const bank = createBankController(services);
   const appointments = createAppointmentController(services);
+  const governance = createGovernanceController(services);
   const router = Router();
 
   router.get('/health', (req, res) => res.json({ status: 'ok', name: 'LavaJá Pass', prototype: true }));
@@ -70,6 +72,15 @@ export function createApiRouter({ services, clock }) {
   router.post('/appointments/:id/transitions', appointments.transition);
   router.post('/appointments/:id/offers', appointments.propose);
   router.post('/appointment-offers/:id/respond', appointments.respond);
+
+  // Governação: consentimentos, alterações, postos, fecho do dia
+  router.get('/customers/:id/consents', governance.consents);
+  router.post('/customers/:id/consents', governance.recordConsent);
+  router.get('/change-log', governance.changeLog);
+  router.patch('/stations/:id', governance.setStationActive);
+  router.get('/reconciliation', governance.reconciliation);
+  router.post('/reconciliation/closings', governance.closeCash);
+  router.post('/reconciliation/corrections', governance.addCorrection);
 
   // Painel
   router.get('/dashboard/summary', dashboard.summary);

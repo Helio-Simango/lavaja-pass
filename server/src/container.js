@@ -3,12 +3,14 @@
 import { AppointmentService } from './application/appointment-service.js';
 import { BankReportService } from './application/bank-report-service.js';
 import { CatalogService } from './application/catalog-service.js';
+import { ChangeLogService } from './application/change-log-service.js';
 import { ConsentService } from './application/consent-service.js';
 import { ConversationService } from './application/conversation-service.js';
 import { CustomerService } from './application/customer-service.js';
 import { DashboardService } from './application/dashboard-service.js';
 import { LoyaltyService } from './application/loyalty-service.js';
 import { PaymentService } from './application/payment-service.js';
+import { ReconciliationService } from './application/reconciliation-service.js';
 import { SettingsService } from './application/settings-service.js';
 import { SharingService } from './application/sharing-service.js';
 import { StationService } from './application/station-service.js';
@@ -23,6 +25,7 @@ import { SqliteConversationRepository } from './infrastructure/database/reposito
 import { SqliteCustomerRepository } from './infrastructure/database/repositories/customer-repository.js';
 import { SqliteLoyaltyRepository } from './infrastructure/database/repositories/loyalty-repository.js';
 import { SqlitePaymentRepository } from './infrastructure/database/repositories/payment-repository.js';
+import { SqliteReconciliationRepository } from './infrastructure/database/repositories/reconciliation-repository.js';
 import { SqliteReportingRepository } from './infrastructure/database/repositories/reporting-repository.js';
 import { SqliteSettingsRepository } from './infrastructure/database/repositories/settings-repository.js';
 import { SqliteSharingRepository } from './infrastructure/database/repositories/sharing-repository.js';
@@ -43,6 +46,7 @@ export function createContainer({ db, clock = systemClock }) {
     customerRepository: new SqliteCustomerRepository(db),
     loyaltyRepository: new SqliteLoyaltyRepository(db),
     paymentRepository: new SqlitePaymentRepository(db),
+    reconciliationRepository: new SqliteReconciliationRepository(db),
     reportingRepository: new SqliteReportingRepository(db),
     settingsRepository: new SqliteSettingsRepository(db),
     sharingRepository: new SqliteSharingRepository(db),
@@ -54,9 +58,9 @@ export function createContainer({ db, clock = systemClock }) {
 
   const settingsService = new SettingsService(shared);
   const catalogService = new CatalogService(shared);
-  const customerService = new CustomerService({ ...shared, catalogService });
   const conversationService = new ConversationService(shared);
   const consentService = new ConsentService(shared);
+  const customerService = new CustomerService({ ...shared, catalogService, consentService });
   const loyaltyService = new LoyaltyService(shared);
   const notifier = new ConversationNotifier({ conversationService, loyaltyService, catalogService });
   const paymentService = new PaymentService({ ...shared, loyaltyService, notifier });
@@ -67,6 +71,8 @@ export function createContainer({ db, clock = systemClock }) {
   const sharingService = new SharingService(shared);
   const bankReportService = new BankReportService({ ...shared, sharingService, settingsService });
   const dashboardService = new DashboardService({ ...shared, sharingService });
+  const reconciliationService = new ReconciliationService(shared);
+  const changeLogService = new ChangeLogService(shared);
 
   return {
     unitOfWork,
@@ -75,12 +81,14 @@ export function createContainer({ db, clock = systemClock }) {
       appointmentService,
       bankReportService,
       catalogService,
+      changeLogService,
       consentService,
       conversationService,
       customerService,
       dashboardService,
       loyaltyService,
       paymentService,
+      reconciliationService,
       washService,
       stationService,
       settingsService,

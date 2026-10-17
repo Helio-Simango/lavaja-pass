@@ -156,7 +156,12 @@ describe('API do simulador de WhatsApp (I-5)', () => {
     it('acompanha um serviço do Pátio até à entrega, com progresso de fidelização', async () => {
       // Cliente e serviço registados no Pátio; a conversa é criada pelo primeiro aviso.
       const { customer } = (
-        await t.api('POST', '/api/customers', { phone: PHONE, name: 'Rui Bila', vehicles: [{ plate: 'AFR 100 MP', classId: 'A' }] })
+        await t.api('POST', '/api/customers', {
+          phone: PHONE,
+          name: 'Rui Bila',
+          vehicles: [{ plate: 'AFR 100 MP', classId: 'A' }],
+          consents: { loyalty: true, marketing: false },
+        })
       ).body;
       const { wash } = (await t.api('POST', '/api/washes', { vehicleId: customer.vehicles[0].id, planId: demoIds(t.db).plan('SIMPLES') })).body;
       const station = demoIds(t.db).station('P3');

@@ -1,5 +1,6 @@
 // Conversão dos dados da aplicação para o formato JSON da API (inclui textos de apresentação).
 import { DATA_QUALITY_INDICATORS, INDICATORS } from '../../domain/indicators.js';
+import { ISSUE_LABELS } from '../../domain/reconciliation.js';
 import { APPOINTMENT_STATUS_LABELS } from '../../domain/scheduling.js';
 import { SECTION_LABELS } from '../../domain/sharing.js';
 import { formatMoney } from '../../domain/money.js';
@@ -215,6 +216,7 @@ export function presentLoyaltyCard(card, plans) {
   const { params } = card.rules;
   return {
     customerId: card.customerId,
+    consent: card.consent,
     rulesVersion: card.rules.version,
     toValidate: card.rules.toValidate,
     classes: card.classes.map((progress) => ({
@@ -548,6 +550,60 @@ export function presentCapacity(capacity) {
         endsAt: wash.status === 'in_progress' ? wash.estimate?.estimatedEndAt : wash.estimate?.estimatedEndAt ?? null,
         isEstimate: true,
       })),
+    })),
+  };
+}
+
+// ---------- Registo de alterações, consentimentos e fecho do dia ----------
+
+const CHANGE_ENTITY_LABELS = Object.freeze({
+  wash_plan: 'Plano',
+  class_plan_price: 'Preço',
+  vehicle: 'Viatura',
+  loyalty_rules: 'Regras de fidelização',
+  station: 'Posto',
+});
+
+export function presentChange(entry) {
+  return { ...entry, entityLabel: CHANGE_ENTITY_LABELS[entry.entity] ?? entry.entity };
+}
+
+export function presentConsents(current) {
+  const consent = (type) => {
+    const value = current[type];
+    return value ? { granted: value.granted, source: value.source, at: value.at } : { granted: false, source: null, at: null };
+  };
+  return { loyalty: consent('loyalty'), marketing: consent('marketing') };
+}
+
+export function presentReconciliation(day) {
+  const mzn = (cents) => presentMoney(cents, 'MZN');
+  return {
+    date: day.date,
+    operators: day.operators.map((entry) => ({
+      operator: entry.operator,
+      count: entry.count,
+      declared: mzn(entry.declaredCents),
+      closing: entry.closing
+        ? {
+            counted: mzn(entry.closing.countedCents),
+            difference: { cents: entry.closing.differenceCents, display: formatMoney(entry.closing.differenceCents, 'MZN') },
+            note: entry.closing.note,
+            closedBy: entry.closing.closedBy,
+            closedAt: entry.closing.createdAt,
+          }
+        : null,
+    })),
+    issues: day.issues.map((issue) => ({
+      code: issue.code,
+      label: ISSUE_LABELS[issue.code],
+      washId: issue.washId,
+      washCode: issue.washId ? washCode(issue.washId) : null,
+      plateDisplay: issue.plate ? formatPlate(issue.plate) : null,
+      operator: issue.operator ?? null,
+      amount: { cents: issue.amountCents, display: formatMoney(issue.amountCents, 'MZN') },
+      reason: issue.reason ?? null,
+      corrections: issue.corrections.map((n) => ({ id: n.id, note: n.note, actor: n.actor, createdAt: n.createdAt })),
     })),
   };
 }
