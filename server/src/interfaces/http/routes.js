@@ -3,6 +3,7 @@ import { createCatalogController } from './controllers/catalog-controller.js';
 import { createCustomerController } from './controllers/customer-controller.js';
 import { createLoyaltyController } from './controllers/loyalty-controller.js';
 import { createPaymentController } from './controllers/payment-controller.js';
+import { createSimulatorController } from './controllers/simulator-controller.js';
 import { createWashController } from './controllers/wash-controller.js';
 
 export function createApiRouter({ services, clock }) {
@@ -11,6 +12,7 @@ export function createApiRouter({ services, clock }) {
   const washes = createWashController({ ...services, clock });
   const payments = createPaymentController(services);
   const loyalty = createLoyaltyController(services);
+  const simulator = createSimulatorController(services);
   const router = Router();
 
   router.get('/health', (req, res) => res.json({ status: 'ok', name: 'LavaJá Pass', prototype: true }));
@@ -50,6 +52,10 @@ export function createApiRouter({ services, clock }) {
   router.put('/loyalty/rules', loyalty.publishRules);
   router.get('/customers/:id/loyalty', loyalty.card);
   router.get('/customers/:id/loyalty/movements', loyalty.movements);
+
+  // Simulador de WhatsApp
+  router.get('/simulator/threads', simulator.listThreads);
+  router.get('/simulator/threads/:phone/messages', simulator.listMessages);
 
   return router;
 }

@@ -1,6 +1,8 @@
 // Raiz de composição: o único ponto que liga as implementações concretas (SQLite, relógio)
 // aos casos de uso. Nenhuma outra camada instancia repositórios.
 import { CatalogService } from './application/catalog-service.js';
+import { ConsentService } from './application/consent-service.js';
+import { ConversationService } from './application/conversation-service.js';
 import { CustomerService } from './application/customer-service.js';
 import { LoyaltyService } from './application/loyalty-service.js';
 import { PaymentService } from './application/payment-service.js';
@@ -10,6 +12,8 @@ import { WashService } from './application/wash-service.js';
 import { systemClock } from './infrastructure/clock.js';
 import { SqliteCatalogRepository } from './infrastructure/database/repositories/catalog-repository.js';
 import { SqliteChangeLogRepository } from './infrastructure/database/repositories/change-log-repository.js';
+import { SqliteConsentRepository } from './infrastructure/database/repositories/consent-repository.js';
+import { SqliteConversationRepository } from './infrastructure/database/repositories/conversation-repository.js';
 import { SqliteCustomerRepository } from './infrastructure/database/repositories/customer-repository.js';
 import { SqliteLoyaltyRepository } from './infrastructure/database/repositories/loyalty-repository.js';
 import { SqlitePaymentRepository } from './infrastructure/database/repositories/payment-repository.js';
@@ -24,6 +28,8 @@ export function createContainer({ db, clock = systemClock }) {
   const repositories = {
     catalogRepository: new SqliteCatalogRepository(db),
     changeLogRepository: new SqliteChangeLogRepository(db),
+    consentRepository: new SqliteConsentRepository(db),
+    conversationRepository: new SqliteConversationRepository(db),
     customerRepository: new SqliteCustomerRepository(db),
     loyaltyRepository: new SqliteLoyaltyRepository(db),
     paymentRepository: new SqlitePaymentRepository(db),
@@ -36,6 +42,8 @@ export function createContainer({ db, clock = systemClock }) {
 
   const catalogService = new CatalogService(shared);
   const customerService = new CustomerService({ ...shared, catalogService });
+  const conversationService = new ConversationService(shared);
+  const consentService = new ConsentService(shared);
   const loyaltyService = new LoyaltyService(shared);
   const paymentService = new PaymentService({ ...shared, loyaltyService });
   const washService = new WashService({ ...shared, catalogService, paymentService, loyaltyService });
@@ -47,6 +55,8 @@ export function createContainer({ db, clock = systemClock }) {
     repositories,
     services: {
       catalogService,
+      consentService,
+      conversationService,
       customerService,
       loyaltyService,
       paymentService,

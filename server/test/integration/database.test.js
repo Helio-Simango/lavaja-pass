@@ -9,7 +9,7 @@ describe('base de dados', () => {
     const db = createTestDb({ seed: false });
     assert.deepEqual(migrate(db), []);
     const versions = db.prepare('SELECT version FROM schema_migrations ORDER BY version').all().map((r) => r.version);
-    assert.deepEqual(versions, ['001_foundation.sql', '002_catalog_customers.sql', '003_washes.sql', '004_payments.sql', '005_loyalty.sql']);
+    assert.deepEqual(versions, ['001_foundation.sql', '002_catalog_customers.sql', '003_washes.sql', '004_payments.sql', '005_loyalty.sql', '006_conversations.sql']);
     db.close();
   });
 
@@ -39,7 +39,11 @@ describe('base de dados', () => {
     const db = createTestDb();
     db.prepare(`INSERT INTO change_log (entity, entity_id, field, actor, created_at)
       VALUES ('x', '1', 'f', 'teste', '2026-10-22')`).run();
-    for (const table of ['change_log', 'wash_status_events', 'loyalty_transactions', 'loyalty_rules']) {
+    db.prepare(`INSERT INTO message_threads (phone, bot_state, created_at, updated_at)
+      VALUES ('258849990000', 'START', 'now', 'now')`).run();
+    db.prepare(`INSERT INTO messages (thread_id, direction, kind, body, created_at) VALUES (1, 'in', 'text', 'Olá', 'now')`).run();
+    db.prepare(`INSERT INTO consents (customer_id, type, granted, source, created_at) VALUES (1, 'loyalty', 1, 'teste', 'now')`).run();
+    for (const table of ['change_log', 'wash_status_events', 'loyalty_transactions', 'loyalty_rules', 'messages', 'consents']) {
       assert.throws(() => db.prepare(`UPDATE ${table} SET created_at = 'outro'`).run(), /só aceita novos registos/);
       assert.throws(() => db.prepare(`DELETE FROM ${table}`).run(), /só aceita novos registos/);
     }
