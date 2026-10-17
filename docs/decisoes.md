@@ -63,6 +63,16 @@ Limites que se mantêm:
 | IMP-21 | O progresso é sempre calculado a partir do livro de movimentos; não há tabela `loyalty_progress` | O cap. 11.1 exige que o progresso mostrado resulte dos movimentos; evita duas fontes de verdade |
 | IMP-22 | O consentimento de fidelização (cap. 14.2) ainda não condiciona a acumulação | Os consentimentos são do marco I-9 |
 
+## Decisões de implementação (I-6)
+
+| ID | Decisão | Motivo |
+|---|---|---|
+| IMP-31 | Os indicadores são calculados por funções puras do domínio (`indicators.js`), usadas pelo Painel e pelo relatório do banco | A mesma definição em todo o lado; testável sem base de dados |
+| IMP-32 | Nos gráficos, o digital e o numerário aparecem lado a lado e nunca empilhados | Uma barra empilhada sugere uma soma, e o DEC-07 proíbe somá-los |
+| IMP-33 | "Por receber" considera os serviços registados no período, não cancelados, com valor e sem pagamento efectivo (inclui os entregues sem pagamento) | Cap. 13.4. O valor aparece sempre com a nota "não é receita" |
+| IMP-34 | Os gráficos são SVG feitos à mão (`client/js/core/charts.js`), sem bibliotecas | Cumpre DEC-12 (sem dependências nem build no frontend) |
+| IMP-35 | O tempo de serviço e a ocupação (cap. 13.4) ficam para o I-8, com a capacidade | Precisam dos postos, horários e trabalhadores declarados |
+
 ## Decisões de implementação (I-5)
 
 | ID | Decisão | Motivo |

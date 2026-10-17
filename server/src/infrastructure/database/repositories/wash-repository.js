@@ -86,10 +86,14 @@ export class SqliteWashRepository {
     return this.#db.prepare(`${SELECT_WASH} WHERE w.status IN ${ACTIVE} ORDER BY w.queued_at, w.id`).all().map(toWash);
   }
 
-  /** @param filter { statuses?: string[], date?: 'AAAA-MM-DD', customerId?, limit } */
-  list({ statuses, date, customerId, limit }) {
+  /** @param filter { statuses?: string[], date?: 'AAAA-MM-DD', customerId?, vehicleId?, limit } */
+  list({ statuses, date, customerId, vehicleId, limit }) {
     const conditions = [];
     const params = [];
+    if (vehicleId !== undefined) {
+      conditions.push('w.vehicle_id = ?');
+      params.push(vehicleId);
+    }
     if (customerId !== undefined) {
       conditions.push('w.customer_id = ?');
       params.push(customerId);

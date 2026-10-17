@@ -1,4 +1,5 @@
 // Conversão dos dados da aplicação para o formato JSON da API (inclui textos de apresentação).
+import { INDICATORS } from '../../domain/indicators.js';
 import { formatMoney } from '../../domain/money.js';
 import { formatPhone } from '../../domain/phone.js';
 import { formatPlate } from '../../domain/plate.js';
@@ -269,5 +270,79 @@ export function presentMessage(message) {
     kind: message.kind,
     body: message.body,
     createdAt: message.createdAt,
+  };
+}
+
+// ---------- Painel e histórico ----------
+
+const indicator = (key, value, extra = {}) => ({ key, ...INDICATORS[key], value, ...extra });
+
+export function presentDashboard(summary) {
+  const { indicators: i, period } = summary;
+  const currency = 'MZN';
+  return {
+    period,
+    indicators: [
+      indicator('completed', i.completed),
+      indicator('eligibleForLoyalty', i.eligibleForLoyalty),
+      indicator('digitalConfirmed', presentMoney(i.digitalConfirmedCents, currency)),
+      indicator('cashDeclared', presentMoney(i.cashDeclaredCents, currency)),
+      indicator('receivable', presentMoney(i.receivableCents, currency), { count: i.receivableCount }),
+      indicator('refunded', presentMoney(i.refundedCents, currency)),
+      indicator('cancelled', i.cancelled),
+      indicator('returningCustomers', i.returningRate, {
+        returning: i.returningCustomers,
+        customers: i.distinctCustomers,
+      }),
+    ],
+    byWeekday: summary.byWeekday,
+    weeklyReceipts: summary.weeklyReceipts.map((week) => ({
+      label: week.label,
+      from: week.from,
+      to: week.to,
+      digital: presentMoney(week.digitalCents, currency),
+      cash: presentMoney(week.cashCents, currency),
+    })),
+    yardNow: summary.yardNow,
+  };
+}
+
+export function presentVehicleWithStats(vehicle) {
+  return { ...presentVehicleWithOwner(vehicle), completedCount: vehicle.completedCount, lastCompletedAt: vehicle.lastCompletedAt };
+}
+
+const LOYALTY_EFFECT_LABELS = Object.freeze({
+  counted: 'Contou',
+  reverted: 'Revertido (reembolso)',
+  benefit_used: 'Benefício usado',
+  benefit_restored: 'Benefício devolvido',
+  not_counted: 'Não contou',
+  none: '—',
+});
+
+export function presentHistoryEntry(wash) {
+  const effective = wash.effectivePayment;
+  const payment = effective
+    ? { method: effective.method, label: effective.method === 'cash' ? `Numerário (decl. ${effective.declaredBy})` : 'Digital (sim.)' }
+    : { method: null, label: wash.refunded ? 'Reembolsado' : '—' };
+  const money = (cents) => presentMoney(cents, wash.currency);
+  return {
+    id: wash.id,
+    code: washCode(wash.id),
+    queuedAt: wash.queuedAt,
+    completedAt: wash.completedAt,
+    cancelledAt: wash.cancelledAt,
+    status: wash.status,
+    statusLabel: WASH_STATUS_LABELS[wash.status],
+    planName: wash.planName,
+    classCode: wash.classCode,
+    price: {
+      base: money(wash.basePriceCents),
+      discount: money(wash.discountCents),
+      loyaltyBenefit: money(wash.loyaltyBenefitCents),
+      final: money(wash.finalPriceCents),
+    },
+    payment,
+    loyaltyEffect: { code: wash.loyaltyEffect, label: LOYALTY_EFFECT_LABELS[wash.loyaltyEffect] },
   };
 }

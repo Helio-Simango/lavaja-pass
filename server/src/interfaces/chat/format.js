@@ -1,9 +1,8 @@
 // Formatação das mensagens da conversa (estilo WhatsApp: *negrito*, linhas curtas).
+import { BUSINESS_TIME_ZONE } from '../../domain/business-time.js';
 import { formatMoney } from '../../domain/money.js';
 import { formatPlate } from '../../domain/plate.js';
 import { WASH_STATUS_LABELS, washCode } from '../../domain/wash.js';
-
-export const BUSINESS_TIME_ZONE = 'Africa/Maputo';
 
 export const money = (cents, currency) => formatMoney(cents, currency);
 export const plate = (value) => formatPlate(value);

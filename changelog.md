@@ -1,5 +1,20 @@
 # Changelog
 
+## [Unreleased]
+
+### I-6 · Painel, viaturas por classe, histórico por matrícula e catálogo
+
+- Domínio `indicators.js`, puro e partilhado com a vertente Banco:
+  - indicadores do cap. 13.4, cada um com definição e origem;
+  - concluídos por dia da semana, no fuso de Maputo;
+  - concluídos por classe e por plano;
+  - recebimentos por semana, sempre por origem.
+- `loyalty-effect.js`: efeito de cada serviço na fidelização (contou, revertido, benefício usado ou devolvido, não contou).
+- API: `GET /api/dashboard/summary`, `/api/dashboard/weekly`, `/api/vehicles?classId=` (com as concluídas) e `/api/vehicles/:id/wash-history` (com `/summary`).
+- `/painel`: cartões de indicadores com ⓘ, período de 7, 30 ou 90 dias, gráficos SVG acessíveis (tooltip, legenda, tabela), módulos, viaturas por classe e histórico por matrícula.
+- `/catalogo`: edição de planos e preços por classe, classes e parâmetros de fidelização com a decisão pendente de cada um.
+- `client/js/core/charts.js`: barras lado a lado, nunca empilhadas, com paleta validada para daltonismo e contraste.
+
 ## [0.5.0] — 2026-10-17
 
 Marcos **I-3**, **I-4** e **I-5**. Cada marco foi desenvolvido numa branch `feature/…`, integrado em `develop` e depois em `main`.

@@ -16,6 +16,10 @@
   --radius: 10px;
   --mono: 'JetBrains Mono', ui-monospace, Menlo, Consolas, monospace;
   --sans: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  /* Séries dos gráficos (paleta validada: CVD e contraste, claro e escuro) */
+  --series-1: #2a78d6;
+  --series-2: #eb6834;
+  --chart-grid: #e2e5e9;
   color-scheme: light;
 }
 
@@ -35,6 +39,9 @@
     --amber-soft: #33270f;
     --blue: #7fb2ef;
     --blue-soft: #16253a;
+    --series-1: #3987e5;
+    --series-2: #d95926;
+    --chart-grid: #2d333a;
     color-scheme: dark;
   }
 }
@@ -157,3 +164,24 @@ dialog::backdrop { background: rgb(0 0 0 / 0.45); }
 dialog form { padding: 20px; }
 dialog h2 { font-size: 18px; margin-bottom: 4px; }
 .dialog-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 18px; }
+
+/* ---------- Gráficos ---------- */
+.chart { position: relative; }
+.chart svg { display: block; width: 100%; height: auto; overflow: visible; }
+.chart .axis-label { font-size: 12px; fill: var(--muted); }
+.chart .grid-line { stroke: var(--chart-grid); stroke-width: 1; }
+.chart .hit { fill: transparent; cursor: default; }
+.chart .hit:focus { outline: none; }
+.chart .column.active .hit { fill: var(--soft); }
+.chart-legend { display: flex; gap: 14px; flex-wrap: wrap; font-size: 13px; color: var(--text); margin: 0 0 8px; padding: 0; list-style: none; }
+.chart-legend li { display: flex; align-items: center; gap: 6px; }
+.chart-legend .swatch { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
+.chart-tooltip { position: absolute; pointer-events: none; background: var(--surface); color: var(--text); border: 1px solid var(--line); border-radius: 8px; padding: 6px 10px; font-size: 13px; box-shadow: 0 4px 14px rgb(0 0 0 / 0.12); white-space: nowrap; z-index: 2; }
+.chart-tooltip strong { display: block; color: var(--ink); margin-bottom: 2px; }
+.chart-tooltip .row { display: flex; align-items: center; gap: 6px; }
+.chart details { margin-top: 6px; font-size: 13px; }
+.chart details summary { cursor: pointer; color: var(--muted); }
+.data-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 6px; }
+.data-table th, .data-table td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--line); }
+.data-table th { color: var(--muted); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.03em; }
+.data-table td.num, .data-table th.num { text-align: right; font-variant-numeric: tabular-nums; }
