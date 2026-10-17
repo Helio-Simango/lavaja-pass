@@ -12,6 +12,7 @@ export class WashService {
   #payments;
   #catalogService;
   #paymentService;
+  #loyaltyService;
   #unitOfWork;
   #clock;
 
@@ -22,6 +23,7 @@ export class WashService {
     paymentRepository,
     catalogService,
     paymentService,
+    loyaltyService,
     unitOfWork,
     clock,
   }) {
@@ -31,12 +33,16 @@ export class WashService {
     this.#payments = paymentRepository;
     this.#catalogService = catalogService;
     this.#paymentService = paymentService;
+    this.#loyaltyService = loyaltyService;
     this.#unitOfWork = unitOfWork;
     this.#clock = clock;
   }
 
-  /** Coloca uma viatura na fila. O preço é sempre calculado aqui, a partir da classe actual da viatura. */
-  register({ vehicleId, planId, source, actor }) {
+  /**
+   * Coloca uma viatura na fila. O preço é sempre calculado aqui, a partir da classe actual da viatura.
+   * Com useBenefit, usa um benefício de fidelização da classe da viatura (fica no retrato do preço).
+   */
+  register({ vehicleId, planId, source, useBenefit = false, actor }) {
     const washId = this.#unitOfWork.run(() => {
       const washSource = parseWashSource(source);
       const vehicle = this.#vehicles.findById(vehicleId);
@@ -44,10 +50,14 @@ export class WashService {
       this.#assertVehicleNotInYard(vehicleId);
 
       const { plan, price } = this.#catalogService.quote(planId, vehicle.classId);
+      const loyaltyBenefitCents = useBenefit
+        ? this.#loyaltyService.benefitFor({ customerId: vehicle.customerId, vehicle, priceCents: price.priceCents })
+        : 0;
       const now = this.#clock.nowIso();
-      const wash = newQueuedWash({ vehicle, plan, price, source: washSource, actor, now });
+      const wash = newQueuedWash({ vehicle, plan, price, loyaltyBenefitCents, source: washSource, actor, now });
       const id = this.#washes.insert(wash, now);
       this.#washes.appendEvent(id, { from: null, to: WashStatus.QUEUED, actor }, now);
+      if (loyaltyBenefitCents > 0) this.#loyaltyService.redeem({ ...wash, id }, actor);
       return id;
     });
     return this.get(washId);
@@ -57,17 +67,29 @@ export class WashService {
   transition(id, command) {
     const changed = this.#unitOfWork.run(() => {
       const wash = this.#getWash(id);
-      const decision = planTransition(wash, command, this.#transitionContext(wash, command));
+      const context = this.#transitionContext(wash, command);
+      const decision = planTransition(wash, command, context);
       if (!decision.changed) return false;
 
       const now = this.#clock.nowIso();
       const applied = this.#washes.applyTransition(id, wash.status, decision.changes, now);
       if (!applied) throw new ConflictError('CONCURRENT_UPDATE', 'O serviço foi alterado entretanto. Tente de novo.');
       this.#washes.appendEvent(id, decision.event, now);
-      if (decision.changes.status === WashStatus.CANCELLED) this.#paymentService.failPendingForCancelledWash(id);
+      this.#afterTransition({ ...wash, ...decision.changes }, context, command.actor);
       return true;
     });
     return { wash: this.get(id), changed };
+  }
+
+  /** Efeitos de uma transição noutras áreas, na mesma unidade de trabalho. */
+  #afterTransition(wash, context, actor) {
+    if (wash.status === WashStatus.COMPLETED) {
+      this.#loyaltyService.recordCompletion(wash, { hasEffectivePayment: context.hasEffectivePayment, actor });
+    }
+    if (wash.status === WashStatus.CANCELLED) {
+      this.#paymentService.failPendingForCancelledWash(wash.id);
+      this.#loyaltyService.restoreForCancellation(wash, actor);
+    }
   }
 
   get(id) {

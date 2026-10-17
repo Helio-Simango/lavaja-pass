@@ -84,9 +84,8 @@ export function paymentStateOf(wash, payments = []) {
  * Cria o retrato de um novo serviço em fila. O preço vem sempre do catálogo, nunca do pedido;
  * alterar o catálogo depois não muda este retrato.
  */
-export function newQueuedWash({ vehicle, plan, price, source, actor, now }) {
-  const discountCents = 0;
-  const loyaltyBenefitCents = 0; // fidelização: marco I-4
+export function newQueuedWash({ vehicle, plan, price, loyaltyBenefitCents = 0, source, actor, now }) {
+  const discountCents = 0; // promoções: fora do protótipo (D-06)
   return {
     customerId: vehicle.customerId,
     vehicleId: vehicle.id,
