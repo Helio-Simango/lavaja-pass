@@ -141,3 +141,91 @@ function countBy(items, keyOf) {
   for (const item of items) counts.set(keyOf(item), (counts.get(keyOf(item)) ?? 0) + 1);
   return counts;
 }
+
+// ---------- Qualidade, completude e consistência dos dados (cap. 9.4) ----------
+// Indicadores descritivos para o banco interpretar; nunca convertidos numa nota ou recomendação.
+
+export const DATA_QUALITY_INDICATORS = Object.freeze({
+  historyAgeDays: {
+    label: 'Antiguidade do histórico',
+    definition: 'Dias desde o primeiro serviço registado.',
+    origin: Origin.REGISTERED,
+  },
+  daysWithRecords: {
+    label: 'Dias com registo',
+    definition: 'Dias de funcionamento com pelo menos um serviço registado ÷ dias de funcionamento declarados.',
+    origin: `${Origin.REGISTERED} · ${Origin.DECLARED_BY_BUSINESS}`,
+  },
+  completedWithPayment: {
+    label: 'Serviços com pagamento registado',
+    definition: 'Serviços concluídos com pagamento confirmado ou declarado (ou sem valor a pagar) ÷ serviços concluídos.',
+    origin: Origin.CALCULATED,
+  },
+  digitalShare: {
+    label: 'Peso do digital confirmado',
+    definition: 'Valor digital confirmado ÷ valor total registado (confirmado + declarado).',
+    origin: Origin.CALCULATED,
+  },
+  deliveredUnpaid: {
+    label: 'Entregas sem pagamento',
+    definition: 'Serviços concluídos sem pagamento ÷ serviços concluídos.',
+    origin: Origin.REGISTERED,
+  },
+  cancellationsAndRefunds: {
+    label: 'Cancelamentos e reembolsos',
+    definition: 'Serviços cancelados ÷ serviços registados no período; número de pagamentos reembolsados.',
+    origin: Origin.REGISTERED,
+  },
+  corrections: {
+    label: 'Correcções',
+    definition: 'Correcções e reconciliações registadas no período (fecho diário).',
+    origin: Origin.REGISTERED,
+  },
+});
+
+const ratio = (part, whole) => (whole === 0 ? null : part / whole);
+
+/**
+ * @param openWeekdays dias de funcionamento declarados pela lavadora (1 = segunda … 7 = domingo)
+ * @param corrections número de correcções registadas no período
+ */
+export function dataQuality({ washes, payments, period, firstWashAt, openWeekdays, timeZone, corrections = 0 }) {
+  const completed = washes.filter((w) => w.status === 'completed' && inPeriod(w.completedAt, period));
+  const registered = washes.filter((w) => inPeriod(w.queuedAt, period));
+  const effectiveWashIds = new Set(payments.filter((p) => p.status === 'confirmed' || p.status === 'declared').map((p) => p.washId));
+  const digital = sumOf(payments.filter((p) => p.status === 'confirmed' && inPeriod(p.confirmedAt, period)), 'amountCents');
+  const cash = sumOf(payments.filter((p) => p.status === 'declared' && inPeriod(p.declaredAt, period)), 'amountCents');
+  const operatingDays = operatingDaysIn(period, openWeekdays, timeZone);
+  const daysWithRecords = new Set(registered.map((w) => localDate(w.queuedAt, timeZone))).size;
+  const paidOrFree = completed.filter((w) => effectiveWashIds.has(w.id) || w.finalPriceCents === 0).length;
+
+  return {
+    historyAgeDays: firstWashAt ? Math.floor((Date.parse(period.to) - Date.parse(firstWashAt)) / DAY_MS) : 0,
+    daysWithRecords: { days: daysWithRecords, operatingDays, share: ratio(daysWithRecords, operatingDays) },
+    completedWithPayment: { count: paidOrFree, of: completed.length, share: ratio(paidOrFree, completed.length) },
+    digitalShare: ratio(digital, digital + cash),
+    deliveredUnpaid: {
+      count: completed.filter((w) => w.completedUnpaid).length,
+      share: ratio(completed.filter((w) => w.completedUnpaid).length, completed.length),
+    },
+    cancellationsAndRefunds: {
+      cancelled: registered.filter((w) => w.status === 'cancelled').length,
+      cancelledShare: ratio(registered.filter((w) => w.status === 'cancelled').length, registered.length),
+      refunds: payments.filter((p) => p.status === 'refunded' && inPeriod(p.refundedAt, period)).length,
+    },
+    corrections,
+  };
+}
+
+function localDate(iso, timeZone) {
+  return new Date(iso).toLocaleDateString('en-CA', { timeZone });
+}
+
+function operatingDaysIn(period, openWeekdays, timeZone) {
+  const days = new Set();
+  for (let ms = Date.parse(period.from); ms <= Date.parse(period.to); ms += DAY_MS / 2) {
+    const iso = new Date(ms).toISOString();
+    if (openWeekdays.includes(weekdayIndex(iso, timeZone) + 1)) days.add(localDate(iso, timeZone));
+  }
+  return days.size;
+}
