@@ -68,7 +68,7 @@ A arquitectura e a regra de dependências entre camadas estão em [docs/arquitec
 | I-5 | Simulador de WhatsApp e assistente | ✅ |
 | I-6 | Painel, viaturas por classe, histórico por matrícula, catálogo | ✅ |
 | I-7 | Vertente Banco, só para demonstração (Moza Banco; D-16: demonstrativo com aviso) | ✅ |
-| I-8 | Marcações e capacidade | — |
+| I-8 | Marcações e capacidade (políticas D-09 a D-14 por validar) | ✅ |
 | I-9 | Consentimentos, registo de alterações, reconciliação | — |
 | I-10 | Documentação e changelog | em curso |
 
@@ -79,9 +79,9 @@ O histórico de alterações está em [changelog.md](changelog.md).
 | Endereço | Ecrã | Estado |
 |---|---|---|
 | `/` | Início, com os módulos | ✅ |
-| `/patio` | Pátio: fila, em execução, pronto, postos, registo de serviço, numerário declarado (M7, M8, M9) | ✅ |
+| `/patio` | Pátio: marcações de hoje, fila, em execução, pronto, postos, registo de serviço, numerário declarado (M7, M8, M9) | ✅ |
 | `/simulador` · `/simulador/whatsapp/:telefone` | Simulador de WhatsApp: o utilizador faz de cliente (M1–M6) | ✅ |
-| `/painel` | Painel: indicadores com definição e origem, gráficos, viaturas por classe, histórico por matrícula (M11–M13) | ✅ |
+| `/painel` | Painel: indicadores com definição e origem, gráficos, capacidade e agenda, viaturas por classe, histórico por matrícula (M10–M13) | ✅ |
 | `/catalogo` | Catálogo: planos e preços por classe, classes, parâmetros de fidelização (M14) | ✅ |
 | `/banco` | Vertente Banco: autorizações e registo de acessos (lavadora, M15); relatório autorizado e exportação (banco, M16) | ✅ |
 
@@ -150,6 +150,18 @@ Fidelização:
 
 `POST /api/washes` aceita `useBenefit: true` para usar um benefício da classe da viatura.
 
+Marcações e capacidade:
+
+| Método e rota | Descrição |
+|---|---|
+| `GET /api/availability?date=&planId=&classId=` | Horários livres do dia (capacidade por posto e por pessoas, reserva para a fila) |
+| `GET /api/appointments?date=` · `GET /api/appointments/:id` | Marcações do dia (hora de Maputo); detalhe com auditoria e propostas |
+| `POST /api/appointments` | `{ vehicleId, planId, startsAt }`: fica `requested` ou `confirmed` conforme a política D-09 |
+| `POST /api/appointments/:id/transitions` | `{ to: "confirmed" \| "checked_in" \| "cancelled" \| "no_show", reason? }`. A chegada cria o serviço |
+| `POST /api/appointments/:id/offers` | `{ proposedStartsAt }`: propõe um horário mais cedo (só muda se o cliente aceitar) |
+| `POST /api/appointment-offers/:id/respond` | `{ accept }`: resposta do cliente; uma proposta expirada mantém o horário original |
+| `GET /api/capacity?date=` | Agenda por posto (marcações e pátio) e regras de capacidade |
+
 Painel e histórico:
 
 | Método e rota | Descrição |
@@ -208,6 +220,12 @@ Simulador de WhatsApp:
   - cancelar devolve o benefício usado; reembolsar reverte o progresso ou regista uma "reversão não aplicada";
   - todos os parâmetros pendentes (D-01 a D-07) são configuráveis em `loyalty_rules`, em versões.
 - **Indicadores:** são sempre calculados a partir dos registos, cada um com a sua definição e origem (cap. 13.4). O digital confirmado e o numerário declarado nunca são somados (também nos gráficos, onde aparecem lado a lado). O valor por receber nunca é receita.
+- **Marcações:**
+  - uma marcação reserva um bloco (duração + margem de segurança) num posto, respeitando os trabalhadores disponíveis e a reserva para a fila (D-12);
+  - uma marcação confirmada **nunca é antecipada sem aceitação do cliente** (DEC-10): a lavadora propõe, o cliente aceita ou recusa (ACEITAR/MANTER na conversa); sem resposta no prazo, mantém-se o horário;
+  - a falta só se regista depois da tolerância (D-10);
+  - cancelar ou faltar propõe o horário à marcação seguinte (D-14);
+  - quem chega com marcação passa à frente da fila, e a fila não ocupa os blocos reservados.
 - **Partilha com bancos:**
   - só com autorização explícita da lavadora, para uma instituição, com finalidade, âmbito, período de dados e validade;
   - a autorização não pode ser alterada, só revogada (triggers);
