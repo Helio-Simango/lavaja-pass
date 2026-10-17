@@ -24,9 +24,9 @@ export function createTestContext() {
   return { db, clock, ...createContainer({ db, clock }) };
 }
 
-export async function startTestServer() {
+export async function startTestServer({ demoResetToken = null } = {}) {
   const context = createTestContext();
-  const app = createHttpApp({ services: context.services, clock: context.clock, logger: silentLogger });
+  const app = createHttpApp({ services: context.services, clock: context.clock, logger: silentLogger, demoResetToken });
   const server = await new Promise((resolve) => {
     const listening = app.listen(0, '127.0.0.1', () => resolve(listening));
   });
