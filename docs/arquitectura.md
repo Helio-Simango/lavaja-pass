@@ -10,6 +10,7 @@
 ┌──────────────────────────▼──────────────────────────────────┐
 │ server/src/interfaces/http   Express: rotas → controladores │
 │                              request.js · presenters.js     │
+│ server/src/interfaces/chat   assistente da conversa · avisos│
 ├─────────────────────────────────────────────────────────────┤
 │ server/src/application       casos de uso (*-service.js)    │
 │                              portas (ports.js)              │
@@ -70,6 +71,14 @@ Um serviço por área (catálogo, clientes, serviços, postos, parâmetros). Cad
 - **`middleware/error-handler.js`:** traduz os erros para 400, 404, 409 ou 500, no formato `{ error: { code, message, details? } }`.
 - **`app.js`:** monta `/api`, serve `client/` e `simulador/`.
 
+### Interface de conversa (`server/src/interfaces/chat`)
+
+- **`assistant.js`:** máquina de estados do cap. 15.6. É um canal de entrada como a API HTTP e chama os mesmos casos de uso. Uma regra violada é respondida na conversa.
+- **`notifier.js`:** implementa a porta `CustomerNotifier`. Os avisos ao cliente são mensagens do sistema na conversa.
+- **`format.js`:** textos da conversa (dinheiro, matrículas, horas de Maputo).
+
+`ConversationService.handleIncoming` (aplicação) guarda a mensagem, pede a resposta ao assistente e guarda as respostas e o novo estado, numa só transacção.
+
 ## Cliente (`client/`)
 
 - **`js/core/`:**
@@ -82,7 +91,15 @@ Um serviço por área (catálogo, clientes, serviços, postos, parâmetros). Cad
   - `register-dialog.js` trata o registo de serviço (M8);
   - `confirm-dialog.js` trata as confirmações.
 
-## Testes (`server/test`)
+## Simulador (`simulador/`)
+
+- **`js/main.js`:** lista de conversas, endereço por número e consulta a cada 3 s.
+- **`js/chat-view.js`:** bolhas, avisos e respostas rápidas.
+- **`js/whatsapp-format.js`:** marcação `*negrito*` e `_itálico_` sobre texto já escapado.
+
+Reutiliza `client/js/core/`, servido em `/js/core/`.
+
+## Testes (`server/test`, `client/test`, `simulador/test`)
 
 - **`unit/`:** domínio, configuração e regra de arquitectura.
 - **`integration/`:** base de dados (restrições, triggers, unidade de trabalho) e API HTTP real sobre uma base em memória, com o relógio fixo em 2026-10-22 08:00 UTC.

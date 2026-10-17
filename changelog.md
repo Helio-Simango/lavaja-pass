@@ -1,6 +1,30 @@
 # Changelog
 
-## [Unreleased]
+## [0.5.0] — 2026-10-17
+
+Marcos **I-3**, **I-4** e **I-5**. Cada marco foi desenvolvido numa branch `feature/…`, integrado em `develop` e depois em `main`.
+
+### I-5 · Simulador de WhatsApp e assistente
+
+- Migração `006_conversations`:
+  - `message_threads`: uma por telefone, com o estado do assistente;
+  - `messages`: ordem estável por id, avisos do sistema distintos;
+  - `consents`: fidelização e marketing, com histórico;
+  - todas só acrescentam registos.
+- `ConversationService.handleIncoming`: a mensagem, as respostas e o estado ficam numa só transacção.
+- Assistente (`interfaces/chat/assistant.js`), uma máquina de estados do cap. 15.6:
+  - registo com nome e consentimentos separados;
+  - menu com planos e preços, entrar na fila (viatura nova ou existente, com benefício), estado com estimativas, pagamento digital simulado e idempotente, histórico e cartão de fidelização;
+  - `MENU` e `PARAR` em qualquer ponto; as regras violadas são respondidas na conversa, sem perder o passo;
+  - a opção "marcar horário" informa que as marcações chegam no I-8.
+- Avisos automáticos:
+  - porta `CustomerNotifier`, implementada por `ConversationNotifier`;
+  - avisa quando o serviço começa, fica pronto, é pago e é entregue (com o progresso de fidelização e o benefício ganho).
+- Interface estilo WhatsApp Web em `/simulador/whatsapp/:telefone`: lista de conversas, avisos destacados, respostas rápidas, responsiva.
+- API:
+  - `GET /api/simulator/threads`;
+  - `GET` e `POST /api/simulator/threads/:phone/messages`.
+- Correcção: `[hidden]` passa a esconder sempre os elementos (ganha às regras de `display`).
 
 ### I-4 · Motor de fidelização parametrizável
 

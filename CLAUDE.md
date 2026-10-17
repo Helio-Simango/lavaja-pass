@@ -16,7 +16,7 @@ npm install
 npm run db:reset          # apaga server/data/lavaja.db, migra e carrega a demonstração
 npm start                 # http://localhost:3000 (Pátio em /patio)
 npm run dev               # com reinício automático
-npm test                  # toda a suite; test:unit e test:integration em separado
+npm test                  # toda a suite; test:unit, test:integration e test:client em separado
 ```
 
 Requer Node.js ≥ 22.13 (`node:sqlite`). A única dependência de execução é o Express 4.
@@ -39,7 +39,8 @@ As dependências apontam sempre para dentro. O teste `server/test/unit/architect
 | `domain/` | só `domain/` | Regras puras: valores (telefone, matrícula, dinheiro), ciclo de vida do serviço, estimativas, erros de domínio. Sem I/O, sem datas do sistema |
 | `application/` | `domain/` | Casos de uso (`*-service.js`). Dependem de portas (`ports.js`), nunca do SQLite nem do Express |
 | `infrastructure/` | `domain/`, `application/` | SQLite (ligação, migrações, unidade de trabalho, repositórios), relógio, dados de demonstração |
-| `interfaces/http/` | `domain/`, `application/` | Express: rotas, controladores (finos), leitura de pedidos (`request.js`), apresentação (`presenters.js`), erros |
+| `interfaces/http/` | `domain/`, `application/`, `interfaces/chat/` | Express: rotas, controladores (finos), leitura de pedidos (`request.js`), apresentação (`presenters.js`), erros |
+| `interfaces/chat/` | `domain/`, `application/` | Assistente da conversa (máquina de estados) e avisos ao cliente (implementa `CustomerNotifier`) |
 | `container.js` · `main.js` | tudo | Raiz de composição: o único sítio que liga repositórios aos casos de uso |
 
 **Onde pôr cada coisa:**
@@ -72,7 +73,7 @@ As dependências apontam sempre para dentro. O teste `server/test/unit/architect
   - classes com campos privados (`#`) para serviços e repositórios;
   - dependências injectadas pelo construtor;
   - nada de singletons nem de `new Date()` nas regras: usar o `clock` injectado.
-- **Testes:** com `node:test`.
+- **Testes:** com `node:test`. A lógica pura do cliente e do simulador é testada em `client/test` e `simulador/test`, que não são servidos ao browser.
   - **Unitários** (`server/test/unit`): domínio puro, sem base de dados.
   - **Integração** (`server/test/integration`): base em memória e servidor HTTP real (`helpers.js`), com o relógio fixo em 2026-10-22 08:00 UTC.
 - **Cliente:** `client/js/core` tem o que é partilhado (API, DOM, operador). Cada página tem a sua pasta, com `main.js` a ligar as partes. Todo o texto vindo da API passa por `escapeHtml` antes de entrar em `innerHTML`.
@@ -83,7 +84,10 @@ As dependências apontam sempre para dentro. O teste `server/test/unit/architect
 2. Implementar as regras no domínio, os casos de uso, a infraestrutura e a interface, com testes.
 3. `npm test` verde.
 4. Actualizar o `README.md`, o `changelog.md` e o `docs/decisoes.md` (decisões de implementação tomadas).
-5. Fazer commit no git, com uma tag por versão.
+5. Git:
+   - uma branch `feature/<marco>-<assunto>` a partir de `develop`, com um commit por funcionalidade (`feat(área): …`, `docs(área): …`);
+   - integração em `develop` com `--no-ff`;
+   - no fim de um conjunto de marcos, `develop` vai para `main`, com uma tag de versão.
 
 ## Cuidados
 

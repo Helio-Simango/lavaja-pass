@@ -1,6 +1,6 @@
 {
   "name": "lavaja-pass",
-  "version": "0.2.0",
+  "version": "0.5.0",
   "private": true,
   "description": "LavaJá Pass — protótipo para o Hackathon Moza xLab – UEM (caso Lava Já – Matola)",
   "type": "module",
