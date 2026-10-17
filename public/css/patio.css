@@ -1,0 +1,32 @@
+.patio-head { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px; margin-bottom: 16px; }
+.patio-head h1 { font-size: 26px; }
+.patio-head p { margin: 4px 0 0; }
+.head-actions { display: flex; align-items: flex-end; gap: 10px; }
+.operator { margin: 0; }
+.operator input { margin-top: 4px; width: 160px; }
+
+.board { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin-top: 12px; }
+@media (max-width: 860px) { .board { grid-template-columns: 1fr; } }
+
+.column { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 12px; min-height: 160px; }
+.column h2 { font-size: 13px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); display: flex; justify-content: space-between; margin-bottom: 10px; }
+.count { color: var(--ink); }
+.cards { display: flex; flex-direction: column; gap: 10px; }
+.empty { font-size: 14px; color: var(--muted); padding: 8px 2px; }
+
+.card { border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; background: var(--surface); }
+.card-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.plate { font-family: var(--mono); font-weight: 700; color: var(--ink); }
+.card-line { display: flex; justify-content: space-between; gap: 8px; font-size: 14px; margin-top: 4px; }
+.card-meta { font-size: 13px; color: var(--muted); margin-top: 4px; }
+.card-actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; align-items: center; }
+.card-actions select { width: auto; padding: 4px 8px; font-size: 13px; }
+.card.overdue { border-color: var(--amber); }
+
+.inline { display: flex; gap: 8px; }
+.two { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.plans { display: flex; flex-wrap: wrap; gap: 6px; }
+.plan-option { border: 1px solid var(--line); border-radius: 8px; padding: 6px 10px; background: var(--surface); color: var(--ink); font: inherit; font-size: 14px; cursor: pointer; }
+.plan-option[aria-checked='true'] { border-color: var(--red); background: var(--red-soft); color: var(--red); font-weight: 600; }
+.plan-option:disabled { opacity: 0.45; cursor: not-allowed; text-decoration: line-through; }
+.small-print { font-size: 13px; margin-top: 16px; }

@@ -1,0 +1,1668 @@
+<!doctype html>
+<html lang="pt">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LavaJá Pass — Documento de Referência v3</title>
+<meta name="description" content="LavaJá Pass: documento de referência do projecto (pitch e desenvolvimento), versão 3.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --red:#C8102E; --red-soft:#FCE8EB; --green:#1E7B47; --green-soft:#E6F3EC;
+  --ink:#16191D; --text:#2A2F36; --muted:#5E6873; --line:#E2E5E9; --soft:#F5F6F8;
+  --amber:#B86E00; --amber-soft:#FFF3DF; --blue:#1F5FA8; --blue-soft:#E7F0FA;
+  --wa-bg:#EFE7DD; --wa-in:#FFFFFF; --wa-out:#D9FDD3; --wa-head:#075E54;
+  --mono:'JetBrains Mono',ui-monospace,Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:#FFFFFF;color:var(--text);font:15px/1.6 Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.page{max-width:900px;margin:0 auto;padding:0 20px 80px}
+h1,h2,h3,h4{color:var(--ink);line-height:1.25;margin:0}
+h2{font-size:26px;font-weight:800;letter-spacing:-.01em;margin:0 0 6px}
+h3{font-size:18px;font-weight:700;margin:28px 0 10px}
+h4{font-size:15px;font-weight:700;margin:18px 0 6px}
+p{margin:0 0 12px}
+ul,ol{margin:0 0 12px;padding-left:22px}
+li{margin:3px 0}
+strong{color:var(--ink)}
+code{font-family:var(--mono);font-size:.86em;background:var(--soft);border:1px solid var(--line);border-radius:4px;padding:0 4px}
+pre{font-family:var(--mono);font-size:11.5px;line-height:1.5;background:#14181D;color:#E6EDF3;border-radius:10px;padding:14px 16px;overflow-x:auto;margin:10px 0 16px;white-space:pre}
+pre .c{color:#7D8B99}
+section{padding-top:44px}
+.kicker{font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--red);margin-bottom:6px}
+.lead{font-size:16px;color:var(--muted);margin-bottom:18px}
+.small{font-size:12.5px;color:var(--muted)}
+hr{border:0;border-top:1px solid var(--line);margin:28px 0}
+
+/* cover */
+.cover{padding:48px 0 24px;border-bottom:4px solid var(--red)}
+.cover .event{display:flex;gap:10px;align-items:center;font-size:13px;font-weight:700;color:var(--green);letter-spacing:.04em;text-transform:uppercase}
+.cover .event span.dot{width:8px;height:8px;border-radius:50%;background:var(--red)}
+.cover h1{font-size:54px;font-weight:800;letter-spacing:-.03em;margin:18px 0 6px}
+.cover h1 em{font-style:normal;color:var(--red)}
+.cover .sub{font-size:19px;color:var(--muted);max-width:640px;margin-bottom:26px}
+.meta{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:8px}
+.meta div{border-top:2px solid var(--line);padding-top:8px;font-size:12.5px;color:var(--muted)}
+.meta b{display:block;color:var(--ink);font-size:14px}
+.toc{columns:2;column-gap:32px;font-size:14px;margin-top:26px;padding:18px 20px;background:var(--soft);border-radius:12px}
+.toc a{color:var(--ink);text-decoration:none}
+.toc div{break-inside:avoid;padding:3px 0}
+.toc span{color:var(--red);font-weight:700;margin-right:6px}
+
+/* blocks */
+.callout{border-left:4px solid var(--green);background:var(--green-soft);border-radius:0 10px 10px 0;padding:12px 16px;margin:14px 0 18px;font-size:14px}
+.callout.warn{border-color:var(--amber);background:var(--amber-soft)}
+.callout.red{border-color:var(--red);background:var(--red-soft)}
+.callout.blue{border-color:var(--blue);background:var(--blue-soft)}
+.callout b{color:var(--ink)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.card{border:1px solid var(--line);border-radius:12px;padding:14px 16px;background:#fff;break-inside:avoid}
+.card h4{margin-top:0}
+.card .tag{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:2px 8px;border-radius:99px;background:var(--soft);color:var(--muted);margin-bottom:8px}
+.stat{border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.stat b{display:block;font-size:24px;font-weight:800;color:var(--ink);letter-spacing:-.01em}
+.stat span{font-size:12px;color:var(--muted)}
+table{width:100%;border-collapse:collapse;margin:10px 0 18px;font-size:13.5px}
+th{text-align:left;font-weight:700;color:var(--ink);background:var(--soft);border-bottom:1px solid var(--line);padding:8px 10px;font-size:12.5px}
+td{border-bottom:1px solid var(--line);padding:8px 10px;vertical-align:top}
+tr{break-inside:avoid}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.pill{display:inline-block;font-size:11px;font-weight:700;padding:1px 8px;border-radius:99px;white-space:nowrap}
+.pill.g{background:var(--green-soft);color:var(--green)}
+.pill.r{background:var(--red-soft);color:var(--red)}
+.pill.a{background:var(--amber-soft);color:var(--amber)}
+.pill.b{background:var(--blue-soft);color:var(--blue)}
+.steps{counter-reset:s;list-style:none;padding:0;margin:8px 0 16px}
+.steps li{counter-increment:s;position:relative;padding:8px 0 8px 44px;border-bottom:1px dashed var(--line);break-inside:avoid}
+.steps li:last-child{border-bottom:0}
+.steps li::before{content:counter(s);position:absolute;left:0;top:8px;width:30px;height:30px;border-radius:50%;background:var(--ink);color:#fff;font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center}
+.steps li .scr{font-size:12px;color:var(--blue);font-weight:600}
+.flow{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:10px 0 16px;font-size:12.5px;font-weight:600}
+.flow span{background:var(--soft);border:1px solid var(--line);border-radius:8px;padding:6px 10px}
+.flow i{font-style:normal;color:var(--muted)}
+
+/* arch diagram */
+.arch{border:1px solid var(--line);border-radius:14px;padding:18px;background:var(--soft);margin:12px 0 18px}
+.arch .row{display:flex;gap:10px;justify-content:center}
+.arch .row.top{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+.arch .box{flex:0 1 auto;background:#fff;border:1.5px solid var(--ink);border-radius:10px;padding:8px 12px;text-align:center;font-size:12.5px;min-width:150px}
+.arch .box b{display:block;font-size:13px;color:var(--ink)}
+.arch .box.r{border-color:var(--red)}
+.arch .box.g{border-color:var(--green)}
+.arch .box.dash{border-style:dashed}
+.arch .arrow{text-align:center;color:var(--muted);font-size:12px;margin:6px 0}
+.arch .big{min-width:520px;max-width:640px}
+
+/* ===== MOCKS ===== */
+.mock{margin:18px 0 26px;break-inside:avoid}
+.mock .cap{font-size:12.5px;color:var(--muted);margin-top:8px}
+.mock .cap b{color:var(--ink)}
+.mock-title{display:flex;align-items:baseline;gap:10px;margin:26px 0 10px}
+.mock-title .n{font-size:12px;font-weight:800;color:#fff;background:var(--red);border-radius:6px;padding:2px 8px}
+.mock-title h4{margin:0;font-size:16px}
+.phones{display:flex;gap:22px;flex-wrap:wrap;justify-content:center;align-items:flex-start}
+.phone{width:290px;border:9px solid #111;border-radius:34px;background:#111;overflow:hidden;box-shadow:0 8px 24px rgba(0,0,0,.12);flex:none}
+.phone .notch{height:18px;background:#111;position:relative}
+.phone .notch::after{content:"";position:absolute;left:50%;top:4px;width:70px;height:8px;margin-left:-35px;background:#000;border-radius:6px}
+.screen{background:#fff;min-height:520px;font-size:12.5px;line-height:1.4;color:#1B1B1B}
+/* whatsapp */
+.wa-head{background:var(--wa-head);color:#fff;padding:8px 12px;display:flex;align-items:center;gap:9px}
+.wa-av{width:30px;height:30px;border-radius:50%;background:#fff;color:var(--red);font-weight:800;font-size:12px;display:flex;align-items:center;justify-content:center;flex:none}
+.wa-head b{display:block;font-size:13px}
+.wa-head small{opacity:.8;font-size:10.5px}
+.wa-body{background:var(--wa-bg);padding:10px 8px 14px;min-height:484px;display:flex;flex-direction:column;gap:6px}
+.msg{max-width:84%;padding:6px 9px 14px;border-radius:8px;position:relative;box-shadow:0 1px 0 rgba(0,0,0,.08);white-space:normal}
+.msg.in{background:var(--wa-in);align-self:flex-start;border-top-left-radius:0}
+.msg.out{background:var(--wa-out);align-self:flex-end;border-top-right-radius:0}
+.msg time{position:absolute;right:7px;bottom:2px;font-size:9.5px;color:#7a7a7a}
+.msg .btns{display:flex;flex-direction:column;gap:4px;margin-top:6px}
+.msg .btns span{display:block;text-align:center;color:#027EB5;font-weight:600;border-top:1px solid #E7E7E7;padding-top:5px}
+.wa-day{align-self:center;background:#E1F2FB;color:#555;font-size:10px;border-radius:6px;padding:2px 8px;margin:2px 0}
+.stamps{display:flex;gap:4px;margin:6px 0 2px}
+.stamps i{width:22px;height:22px;border-radius:50%;border:2px solid var(--green);display:flex;align-items:center;justify-content:center;font-style:normal;font-size:11px;font-weight:800;color:#fff;background:var(--green)}
+.stamps i.e{background:#fff;color:var(--green)}
+.stamps i.n{background:var(--amber);border-color:var(--amber)}
+/* app screens */
+.app-top{padding:10px 14px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--line)}
+.app-top b{font-size:13.5px}
+.btn{display:block;text-align:center;font-weight:700;border-radius:10px;padding:11px 10px;font-size:13px;margin-top:8px}
+.btn.p{background:var(--green);color:#fff}
+.btn.r{background:var(--red);color:#fff}
+.btn.o{border:1.5px solid var(--line);color:var(--ink);background:#fff}
+.btn.k{background:var(--ink);color:#fff}
+.btn.sm{padding:7px 8px;font-size:11.5px;border-radius:8px;margin-top:6px}
+.field{border:1.5px solid var(--line);border-radius:10px;padding:9px 11px;margin-top:6px;font-size:13px;display:flex;justify-content:space-between}
+.field.sel{border-color:var(--green);background:var(--green-soft)}
+.lbl{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-top:12px}
+/* kanban (operator mobile) */
+.op-head{background:var(--ink);color:#fff;padding:9px 12px;display:flex;justify-content:space-between;align-items:center}
+.op-head b{font-size:13px}
+.op-head small{font-size:10.5px;opacity:.75}
+.online{font-size:10px;font-weight:700;background:#25D366;color:#063;padding:2px 7px;border-radius:99px}
+.baias{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;padding:8px 10px;background:var(--soft);border-bottom:1px solid var(--line)}
+.baias div{border-radius:7px;text-align:center;font-size:10px;font-weight:700;padding:4px 0;background:#fff;border:1.5px solid var(--line)}
+.baias div.busy{border-color:var(--blue);color:var(--blue)}
+.baias div.ready{border-color:var(--green);color:var(--green)}
+.baias div.free{border-style:dashed;color:var(--muted)}
+.tabs{display:flex;border-bottom:1px solid var(--line)}
+.tabs span{flex:1;text-align:center;padding:8px 2px;font-size:11px;font-weight:700;color:var(--muted)}
+.tabs span.on{color:var(--ink);border-bottom:3px solid var(--red)}
+.colhead{font-size:10.5px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);padding:9px 12px 3px}
+.car{margin:6px 10px;border:1.5px solid var(--line);border-radius:12px;padding:9px 11px;background:#fff}
+.car .plate{font-family:var(--mono);font-weight:700;font-size:15px;color:var(--ink);letter-spacing:.02em}
+.car .row{display:flex;justify-content:space-between;align-items:center;font-size:11.5px;color:var(--muted);margin-top:2px}
+.car.wash{border-left:5px solid var(--blue)}
+.car.ready{border-left:5px solid var(--green)}
+.car.queue{border-left:5px solid var(--amber)}
+.fab{margin:10px;background:var(--red);color:#fff;text-align:center;font-weight:800;border-radius:12px;padding:12px;font-size:13px}
+.sheet{background:rgba(0,0,0,.45);min-height:520px;display:flex;flex-direction:column;justify-content:flex-end}
+.sheet .panel{background:#fff;border-radius:18px 18px 0 0;padding:14px 14px 18px}
+.sheet .grab{width:40px;height:4px;border-radius:4px;background:#ccc;margin:0 auto 10px}
+.plate-input{font-family:var(--mono);font-size:22px;font-weight:700;letter-spacing:.06em;text-align:center;border:2px solid var(--ink);border-radius:10px;padding:8px;margin-top:6px}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.chips span{border:1.5px solid var(--line);border-radius:99px;padding:6px 10px;font-size:12px;font-weight:600}
+.chips span.on{border-color:var(--ink);background:var(--ink);color:#fff}
+.keypad{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
+.keypad span{border:1.5px solid var(--line);border-radius:12px;text-align:center;padding:11px 0;font-size:17px;font-weight:700}
+.pin{display:flex;gap:10px;justify-content:center;margin:10px 0}
+.pin i{width:14px;height:14px;border-radius:50%;border:2px solid var(--ink)}
+.pin i.f{background:var(--ink)}
+/* desktop frame */
+.desk{border:1px solid #CDD2D8;border-radius:12px;overflow:hidden;box-shadow:0 8px 24px rgba(0,0,0,.08);background:#fff}
+.desk .bar{background:#ECEFF2;padding:7px 12px;display:flex;gap:6px;align-items:center;border-bottom:1px solid #D9DDE2}
+.desk .bar i{width:10px;height:10px;border-radius:50%;background:#D0D4D9;display:block}
+.desk .bar .url{margin-left:12px;font-size:11px;color:var(--muted);background:#fff;border-radius:6px;padding:2px 10px;flex:1;max-width:360px;font-family:var(--mono)}
+.dash{display:grid;grid-template-columns:150px 1fr;min-height:440px;font-size:12px}
+.side{background:var(--ink);color:#C9CFD6;padding:14px 10px}
+.side .brand{color:#fff;font-weight:800;font-size:14px;margin-bottom:2px}
+.side .brand em{font-style:normal;color:#FF6B7D}
+.side small{display:block;font-size:10px;opacity:.7;margin-bottom:14px}
+.side div.it{padding:7px 9px;border-radius:7px;margin:2px 0;font-weight:600}
+.side div.it.on{background:rgba(255,255,255,.12);color:#fff}
+.side .moz{margin-top:14px;font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;opacity:.6;padding-left:9px}
+.main{padding:14px 16px;background:#FAFBFC}
+.main h5{margin:0 0 2px;font-size:15px;color:var(--ink)}
+.main .sub{font-size:11px;color:var(--muted);margin-bottom:10px}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:10px}
+.kpi{background:#fff;border:1px solid var(--line);border-radius:10px;padding:8px 10px}
+.kpi span{display:block;font-size:10px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+.kpi b{font-size:18px;color:var(--ink);font-weight:800}
+.kpi em{font-style:normal;font-size:10px;color:var(--muted)}
+.panel2{display:grid;grid-template-columns:1.35fr 1fr;gap:10px}
+.panel2.even{grid-template-columns:1.2fr 1fr}
+.box2{background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.box2 .t{font-weight:700;color:var(--ink);font-size:12px;margin-bottom:6px;display:flex;justify-content:space-between}
+.bars{display:flex;align-items:flex-end;gap:7px;height:120px;padding-top:6px;border-bottom:1px solid var(--line)}
+.bars div{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%}
+.bars div i{display:block;width:100%;border-radius:4px 4px 0 0;background:#9FB3C8}
+.bars div i.low{background:var(--amber)}
+.bars div i.hi{background:var(--red)}
+.bars div small{font-size:9.5px;color:var(--muted);margin-bottom:2px;font-weight:700}
+.blabels{display:flex;gap:7px;font-size:10px;color:var(--muted);margin-top:3px}
+.blabels span{flex:1;text-align:center}
+.alert{background:var(--amber-soft);border:1px solid #F1D29C;border-radius:9px;padding:8px 10px;margin-top:8px;font-size:11px}
+.alert b{color:#7A4A00}
+.bayrow{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px dashed var(--line);font-size:11px}
+.bayrow:last-child{border-bottom:0}
+.mbar{height:7px;border-radius:4px;background:var(--line);overflow:hidden;margin-top:3px}
+.mbar i{display:block;height:100%;background:var(--green)}
+.modal-wrap{background:rgba(22,25,29,.5);padding:26px 40px}
+.modal{background:#fff;border-radius:14px;padding:16px 18px;max-width:560px;margin:0 auto;font-size:12px}
+.modal h5{font-size:15px;margin:0 0 8px;color:var(--ink)}
+.radio{display:flex;gap:8px;align-items:flex-start;border:1.5px solid var(--line);border-radius:10px;padding:8px 10px;margin-top:6px}
+.radio.on{border-color:var(--green);background:var(--green-soft)}
+.radio i{width:14px;height:14px;border-radius:50%;border:2px solid var(--muted);flex:none;margin-top:2px}
+.radio.on i{border:4px solid var(--green)}
+.preview{background:var(--wa-bg);border-radius:10px;padding:10px;margin-top:6px}
+.preview .msg{max-width:100%}
+.score-ring{width:96px;height:96px;border-radius:50%;background:conic-gradient(var(--blue) 0 66%, var(--line) 66% 100%);display:flex;align-items:center;justify-content:center;flex:none}
+.score-ring div{width:74px;height:74px;border-radius:50%;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.score-ring b{font-size:24px;color:var(--ink);line-height:1}
+.score-ring small{font-size:10px;color:var(--muted)}
+.comp{display:grid;grid-template-columns:84px 1fr 34px;gap:8px;align-items:center;font-size:11px;padding:3px 0}
+.comp .mbar{margin:0}
+.comp .mbar i{background:var(--blue)}
+.comp b{text-align:right;color:var(--ink)}
+/* poster */
+.poster{width:300px;border-radius:14px;overflow:hidden;border:1px solid var(--line);box-shadow:0 8px 24px rgba(0,0,0,.1);flex:none;background:#fff}
+.poster .top{background:var(--red);color:#fff;padding:18px 18px 14px}
+.poster .top b{display:block;font-size:30px;font-weight:800;letter-spacing:-.02em;line-height:1}
+.poster .top span{font-size:13px;opacity:.95}
+.poster .mid{padding:16px 18px;text-align:center}
+.poster .qr{width:150px;height:150px;margin:6px auto 10px}
+.poster .bot{background:var(--soft);padding:10px 18px;font-size:11.5px;color:var(--muted)}
+.poster .num{font-family:var(--mono);font-weight:700;color:var(--ink);font-size:15px}
+
+/* print */
+@page{size:A4;margin:13mm 12mm 14mm}
+@media print{
+  body{font-size:12.6px}
+  .page{max-width:none;padding:0}
+  section{padding-top:0}
+  .brk{break-before:page}
+  .cover{padding-top:10px}
+  .cover h1{font-size:46px}
+  .arch .box{min-width:118px;font-size:11px}
+  h3{break-after:avoid}
+  h4{break-after:avoid}
+  .mock-title{break-after:avoid}
+  pre{font-size:9.6px;white-space:pre-wrap;word-break:break-word;break-inside:auto}
+  table{font-size:11.5px}
+  .no-print{display:none}
+  .card,.callout,.stat{break-inside:avoid}
+  table{break-inside:avoid}
+  .dash{grid-template-columns:118px 1fr}
+}
+@media screen and (max-width:720px){
+  .grid2,.grid3,.grid4,.meta{grid-template-columns:1fr 1fr}
+  .cover h1{font-size:38px}
+  .toc{columns:1}
+  .dash{grid-template-columns:1fr}
+  .side{display:none}
+  .kpis{grid-template-columns:1fr 1fr}
+  .panel2{grid-template-columns:1fr}
+  .arch .big{min-width:0;width:100%}
+  .modal-wrap{padding:14px}
+  .desk,.table-wrap{overflow-x:auto}
+}
+@media screen and (max-width:480px){.grid2,.grid3,.grid4,.meta{grid-template-columns:1fr}}
+
+/* ===== v2 mocks: web app ===== */
+.appnav{display:flex;align-items:center;gap:14px;background:var(--ink);color:#C9CFD6;padding:8px 14px;font-size:11.5px}
+.appnav .logo{color:#fff;font-weight:800;font-size:13px;margin-right:6px}
+.appnav .logo em{font-style:normal;color:#FF6B7D}
+.appnav a{color:#C9CFD6;text-decoration:none;font-weight:600;padding:3px 8px;border-radius:6px}
+.appnav a.on{background:rgba(255,255,255,.14);color:#fff}
+.appnav .demo{margin-left:auto;background:var(--amber);color:#fff;font-weight:700;font-size:10px;padding:2px 8px;border-radius:99px}
+.appbody{background:#FAFBFC;padding:12px 14px;font-size:11.5px;min-height:300px}
+.appbody h5{margin:0 0 2px;font-size:14px;color:var(--ink)}
+.appbody .sub{font-size:10.5px;color:var(--muted);margin-bottom:10px}
+.mtable{width:100%;border-collapse:collapse;font-size:11px;margin:4px 0 0;background:#fff;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.mtable th{font-size:10px;background:var(--soft);padding:6px 8px}
+.mtable td{padding:6px 8px}
+.mtable a{color:var(--blue);font-weight:700;text-decoration:none;font-family:var(--mono)}
+.segment{display:inline-flex;border:1.5px solid var(--line);border-radius:9px;overflow:hidden;margin-bottom:8px}
+.segment span{padding:5px 12px;font-weight:700;font-size:11px;color:var(--muted);border-right:1.5px solid var(--line)}
+.segment span:last-child{border-right:0}
+.segment span.on{background:var(--ink);color:#fff}
+.board{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.board .col{background:var(--soft);border-radius:10px;padding:6px}
+.board .col h6{margin:2px 4px 6px;font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);display:flex;justify-content:space-between}
+.board .car{margin:0 0 6px}
+.chip-s{display:inline-block;font-size:9.5px;font-weight:700;padding:1px 6px;border-radius:99px;background:var(--soft);color:var(--muted);border:1px solid var(--line)}
+.btnrow{display:flex;gap:5px;margin-top:6px}
+.btnrow .btn{margin-top:0;flex:1}
+/* WhatsApp-web-like simulator */
+.waw{display:grid;grid-template-columns:190px 1fr;min-height:430px;font-size:11.5px}
+.waw .list{border-right:1px solid var(--line);background:#fff}
+.waw .list .search{padding:8px;border-bottom:1px solid var(--line)}
+.waw .list .search div{background:var(--soft);border-radius:8px;padding:6px 8px;color:var(--muted);font-size:10.5px}
+.waw .th{display:flex;gap:8px;align-items:center;padding:8px 10px;border-bottom:1px solid #F0F2F4}
+.waw .th.on{background:#F0F2F5}
+.waw .th .wa-av{width:26px;height:26px;font-size:10px;background:var(--soft);color:var(--ink)}
+.waw .th b{display:block;font-size:11px;color:var(--ink);font-family:var(--mono)}
+.waw .th small{color:var(--muted);font-size:10px}
+.waw .chat{display:flex;flex-direction:column}
+.waw .chat .wa-head{padding:7px 12px}
+.waw .chat .wa-body{flex:1;min-height:0}
+.waw .composer{display:flex;gap:6px;padding:7px 10px;background:#F0F2F5}
+.waw .composer div{flex:1;background:#fff;border-radius:8px;padding:6px 10px;color:var(--muted)}
+.waw .composer span{background:var(--wa-head);color:#fff;border-radius:8px;padding:6px 10px;font-weight:700}
+.simbanner{background:var(--amber-soft);color:#7A4A00;font-size:10px;text-align:center;padding:3px;border-bottom:1px solid #F1D29C}
+.progress{display:flex;gap:3px;margin:3px 0}
+.progress i{width:16px;height:16px;border-radius:50%;border:2px solid var(--green);display:block}
+.progress i.f{background:var(--green)}
+.hist-modal{background:rgba(22,25,29,.5);padding:18px 22px}
+.hist-modal .modal{max-width:100%}
+.kv{display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px dashed var(--line);font-size:11px}
+.kv:last-child{border-bottom:0}
+.wrapnote{font-size:10px;color:var(--muted);margin-top:6px}
+
+/* ===== v3: estados de decisão ===== */
+.st{display:inline-block;font-size:10.5px;font-weight:800;letter-spacing:.03em;padding:1px 8px;border-radius:99px;white-space:nowrap;vertical-align:1px;border:1px solid transparent}
+.st.d{background:var(--green-soft);color:var(--green);border-color:#CBE6D6}
+.st.p{background:var(--blue-soft);color:var(--blue);border-color:#BFD4EE}
+.st.n{background:var(--red-soft);color:var(--red);border-color:#F5C6CE}
+.st.v{background:var(--amber-soft);color:var(--amber);border-color:#F1D29C}
+.legend-box{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:18px 0 0}
+.legend-box div{border:1px solid var(--line);border-radius:10px;padding:8px 10px;font-size:12px;color:var(--muted);background:#fff}
+.legend-box b{display:block;margin-bottom:3px}
+.do-dont{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.do-dont .card ul{margin:0;padding-left:18px}
+.do-dont .ok h4{color:var(--green)}
+.do-dont .no h4{color:var(--red)}
+.idc{font-family:var(--mono);font-weight:700;font-size:11.5px;color:var(--ink);white-space:nowrap}
+.tbl-sm{font-size:12.5px}
+.tbl-sm td,.tbl-sm th{padding:6px 8px}
+.ref{font-size:11px;color:var(--blue);font-weight:700;white-space:nowrap}
+.kv2{display:grid;grid-template-columns:190px 1fr;gap:0;border:1px solid var(--line);border-radius:10px;overflow:hidden;margin:10px 0 16px}
+.kv2 div{padding:8px 12px;border-bottom:1px solid var(--line);font-size:13.5px}
+.kv2 div:nth-child(odd){background:var(--soft);font-weight:700;color:var(--ink)}
+.kv2 div:nth-last-child(-n+2){border-bottom:0}
+.slot{display:grid;grid-template-columns:52px 1fr;gap:6px;font-size:11px;align-items:stretch}
+.slot .t{color:var(--muted);font-weight:700;padding-top:4px}
+.slot .b{border-radius:8px;padding:5px 8px;margin-bottom:5px;border:1.5px solid var(--line);background:#fff}
+.slot .b.res{border-color:var(--blue);background:var(--blue-soft)}
+.slot .b.walk{border-color:var(--amber);background:var(--amber-soft)}
+.slot .b.free{border-style:dashed;color:var(--muted)}
+@media print{.legend-box{grid-template-columns:repeat(4,1fr)}.kv2{grid-template-columns:150px 1fr}}
+@media screen and (max-width:720px){.legend-box,.do-dont{grid-template-columns:1fr 1fr}.kv2{grid-template-columns:1fr}}
+
+.dec{table-layout:fixed}.dec th:nth-child(1){width:6%}.dec th:nth-child(2){width:29%}.dec th:nth-child(3){width:31%}.dec th:nth-child(4){width:13.5%}.dec th:nth-child(5){width:9%}.dec th:nth-child(6){width:11.5%}.dec .small{font-size:inherit}.dec .st{white-space:nowrap;font-size:9.5px;padding:1px 6px}
+@media print{.dec{font-size:10.8px}}
+
+@media print{.waw{grid-template-columns:150px 1fr}.desk{break-inside:avoid}}
+</style>
+</head>
+<body>
+<div class="page">
+
+<!-- ================= CAPA ================= -->
+<header class="cover">
+  <div class="event"><span class="dot"></span> Hackathon Moza xLab – UEM · 1.ª Edição · 22 e 23 de Outubro de 2026</div>
+  <h1>LavaJá <em>Pass</em></h1>
+  <div class="sub">Uma solução para instituições bancárias que começa por organizar a actividade das pequenas lavadoras de automóveis: clientes, viaturas, serviços, filas, marcações, recebimentos registados e fidelização. Com autorização da lavadora, essa actividade transforma-se em informação estruturada e auditável.</div>
+  <div class="meta">
+    <div>Documento<b>Referência do projecto (pitch e desenvolvimento)</b></div>
+    <div>Versão<b>v3 · 17/10/2026</b></div>
+    <div>Equipa<b>Helio Simango &amp; Equipa</b></div>
+    <div>Estado<b>Protótipo em desenvolvimento</b></div>
+  </div>
+  <div class="legend-box" aria-label="Legenda dos estados">
+    <div><b><span class="st d">Decidido</span></b>Orientação expressamente estabelecida.</div>
+    <div><b><span class="st p">Proposto</span></b>Solução sugerida, ainda sem validação definitiva.</div>
+    <div><b><span class="st n">Pendente</span></b>Questão que exige uma decisão (ver capítulo 21).</div>
+    <div><b><span class="st v">A validar</span></b>Hipótese que depende de testes, dados ou confirmação externa.</div>
+  </div>
+  <nav class="toc">
+    <div><a href="#c1"><span>1</span>Identificação e visão</a></div>
+    <div><a href="#c2"><span>2</span>Resumo executivo</a></div>
+    <div><a href="#c3"><span>3</span>Problema e oportunidade</a></div>
+    <div><a href="#c4"><span>4</span>Proposta de valor e partes interessadas</a></div>
+    <div><a href="#c5"><span>5</span>Posicionamento estratégico</a></div>
+    <div><a href="#c6"><span>6</span>Modelo de negócio e hipóteses de receita</a></div>
+    <div><a href="#c7"><span>7</span>Arquitectura funcional do ecossistema</a></div>
+    <div><a href="#c8"><span>8</span>Solução Lavadora–Cliente</a></div>
+    <div><a href="#c9"><span>9</span>Solução Lavadora–Banco</a></div>
+    <div><a href="#c10"><span>10</span>Regras de negócio</a></div>
+    <div><a href="#c11"><span>11</span>Programa de fidelização</a></div>
+    <div><a href="#c12"><span>12</span>Filas, capacidade e marcações</a></div>
+    <div><a href="#c13"><span>13</span>Dados, pagamentos e indicadores</a></div>
+    <div><a href="#c14"><span>14</span>Segurança, privacidade e governação</a></div>
+    <div><a href="#c15"><span>15</span>Arquitectura técnica do protótipo</a></div>
+    <div><a href="#c16"><span>16</span>Mocks das telas</a></div>
+    <div><a href="#c17"><span>17</span>Plano de implementação</a></div>
+    <div><a href="#c18"><span>18</span>Projecto-piloto e indicadores de sucesso</a></div>
+    <div><a href="#c19"><span>19</span>Pitch: guião e perguntas do júri</a></div>
+    <div><a href="#c20"><span>20</span>Riscos, dependências e limitações</a></div>
+    <div><a href="#c21"><span>21</span>Decisões tomadas e pendentes</a></div>
+    <div><a href="#c22"><span>22</span>Próximos passos</a></div>
+    <div><a href="#anexoA"><span>A</span>Contradições identificadas</a></div>
+    <div><a href="#anexoB"><span>B</span>Histórico de versões</a></div>
+  </nav>
+</header>
+
+<!-- ================= 1 ================= -->
+<section id="c1">
+  <div class="kicker">1 · Identificação e visão</div>
+  <h2>O que é o LavaJá Pass</h2>
+  <div class="kv2">
+    <div>Nome</div><div>LavaJá Pass</div>
+    <div>Natureza</div><div>Protótipo demonstrativo de uma plataforma integrada. As conversas e os pagamentos são <b>simulados</b>. <span class="st d">Decidido</span></div>
+    <div>Contexto</div><div>Hackathon Moza xLab – UEM, 1.ª edição. Caso "Lava Já – Matola": como aumentar o tráfego e a fidelização de clientes de um car wash comunitário.</div>
+    <div>Cliente institucional</div><div>Instituições bancárias, como possíveis clientes pagantes da solução. <span class="st v">A validar</span></div>
+    <div>Utilizadores</div><div>Lavadoras (gestor e operadores), clientes finais das lavadoras e, com autorização, analistas das instituições bancárias.</div>
+    <div>Ponto de partida</div><div>Pequenas lavadoras de automóveis, muitas a operar informalmente. <span class="st d">Decidido</span></div>
+  </div>
+  <p><b>Visão.</b> Dar às pequenas lavadoras ferramentas simples para organizar a operação e fidelizar clientes. Com autorização explícita da lavadora, a actividade registada torna-se informação estruturada que as instituições bancárias podem considerar na sua própria análise de oportunidades de financiamento.</p>
+  <div class="grid2">
+    <div class="card"><h4>O LavaJá Pass é…</h4><ul class="small">
+      <li>Uma plataforma para organizar clientes, viaturas, serviços, filas, marcações, recebimentos e fidelização</li>
+      <li>Uma forma de apresentar a actividade registada a um banco, com autorização, origem dos dados identificada e acessos registados</li>
+      <li>No protótipo: Node.js, Express, SQLite e frontend em JavaScript puro</li>
+    </ul></div>
+    <div class="card"><h4>O LavaJá Pass não é…</h4><ul class="small">
+      <li>Um sistema de pontuação ou de decisão de crédito</li>
+      <li>Uma garantia de acesso a financiamento: a decisão continua a ser do banco</li>
+      <li>No protótipo: um processador de pagamentos reais nem uma integração com o WhatsApp</li>
+    </ul></div>
+  </div>
+  <p class="small"><b>Como usar este documento.</b> Os capítulos 2 a 7 servem o pitch e as conversas com parceiros. Os capítulos 8 a 15 são a especificação para o desenvolvimento, incluindo com o Claude Code. Os capítulos 17 e 21 dizem por que ordem construir e o que ainda falta decidir. Nada marcado como <span class="st n">Pendente</span> deve ser fixado no código: deve ficar configurável.</p>
+</section>
+
+<!-- ================= 2 ================= -->
+<section id="c2" class="brk">
+  <div class="kicker">2 · Resumo executivo</div>
+  <h2>Organizar a operação das lavadoras e tornar a sua actividade legível para os bancos</h2>
+  <p class="lead">Muitas pequenas lavadoras trabalham com numerário, cartões de papel e memória. Isso dificulta a gestão do dia-a-dia e torna difícil mostrar, de forma estruturada, o que o negócio faz. O LavaJá Pass ataca as duas coisas com uma única plataforma.</p>
+  <div class="grid3">
+    <div class="card"><span class="tag">Lavadora</span><h4>Operação organizada</h4><p class="small">Fila sem marcação e marcações confirmadas, estimativas de atendimento, preços por classe de viatura, recebimentos registados e fidelização por cliente.</p></div>
+    <div class="card"><span class="tag">Cliente final</span><h4>Menos espera, mais motivos para voltar</h4><p class="small">Regista o serviço por conversa (simulada no protótipo), acompanha o estado e vê o progresso de fidelização por classe da viatura.</p></div>
+    <div class="card"><span class="tag">Banco</span><h4>Informação estruturada, com autorização</h4><p class="small">Relatório de actividade com volume, frequência, evolução e qualidade dos dados, identificando a origem de cada dado. É um complemento à análise do banco, nunca uma substituição.</p></div>
+  </div>
+  <h3>Em resumo</h3>
+  <table>
+    <tr><th>Tema</th><th>Posição actual</th><th>Estado</th></tr>
+    <tr><td>Posicionamento</td><td>Solução para instituições bancárias, começando pela digitalização das pequenas lavadoras</td><td><span class="st d">Decidido</span></td></tr>
+    <tr><td>Produto</td><td>Um único ecossistema com duas vertentes: Lavadora–Cliente e Lavadora–Banco</td><td><span class="st d">Decidido</span></td></tr>
+    <tr><td>Quem paga</td><td>Licenciamento ou subscrição institucional pelos bancos</td><td><span class="st v">A validar</span></td></tr>
+    <tr><td>Fidelização</td><td>Uma conta por cliente, progresso por classe (A, B, C), níveis a cada 10 lavagens</td><td><span class="st d">Decidido</span> / <span class="st p">Proposto</span></td></tr>
+    <tr><td>Progressão entre níveis e tipo de benefício</td><td>Ambiguidade registada, com alternativas</td><td><span class="st n">Pendente</span></td></tr>
+    <tr><td>Marcações</td><td>Uma marcação confirmada nunca é antecipada sem aceitação do cliente</td><td><span class="st d">Decidido</span></td></tr>
+    <tr><td>Políticas de marcação (atrasos, faltas, depósitos…)</td><td>Alternativas descritas</td><td><span class="st n">Pendente</span></td></tr>
+    <tr><td>Dados</td><td>Origem identificada: digital simulado confirmado ≠ numerário declarado ≠ estimativa</td><td><span class="st d">Decidido</span></td></tr>
+    <tr><td>Partilha com bancos</td><td>Só com autorização explícita da lavadora, com finalidade e acessos registados</td><td><span class="st d">Decidido</span></td></tr>
+    <tr><td>Enquadramento legal em Moçambique</td><td>Por confirmar com apoio jurídico</td><td><span class="st v">A validar</span></td></tr>
+  </table>
+  <div class="callout warn"><b>Nada neste documento é um resultado obtido.</b> Preços, metas, durações e benefícios são parâmetros de demonstração ou propostas a validar. Não existem parcerias, contratos ou compromissos de bancos. O Moza Banco e a UEM são referidos apenas como promotores do hackathon.</div>
+</section>
+
+<!-- ================= 3 ================= -->
+<section id="c3">
+  <div class="kicker">3 · Problema e oportunidade</div>
+  <h2>Dois lados do mesmo problema</h2>
+  <h3>3.1 Na lavadora <span class="st v">A validar</span></h3>
+  <div class="grid2">
+    <div class="card"><h4>Procura mal distribuída</h4><p class="small">Fila longa à sexta à tarde e ao fim-de-semana; postos parados em alguns dias da semana.</p></div>
+    <div class="card"><h4>Espera sem previsão</h4><p class="small">O cliente não sabe quando o carro fica pronto nem consegue marcar um horário. Parte desiste.</p></div>
+    <div class="card"><h4>Fidelização frágil</h4><p class="small">Cartões de papel perdem-se e falsificam-se; o dono não sabe quem são os clientes nem com que frequência voltam.</p></div>
+    <div class="card"><h4>Actividade sem registo</h4><p class="small">Recebimentos sobretudo em numerário e sem histórico, o que dificulta a gestão e a demonstração da actividade a terceiros.</p></div>
+  </div>
+  <h3>3.2 No banco <span class="st v">A validar</span></h3>
+  <p>Para uma instituição bancária, um pequeno negócio informal tende a ter pouca informação estruturada sobre a sua actividade. A hipótese é que um registo diário, contínuo, com a origem dos dados identificada e a autorização do negócio, seja útil como <b>informação adicional</b> na análise de oportunidades de financiamento ou de outros produtos. Esta hipótese tem de ser confirmada junto dos bancos (capítulo 18).</p>
+  <h3>3.3 Oportunidade</h3>
+  <p class="small">Contexto de mercado: segundo o relatório de inclusão financeira do Banco de Moçambique citado pela Lusa (Março de 2026), a cobertura de ATMs caiu para 7,1 por 100.000 adultos em 2025, enquanto os agentes de carteiras móveis não bancárias ultrapassaram os 446 mil. Os pagamentos digitais por telemóvel são, portanto, uma via plausível no futuro. No protótipo, o pagamento digital é simulado.</p>
+  <h3>3.4 Perguntas a fazer no terreno</h3>
+  <div class="grid3">
+    <div class="card"><h4>Ao dono da lavadora</h4><ul class="small">
+      <li>Postos, trabalhadores e horário reais</li>
+      <li>Serviços, preços e diferenças por tipo de viatura</li>
+      <li>Duração real de cada serviço por tipo de viatura</li>
+      <li>Aceita marcações? Como trata atrasos e faltas?</li>
+      <li>Custos por lavagem: água, energia, produtos, mão-de-obra</li>
+      <li>Partilharia dados com um banco? Em que condições?</li>
+    </ul></div>
+    <div class="card"><h4>Aos operadores e clientes</h4><ul class="small">
+      <li>Operador: smartphone, forma de pagamento, entregas sem pagamento</li>
+      <li>Cliente: tempo de espera, interesse em marcar horário</li>
+      <li>Cliente: que benefício o faria voltar?</li>
+      <li>Fotos do pátio (com autorização) para o pitch</li>
+    </ul></div>
+    <div class="card"><h4>A um banco (quando possível)</h4><ul class="small">
+      <li>Que informação lhe seria útil sobre um pequeno negócio?</li>
+      <li>Que formato (relatório, exportação, integração)?</li>
+      <li>Que requisitos legais, contratuais e de segurança se aplicam?</li>
+      <li>Pagaria pela solução? Em que modelo?</li>
+    </ul></div>
+  </div>
+</section>
+
+<!-- ================= 4 ================= -->
+<section id="c4" class="brk">
+  <div class="kicker">4 · Proposta de valor e partes interessadas</div>
+  <h2>Quem paga, quem usa e o que cada um ganha</h2>
+  <table>
+    <tr><th>Parte</th><th>Papel</th><th>Paga a solução?</th><th>Usa a plataforma?</th><th>Valor esperado (hipótese)</th></tr>
+    <tr><td><b>Instituição bancária</b></td><td>Cliente institucional</td><td>Hipótese principal <span class="st v">A validar</span></td><td>Sim, vertente Banco, com autorização</td><td>Informação estruturada e autorizada sobre a actividade de pequenos negócios; relação com novos comerciantes</td></tr>
+    <tr><td><b>Lavadora (dono/gestor)</b></td><td>Utilizadora principal</td><td>Por definir (D-15) <span class="st n">Pendente</span></td><td>Sim, gestão, painel e autorizações</td><td>Gestão da operação, conhecimento dos clientes, fidelização, histórico de actividade</td></tr>
+    <tr><td><b>Operador (lavador)</b></td><td>Utilizador operacional</td><td>Não</td><td>Sim, Pátio</td><td>Quadro simples; avisos automáticos ao cliente; registo claro de quem recebeu o quê</td></tr>
+    <tr><td><b>Cliente final</b></td><td>Cliente da lavadora</td><td>Não paga a plataforma (paga o serviço à lavadora)</td><td>Sim, conversa (simulada no protótipo)</td><td>Menos espera, marcações, progresso de fidelização visível</td></tr>
+    <tr><td><b>Equipa LavaJá Pass</b></td><td>Fornecedor</td><td>—</td><td>Administração</td><td>Receitas de licenças e serviços, se o modelo for validado (capítulo 6)</td></tr>
+  </table>
+  <h3>4.1 Proposta de valor por parte</h3>
+  <div class="grid2">
+    <div class="card"><h4>Para a lavadora</h4><ul class="small">
+      <li>Fila e marcações coordenadas pela capacidade real (postos e trabalhadores)</li>
+      <li>Preços por plano e classe de viatura, guardados em cada serviço</li>
+      <li>Recebimentos separados por origem: digital confirmado e numerário declarado por operador</li>
+      <li>Fidelização por cliente, auditável e sem cartões de papel</li>
+      <li>Controlo sobre o que é partilhado, com quem e durante quanto tempo</li>
+    </ul></div>
+    <div class="card"><h4>Para o banco <span class="st v">A validar</span></h4><ul class="small">
+      <li>Relatório de actividade com histórico, volume, frequência e evolução</li>
+      <li>Indicadores de qualidade e completude dos dados, com a origem de cada dado</li>
+      <li>Acesso limitado à finalidade autorizada e com registo de consultas</li>
+      <li>Um ponto de entrada para conhecer e servir pequenos comerciantes</li>
+    </ul></div>
+  </div>
+</section>
+
+<!-- ================= 5 ================= -->
+<section id="c5">
+  <div class="kicker">5 · Posicionamento estratégico</div>
+  <h2>Uma solução para bancos que começa nas lavadoras <span class="st d">Decidido</span></h2>
+  <p>O LavaJá Pass apresenta-se como uma solução tecnológica para instituições bancárias, que começa pela digitalização e organização da actividade de pequenas lavadoras de automóveis. Não se apresenta apenas como "uma app para lavagens".</p>
+  <h3>5.1 Porquê começar pelas lavadoras <span class="st v">A validar</span></h3>
+  <ul>
+    <li>O serviço é recorrente e frequente, o que gera um histórico com densidade suficiente em pouco tempo.</li>
+    <li>Cada serviço é uma unidade simples de registar: viatura, plano, preço, estado, pagamento.</li>
+    <li>São negócios muitas vezes informais e com muito numerário, onde a falta de registo pesa mais.</li>
+    <li>O caso do hackathon dá acesso a uma lavadora concreta e ao interesse do promotor.</li>
+  </ul>
+  <h3>5.2 Relação com o desafio do hackathon</h3>
+  <p>O desafio pede soluções para <b>aumentar o tráfego e a fidelização</b> de um car wash comunitário. A vertente Lavadora–Cliente responde directamente a isso (fila, marcações, fidelização, avisos). A vertente Lavadora–Banco explica porque é que esta solução interessa a uma instituição bancária. No pitch, deve abrir-se pelo desafio e só depois mostrar a vertente Banco (capítulo 19).</p>
+  <div class="do-dont">
+    <div class="card ok"><h4>Dizer</h4><ul class="small">
+      <li>"Organiza a actividade e torna-a legível, com autorização."</li>
+      <li>"Pode dar ao banco informação adicional para a sua análise."</li>
+      <li>"O digital confirmado e o numerário declarado aparecem separados."</li>
+      <li>"No protótipo, conversas e pagamentos são simulados."</li>
+      <li>"O modelo comercial é uma hipótese a validar num piloto."</li>
+    </ul></div>
+    <div class="card no"><h4>Não dizer</h4><ul class="small">
+      <li>"Garante acesso ao crédito."</li>
+      <li>"Prova a capacidade de reembolso."</li>
+      <li>"Substitui a avaliação de risco do banco."</li>
+      <li>"Já temos bancos interessados" (sem evidência)</li>
+      <li>"Integra com o WhatsApp e com pagamentos reais" (no protótipo)</li>
+    </ul></div>
+  </div>
+</section>
+
+<!-- ================= 6 ================= -->
+<section id="c6" class="brk">
+  <div class="kicker">6 · Modelo de negócio</div>
+  <h2>Hipóteses de receita e estrutura de custos</h2>
+  <div class="callout warn"><b>Tudo neste capítulo está por validar.</b> Não há preços, contratos, receitas nem compromissos de bancos. As receitas do banco com os seus serviços financeiros <b>não</b> são receitas do LavaJá Pass e aparecem em separado.</div>
+  <h3>6.1 Hipóteses de receita do LavaJá Pass <span class="st v">A validar</span></h3>
+  <table>
+    <tr><th>Fonte possível</th><th>Quem pagaria</th><th>Descrição</th><th>Prioridade</th></tr>
+    <tr><td>Licença ou subscrição institucional</td><td>Banco</td><td>Acesso à plataforma para um número de lavadoras, ou por período</td><td>Hipótese principal</td></tr>
+    <tr><td>Subscrição por lavadora activa</td><td>Banco (em nome das lavadoras)</td><td>Valor por lavadora que usa a plataforma no período</td><td>Alternativa</td></tr>
+    <tr><td>Implementação e integração</td><td>Banco</td><td>Configuração, integração com sistemas do banco, relatórios à medida</td><td>Complementar</td></tr>
+    <tr><td>Formação e acompanhamento</td><td>Banco</td><td>Integração e formação das lavadoras no terreno</td><td>Complementar</td></tr>
+    <tr><td>Suporte e manutenção</td><td>Banco</td><td>Níveis de serviço, suporte às lavadoras e ao banco</td><td>Complementar</td></tr>
+    <tr><td>Uso pela lavadora (sem banco)</td><td>Lavadora</td><td>Versão paga ou gratuita para a lavadora; ver D-15</td><td>Em aberto</td></tr>
+  </table>
+  <h3>6.2 Benefícios potenciais para os bancos <span class="st v">A validar</span></h3>
+  <p class="small">Estes benefícios geram receitas <b>para o banco</b> (contas, pagamentos, crédito, outros produtos), segundo os seus critérios. Não são receitas do LavaJá Pass e não devem ser somadas ao modelo de negócio da plataforma.</p>
+  <ul class="small">
+    <li>Informação estruturada e autorizada sobre a actividade de pequenos negócios</li>
+    <li>Canal de contacto com comerciantes ainda pouco servidos</li>
+    <li>Possível base para produtos ajustados à actividade (contas, recebimentos digitais, financiamento de equipamento), sempre sujeitos à análise do banco</li>
+  </ul>
+  <h3>6.3 Estrutura de custos (categorias, sem valores)</h3>
+  <table>
+    <tr><th>Categoria</th><th>Exemplos</th></tr>
+    <tr><td>Desenvolvimento e manutenção</td><td>Evolução do produto, correcções, segurança</td></tr>
+    <tr><td>Operação</td><td>Alojamento, cópias de segurança, monitorização</td></tr>
+    <tr><td>Implementação no terreno</td><td>Integração e formação das lavadoras, materiais (cartazes)</td></tr>
+    <tr><td>Suporte</td><td>Atendimento às lavadoras e às instituições</td></tr>
+    <tr><td>Integrações futuras</td><td>Mensagens (API oficial do WhatsApp) e pagamentos reais, ambos com custos por utilização</td></tr>
+    <tr><td>Conformidade</td><td>Aconselhamento jurídico, protecção de dados, auditorias</td></tr>
+  </table>
+  <h3>6.4 Perguntas a validar com bancos</h3>
+  <ol class="small">
+    <li>A informação proposta (capítulo 9) é útil? Que partes, e para que decisões?</li>
+    <li>Que formato e frequência: relatório periódico, consulta, exportação ou integração?</li>
+    <li>Que requisitos legais, contratuais, de segurança e de consentimento exigem?</li>
+    <li>Estariam dispostos a pagar? Em que modelo e com que critérios de sucesso?</li>
+    <li>Participariam num piloto? Com que compromissos de parte a parte?</li>
+  </ol>
+</section>
+
+<!-- ================= 7 ================= -->
+<section id="c7" class="brk">
+  <div class="kicker">7 · Arquitectura funcional</div>
+  <h2>Um ecossistema, duas vertentes, permissões diferentes <span class="st d">Decidido</span></h2>
+  <p>Não há um sistema separado para cada vertente. As duas usam a mesma base de dados e as mesmas regras; o que muda são as funcionalidades, os perfis e as permissões. A vertente Banco só vê o que a lavadora autorizou.</p>
+  <div style="margin:12px 0 18px"><svg viewBox="0 0 680 330" width="100%" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Arquitectura funcional: duas vertentes sobre uma base comum" style="font-family:Inter,sans-serif;max-width:720px;display:block;margin:0 auto"><defs><marker id="fa" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#5E6873"/></marker></defs><rect x="0" y="0" width="680" height="330" rx="14" fill="#F5F6F8"/><rect x="20" y="16" width="300" height="128" rx="11" fill="#fff" stroke="#1E7B47" stroke-width="1.8"/><text x="170" y="38" text-anchor="middle" font-size="12.5" font-weight="700" fill="#16191D">Vertente Lavadora–Cliente</text><rect x="34" y="50" width="272" height="18" rx="5" fill="#F5F6F8"/><text x="170" y="63" text-anchor="middle" font-size="10.5" font-weight="400" fill="#2A2F36">Simulador do cliente (conversa)</text><rect x="34" y="72" width="272" height="18" rx="5" fill="#F5F6F8"/><text x="170" y="85" text-anchor="middle" font-size="10.5" font-weight="400" fill="#2A2F36">Pátio do operador</text><rect x="34" y="94" width="272" height="18" rx="5" fill="#F5F6F8"/><text x="170" y="107" text-anchor="middle" font-size="10.5" font-weight="400" fill="#2A2F36">Painel e Catálogo do gestor</text><rect x="34" y="116" width="272" height="18" rx="5" fill="#F5F6F8"/><text x="170" y="129" text-anchor="middle" font-size="10.5" font-weight="400" fill="#2A2F36">Marcações e capacidade</text><rect x="360" y="16" width="300" height="128" rx="11" fill="#fff" stroke="#1F5FA8" stroke-width="1.8"/><text x="510" y="38" text-anchor="middle" font-size="12.5" font-weight="700" fill="#16191D">Vertente Lavadora–Banco</text><rect x="374" y="50" width="272" height="18" rx="5" fill="#F5F6F8"/><text x="510" y="63" text-anchor="middle" font-size="10.5" font-weight="400" fill="#2A2F36">Autorizações da lavadora</text><rect x="374" y="72" width="272" height="18" rx="5" fill="#F5F6F8"/><text x="510" y="85" text-anchor="middle" font-size="10.5" font-weight="400" fill="#2A2F36">Relatório de actividade</text><rect x="374" y="94" width="272" height="18" rx="5" fill="#F5F6F8"/><text x="510" y="107" text-anchor="middle" font-size="10.5" font-weight="400" fill="#2A2F36">Registo de acessos</text><rect x="374" y="116" width="272" height="18" rx="5" fill="#F5F6F8"/><text x="510" y="129" text-anchor="middle" font-size="10.5" font-weight="400" fill="#2A2F36">Revogação</text><line x1="170" y1="146" x2="170" y2="236" stroke="#5E6873" stroke-width="1.4" marker-start="url(#fa)" marker-end="url(#fa)"/><text x="178" y="196" text-anchor="start" font-size="9.5" font-weight="400" fill="#5E6873">regista e consulta</text><line x1="510" y1="236" x2="510" y2="146" stroke="#1F5FA8" stroke-width="1.4" stroke-dasharray="4 3" marker-end="url(#fa)"/><text x="518" y="196" text-anchor="start" font-size="9.5" font-weight="400" fill="#1F5FA8">só agregados autorizados</text><rect x="20" y="168" width="640" height="36" rx="9" fill="#FCE8EB" stroke="#C8102E" stroke-width="1.6"/><text x="340" y="190" text-anchor="middle" font-size="11.5" font-weight="700" fill="#16191D">Perfis · permissões · consentimentos · autorizações · auditoria</text><rect x="20" y="238" width="640" height="76" rx="11" fill="#fff" stroke="#16191D" stroke-width="1.6"/><text x="340" y="262" text-anchor="middle" font-size="12.5" font-weight="700" fill="#16191D">Base comum (uma só base de dados, as mesmas regras)</text><text x="340" y="284" text-anchor="middle" font-size="10.5" font-weight="400" fill="#5E6873">clientes · viaturas · catálogo · serviços · marcações · pagamentos · fidelização</text><text x="340" y="302" text-anchor="middle" font-size="10" font-weight="400" fill="#5E6873">cada dado com a sua origem: registado · declarado · confirmado (simulado) · calculado · estimado</text></svg></div>
+  <h3>7.1 Perfis e permissões <span class="st p">Proposto</span></h3>
+  <table class="tbl-sm">
+    <tr><th>Perfil</th><th>Vê</th><th>Pode fazer</th><th>Não pode</th></tr>
+    <tr><td><b>Cliente final</b></td><td>As suas viaturas, serviços, marcações e fidelização</td><td>Registar serviço, marcar, aceitar ou recusar propostas de horário, pagar (simulado)</td><td>Ver dados de outros clientes</td></tr>
+    <tr><td><b>Operador</b></td><td>Fila, marcações do dia e serviços activos</td><td>Mudar estados, declarar numerário em seu nome, registar serviços</td><td>Alterar preços, ver relatórios bancários, autorizar partilhas</td></tr>
+    <tr><td><b>Gestor da lavadora</b></td><td>Toda a actividade da sua lavadora</td><td>Catálogo, preços, capacidade, autorizar e revogar partilhas, ver o registo de acessos</td><td>Alterar o histórico de serviços já registados</td></tr>
+    <tr><td><b>Analista bancário</b></td><td>Só relatórios das lavadoras que autorizaram a sua instituição, no âmbito e período autorizados</td><td>Consultar e exportar o relatório autorizado</td><td>Ver dados pessoais dos clientes finais; alterar dados</td></tr>
+    <tr><td><b>Administrador da plataforma</b></td><td>Configuração técnica</td><td>Gerir lavadoras e instituições, repor a demonstração</td><td>Consultar dados de negócio sem necessidade justificada</td></tr>
+  </table>
+  <div class="callout red"><b>Decisão arquitectural necessária (D-16).</b> O protótipo actual não tem autenticação: todas as interfaces estão abertas a quem acede ao servidor. Para aplicar estes perfis é preciso decidir entre: (a) manter a vertente Banco apenas como demonstração, com aviso explícito; (b) acrescentar uma autenticação simples por perfil no protótipo. Até lá, a matriz acima é <b>proposta</b> e o protótipo não deve ser usado com dados reais.</div>
+</section>
+
+<!-- ================= 8 ================= -->
+<section id="c8" class="brk">
+  <div class="kicker">8 · Solução Lavadora–Cliente</div>
+  <h2>Gestão da operação e experiência do cliente</h2>
+  <table>
+    <tr><th>Funcionalidade</th><th>Descrição</th><th>Estado</th><th>Ecrã</th></tr>
+    <tr><td>Clientes</td><td>Identificados pelo telefone normalizado; único por cliente</td><td><span class="st d">Decidido</span></td><td>M2, M8</td></tr>
+    <tr><td>Viaturas</td><td>Várias por cliente; matrícula normalizada; classe A, B ou C</td><td><span class="st d">Decidido</span></td><td>M3, M8</td></tr>
+    <tr><td>Classificação configurável</td><td>Classes por critérios operacionais (dimensões, esforço, custo)</td><td><span class="st d">Decidido</span></td><td>M14</td></tr>
+    <tr><td>Serviços e preços</td><td>Planos com preço por classe; retrato do preço em cada serviço</td><td><span class="st d">Decidido</span></td><td>M14</td></tr>
+    <tr><td>Fila sem marcação</td><td>Entrada por ordem de chegada, com estimativas</td><td><span class="st d">Decidido</span></td><td>M3, M7</td></tr>
+    <tr><td>Marcações</td><td>Horários confirmados, coordenados com a fila pela capacidade</td><td><span class="st p">Proposto</span> · políticas <span class="st n">Pendente</span></td><td>M4, M7, M10</td></tr>
+    <tr><td>Estimativas</td><td>Início e conclusão previstos, sempre apresentados como estimativas</td><td><span class="st d">Decidido</span></td><td>M3, M7</td></tr>
+    <tr><td>Pagamentos</td><td>Digital simulado confirmado ou numerário declarado por operador</td><td><span class="st d">Decidido</span></td><td>M5, M9</td></tr>
+    <tr><td>Histórico</td><td>Por matrícula, com valores guardados em cada serviço</td><td><span class="st d">Decidido</span></td><td>M13</td></tr>
+    <tr><td>Fidelização</td><td>Conta única por cliente, progresso por classe</td><td><span class="st d">Decidido</span> · regras <span class="st n">Pendente</span></td><td>M6</td></tr>
+    <tr><td>Indicadores operacionais</td><td>Calculados a partir dos registos</td><td><span class="st d">Decidido</span></td><td>M11, M12</td></tr>
+    <tr><td>Consulta pelo cliente</td><td>Estado, histórico e fidelização na conversa</td><td><span class="st d">Decidido</span></td><td>M5, M6</td></tr>
+    <tr><td>Campanhas</td><td>Reservado para avaliação futura; sem envios automáticos</td><td><span class="st d">Decidido</span> (reservado)</td><td>—</td></tr>
+  </table>
+  <h3>8.1 Jornada do cliente</h3>
+  <ol class="steps">
+    <li><b>Abre a conversa</b> (cartaz com QR no pátio; no protótipo, o simulador com o número do cliente). Se é novo, indica o nome e escolhe os consentimentos. <span class="scr">M1 · M2</span></li>
+    <li><b>Sem marcação:</b> escolhe a viatura e o plano (preço da classe da viatura) e recebe posição e estimativa. <span class="scr">M3</span></li>
+    <li><b>Com marcação:</b> escolhe dia e plano, vê horários disponíveis e recebe a confirmação. Se surgir um horário mais cedo, o sistema <b>propõe</b> e o cliente aceita ou recusa. <span class="scr">M4</span></li>
+    <li><b>É avisado</b> quando o serviço começa e quando está pronto; paga (simulado) ou paga em numerário ao operador. <span class="scr">M5</span></li>
+    <li><b>Concluído e pago:</b> o progresso de fidelização da classe avança e o cliente vê o seu cartão. <span class="scr">M5 · M6</span></li>
+  </ol>
+  <h3>8.2 Jornada do operador</h3>
+  <ol class="steps">
+    <li><b>Abre o Pátio</b>: marcações do dia, fila, em execução, pronto, e estado do pagamento em cada cartão. <span class="scr">M7</span></li>
+    <li><b>Regista</b> clientes sem telemóvel (telefone, matrícula, classe, plano). <span class="scr">M8</span></li>
+    <li><b>Inicia num posto livre</b>, marca como pronto e regista a chegada de clientes com marcação. <span class="scr">M7</span></li>
+    <li><b>Declara numerário</b> em seu nome, com o valor exacto e confirmação. <span class="scr">M9</span></li>
+    <li><b>Conclui a entrega.</b> Entregar sem pagamento exige confirmação explícita e não conta para a fidelização. <span class="scr">M7</span></li>
+  </ol>
+  <h3>8.3 Jornada do gestor</h3>
+  <ol class="steps">
+    <li><b>Painel:</b> serviços por estado, recebimentos separados por origem, valor por receber (que não é receita), dias fracos. <span class="scr">M11</span></li>
+    <li><b>Viaturas por classe</b> e <b>histórico por matrícula</b>. <span class="scr">M12 · M13</span></li>
+    <li><b>Catálogo e capacidade:</b> preços por classe, postos, trabalhadores e horários. <span class="scr">M10 · M14</span></li>
+    <li><b>Partilha com bancos:</b> autoriza, define âmbito e prazo, revoga e consulta quem acedeu. <span class="scr">M15</span></li>
+  </ol>
+</section>
+
+<!-- ================= 9 ================= -->
+<section id="c9" class="brk">
+  <div class="kicker">9 · Solução Lavadora–Banco</div>
+  <h2>Informação estruturada, autorizada e com origem identificada</h2>
+  <h3>9.1 Princípios <span class="st d">Decidido</span></h3>
+  <ul>
+    <li>A partilha só acontece com <b>autorização explícita da lavadora</b>, para uma instituição, com finalidade, âmbito e prazo definidos, e pode ser revogada.</li>
+    <li>Cada dado indica a sua <b>origem</b> (registado, declarado, confirmado em simulação, calculado ou estimado). Dados declarados nunca aparecem como comprovados.</li>
+    <li><b>Minimização:</b> o banco vê indicadores agregados da lavadora, não telefones nem nomes dos clientes finais.</li>
+    <li>O relatório é <b>informação adicional</b>. Não é uma pontuação de crédito, não demonstra capacidade de reembolso e não substitui a avaliação de risco do banco.</li>
+    <li>Todas as consultas ficam registadas: quem, quando, o quê e ao abrigo de que autorização.</li>
+  </ul>
+  <h3>9.2 Funcionalidades</h3>
+  <table>
+    <tr><th>Funcionalidade</th><th>Descrição</th><th>Estado</th></tr>
+    <tr><td>Autorização de partilha</td><td>A lavadora autoriza uma instituição, com finalidade, âmbito, período de dados e validade; revogável</td><td><span class="st d">Decidido</span> (princípio) · <span class="st p">Proposto</span> (detalhe)</td></tr>
+    <tr><td>Histórico de actividade</td><td>Serviços concluídos ao longo do tempo, por semana e por mês</td><td><span class="st p">Proposto</span></td></tr>
+    <tr><td>Volume e frequência</td><td>Serviços por período, por dia da semana, por classe e plano; clientes recorrentes (agregado)</td><td><span class="st p">Proposto</span></td></tr>
+    <tr><td>Indicadores financeiros disponíveis</td><td>Recebimentos por origem; reembolsos; valor por receber</td><td><span class="st p">Proposto</span></td></tr>
+    <tr><td>Qualidade e completude dos dados</td><td>Indicadores da secção 9.4</td><td><span class="st p">Proposto</span></td></tr>
+    <tr><td>Evolução da actividade</td><td>Comparação entre períodos, sem extrapolações</td><td><span class="st p">Proposto</span></td></tr>
+    <tr><td>Origem dos dados</td><td>Cada valor com a sua origem (capítulo 13)</td><td><span class="st d">Decidido</span></td></tr>
+    <tr><td>Relatórios</td><td>Relatório de actividade para consulta e exportação (formato a definir)</td><td><span class="st p">Proposto</span></td></tr>
+    <tr><td>Indicadores de maturidade operacional</td><td>Só depois de definidos e validados (D-17); nunca combinados numa pontuação</td><td><span class="st n">Pendente</span></td></tr>
+    <tr><td>Registo de acessos e auditoria</td><td>Registo de cada consulta e exportação, visível para a lavadora</td><td><span class="st d">Decidido</span> (princípio)</td></tr>
+  </table>
+  <h3>9.3 Conteúdo proposto do relatório de actividade <span class="st p">Proposto</span></h3>
+  <ol class="small">
+    <li><b>Identificação:</b> lavadora, período coberto, data de emissão, autorização em vigor (referência, finalidade, validade).</li>
+    <li><b>Actividade:</b> serviços concluídos por semana e por mês; distribuição por dia da semana, por classe e por plano.</li>
+    <li><b>Recebimentos por origem:</b> digital simulado confirmado; numerário declarado por operador; reembolsos; valor por receber. Sempre em linhas separadas.</li>
+    <li><b>Clientes (agregado):</b> número de clientes distintos e proporção de clientes que regressaram no período.</li>
+    <li><b>Qualidade dos dados:</b> indicadores da secção 9.4.</li>
+    <li><b>Notas:</b> limitações dos dados, lacunas e aviso de que não é uma avaliação de crédito.</li>
+  </ol>
+  <h3>9.4 Qualidade, completude e consistência dos dados <span class="st p">Proposto</span></h3>
+  <table class="tbl-sm">
+    <tr><th>Indicador</th><th>Definição proposta</th></tr>
+    <tr><td>Antiguidade do histórico</td><td>Dias desde o primeiro serviço registado</td></tr>
+    <tr><td>Dias com registo</td><td>Dias de funcionamento com pelo menos um serviço registado ÷ dias de funcionamento declarados</td></tr>
+    <tr><td>Serviços com pagamento registado</td><td>Serviços concluídos com pagamento confirmado ou declarado ÷ serviços concluídos</td></tr>
+    <tr><td>Peso do digital confirmado</td><td>Valor digital confirmado ÷ valor total registado (confirmado + declarado)</td></tr>
+    <tr><td>Entregas sem pagamento</td><td>Serviços concluídos sem pagamento ÷ serviços concluídos</td></tr>
+    <tr><td>Cancelamentos e reembolsos</td><td>Proporções no período</td></tr>
+    <tr><td>Correcções</td><td>Número de correcções ou reconciliações registadas (capítulo 13)</td></tr>
+  </table>
+  <p class="small">São indicadores descritivos para o banco interpretar; o LavaJá Pass não os converte numa nota nem numa recomendação.</p>
+  <h3>9.5 Jornadas</h3>
+  <ol class="steps">
+    <li><b>A lavadora autoriza</b> uma instituição: escolhe finalidade, âmbito (que secções do relatório), período de dados e validade. <span class="scr">M15</span></li>
+    <li><b>O analista consulta</b> o relatório dentro do âmbito autorizado; a consulta fica registada. <span class="scr">M16</span></li>
+    <li><b>A lavadora vê</b> quem acedeu e quando, e pode <b>revogar</b> a autorização. A partir daí não há novas consultas. <span class="scr">M15</span></li>
+  </ol>
+  <h3>9.6 Âmbito no protótipo <span class="st n">Pendente</span></h3>
+  <p>Proposta: o protótipo mostra a autorização, o relatório e o registo de acessos com dados de demonstração, com um aviso visível de que não existe autenticação. A decisão entre esta opção e uma autenticação simples por perfil é a <b>D-16</b>.</p>
+</section>
+
+<!-- ================= 10 ================= -->
+<section id="c10" class="brk">
+  <div class="kicker">10 · Regras de negócio</div>
+  <h2>Regras que o servidor aplica</h2>
+  <p class="lead">Todas as regras vivem no backend. A interface só pede acções; nunca decide estados, preços, pagamentos ou benefícios.</p>
+
+  <h3>10.1 Clientes e viaturas <span class="st d">Decidido</span></h3>
+  <table class="tbl-sm">
+    <tr><th>Regra</th><th>Detalhe</th></tr>
+    <tr><td>Telefone</td><td>Normalizado para <code>2588XXXXXXXX</code> (móvel de Moçambique, prefixos 82–87). Aceita "84 123 4567", "+258 84 123 4567" ou "258841234567". É identificador de negócio, único por cliente, mas a chave primária é interna.</td></tr>
+    <tr><td>Várias viaturas</td><td>Um cliente pode ter várias viaturas; cada viatura pertence a um cliente e tem uma classe actual.</td></tr>
+    <tr><td>Matrícula</td><td>Normalizada (maiúsculas, sem espaços nem hífens). A unicidade aplica-se ao par <b>jurisdição + matrícula</b> (por omissão MZ). Uma matrícula registada noutro cliente é recusada; a transferência de viaturas fica fora do protótipo.</td></tr>
+    <tr><td>Reclassificação</td><td>Permitida; cada serviço guarda a classe usada no momento.</td></tr>
+  </table>
+
+  <h3>10.2 Classes e catálogo</h3>
+  <table>
+    <tr><th>Classe</th><th>Proposta operacional (configurável)</th><th>Estado</th></tr>
+    <tr><td><b>A</b></td><td>Viaturas ligeiras de passageiros, como hatchbacks e sedans</td><td><span class="st d">Decidido</span></td></tr>
+    <tr><td><b>B</b></td><td>Viaturas de maiores dimensões, como SUVs, 4x4 e determinadas carrinhas de caixa aberta (pickups)</td><td><span class="st d">Decidido</span></td></tr>
+    <tr><td><b>C</b></td><td>Viaturas de maiores dimensões ou comerciais ligeiras, como vans e minibus</td><td><span class="st d">Decidido</span></td></tr>
+  </table>
+  <ul class="small">
+    <li><b>Exactamente três classes</b> na versão inicial; não existe Classe D <span class="st d">Decidido</span>. A base de dados recusa outros códigos e não há rota para criar classes.</li>
+    <li>São propostas operacionais do protótipo, não uma classificação oficial. A classificação depende de dimensões, esforço e custo do serviço, e não do nome comercial. Os critérios exactos para pickups são a <b>D-21</b> <span class="st n">Pendente</span>.</li>
+    <li>Motociclos, pesados e veículos especiais ficam fora do catálogo inicial (decisão comercial futura).</li>
+    <li>Um serviço só é aceite se o plano estiver <b>activo</b> e tiver <b>preço para a classe</b> da viatura <span class="st d">Decidido</span>.</li>
+    <li>Cada serviço guarda o <b>retrato</b> do que foi aplicado: classe, plano, preço base, desconto, benefício de fidelização, preço final e moeda. Alterar o catálogo não muda o histórico <span class="st d">Decidido</span>.</li>
+    <li>Valores monetários em <b>centavos inteiros</b> (450,00 MZN = 45000) <span class="st d">Decidido</span>.</li>
+  </ul>
+  <table class="tbl-sm">
+    <tr><th>Plano (demonstração)</th><th>Duração base</th><th class="num">A</th><th class="num">B</th><th class="num">C</th><th>Estado</th></tr>
+    <tr><td>Simples · exterior</td><td>30 min</td><td class="num">250,00</td><td class="num">350,00</td><td class="num">450,00</td><td>Activo</td></tr>
+    <tr><td>Completa · exterior e interior</td><td>50 min</td><td class="num">450,00</td><td class="num">600,00</td><td class="num">750,00</td><td>Activo</td></tr>
+    <tr><td>Completa + Motor</td><td>75 min</td><td class="num">700,00</td><td class="num">900,00</td><td class="num">1.100,00</td><td>Activo</td></tr>
+    <tr><td>Polimento</td><td>120 min</td><td class="num">1.500,00</td><td class="num">2.000,00</td><td class="num">sem preço</td><td>Indisponível</td></tr>
+  </table>
+  <p class="small">Valores em MZN, <b>ilustrativos</b>, só para a demonstração <span class="st v">A validar</span> (D-19). O Polimento está indisponível e sem preço para a classe C de propósito: demonstra as duas recusas. A duração por classe é a D-20.</p>
+
+  <h3>10.3 Ciclo de vida do serviço <span class="st d">Decidido</span></h3>
+  <div class="flow"><span>queued · em fila</span><i>→ iniciar (posto) →</i><span>in_progress · em execução</span><i>→ pronto →</i><span>ready · pronto</span><i>→ concluir →</i><span>completed · concluído</span></div>
+  <div class="flow"><span>queued · em fila</span><i>→ cancelar (motivo) →</i><span>cancelled · cancelado</span></div>
+  <table class="tbl-sm">
+    <tr><th>Transição</th><th>Condições</th></tr>
+    <tr><td>queued → in_progress</td><td>Posto indicado e livre (ocupado = em execução ou pronto)</td></tr>
+    <tr><td>in_progress → ready</td><td>O cliente é avisado</td></tr>
+    <tr><td>ready → completed</td><td>Pagamento <code>confirmed</code> ou <code>declared</code>, ou valor final 0; sem pagamento, só com confirmação explícita (<code>allowUnpaid</code>), que fica registada</td></tr>
+    <tr><td>queued → cancelled</td><td>Motivo obrigatório, sem pagamento efectivo; devolve o benefício de fidelização, se usado</td></tr>
+    <tr><td>completed, cancelled</td><td>Estados finais: um serviço cancelado não volta a um estado activo</td></tr>
+  </table>
+  <p class="small">Repetir o pedido para o estado actual não tem efeitos. Todas as transições ficam numa tabela de auditoria (data, estado anterior e novo, autor, motivo). A relação entre marcações e serviços está no capítulo 12.</p>
+
+  <h3>10.4 Pagamentos simulados <span class="st d">Decidido</span></h3>
+  <table class="tbl-sm">
+    <tr><th>Estado</th><th>Significado</th></tr>
+    <tr><td><code>pending</code></td><td>Pagamento digital iniciado, por confirmar</td></tr>
+    <tr><td><code>confirmed</code></td><td>Pagamento digital <b>simulado</b> confirmado pelo mecanismo de simulação (não é uma transacção real)</td></tr>
+    <tr><td><code>declared</code></td><td>Numerário <b>declarado</b> por um operador identificado, com valor e data</td></tr>
+    <tr><td><code>failed</code></td><td>Simulação falhada, ou pagamento pendente substituído por numerário</td></tr>
+    <tr><td><code>refunded</code></td><td>Pagamento confirmado ou declarado que foi reembolsado, com motivo e autor</td></tr>
+  </table>
+  <ul class="small">
+    <li>O valor tem de ser igual ao valor final em dívida; o pagamento tem de pertencer ao serviço indicado.</li>
+    <li>Chave de idempotência obrigatória; no máximo um pagamento pendente e um efectivo por serviço (índices únicos parciais).</li>
+    <li>Pagar, concluir, atribuir progresso de fidelização e reembolsar decorrem numa transacção da base de dados.</li>
+  </ul>
+
+  <h3>10.5 Contagens <span class="st d">Decidido</span></h3>
+  <p><b>Serviços concluídos</b> = apenas o estado <code>completed</code>. Os serviços em fila, em execução, prontos ou cancelados, e as marcações, não contam. As <b>lavagens elegíveis para fidelização</b> são uma contagem separada: exigem também pagamento digital simulado confirmado ou numerário declarado explicitamente.</p>
+
+  <h3>10.6 Simulador e campanhas <span class="st d">Decidido</span></h3>
+  <ul class="small">
+    <li>O simulador de WhatsApp Web tem um endereço por número (<code>/simulador/whatsapp/258841234567</code>); as conversas ficam guardadas na base, isoladas por número e por ordem cronológica estável. Não há envio real de mensagens nem IA paga.</li>
+    <li>O módulo de campanhas fica reservado para avaliação futura: sem campanhas automáticas, envios em massa ou agendamentos nesta versão.</li>
+  </ul>
+</section>
+
+<!-- ================= 11 ================= -->
+<section id="c11">
+  <div class="kicker">11 · Programa de fidelização</div>
+  <h2>Uma conta por cliente, progresso por classe, regras por fechar</h2>
+  <h3>11.1 O que está decidido <span class="st d">Decidido</span></h3>
+  <ul>
+    <li>A fidelização está associada ao <b>cliente</b>, não exclusivamente à viatura: uma única conta, com progresso <b>separado por classe</b> (A, B, C).</li>
+    <li>Uma lavagem só conta para a fidelização se estiver <code>completed</code> <b>e</b> tiver pagamento digital simulado confirmado ou numerário declarado explicitamente pelo operador.</li>
+    <li>Cada atribuição ou utilização fica num <b>livro de movimentos</b> com referência única por serviço: repetir um pedido nunca duplica progresso nem benefícios. O saldo nunca é negativo e o progresso mostrado resulta sempre dos movimentos.</li>
+    <li>Um benefício de uma classe não pode ser usado noutra classe.</li>
+  </ul>
+  <h3>11.2 Proposta de progressão por níveis <span class="st p">Proposto</span></h3>
+  <table>
+    <tr><th>Nível</th><th>Benefício proposto</th><th>Benefício nominal</th></tr>
+    <tr><td><b>Nível 1</b></td><td>1 lavagem gratuita por cada 10 lavagens</td><td>1 em 10</td></tr>
+    <tr><td><b>Nível 2</b></td><td>2 lavagens gratuitas por cada 10 lavagens</td><td>2 em 10</td></tr>
+    <tr><td><b>Nível 3</b></td><td>3 lavagens gratuitas por cada 10 lavagens</td><td>3 em 10</td></tr>
+  </table>
+  <h3>11.3 Ambiguidade na passagem de nível <span class="st n">Pendente</span> · D-01</h3>
+  <p>A regra discutida diz que se sobe de nível "depois de completar dez ciclos". Lida à letra, um ciclo são 10 lavagens; dez ciclos são <b>100 lavagens</b> para passar de nível, o que pode tornar a progressão excessivamente longa. <b>Esta ambiguidade não está resolvida.</b> Alternativas para decisão:</p>
+  <table class="tbl-sm">
+    <tr><th>Alternativa</th><th>Regra</th><th>Lavagens até ao Nível 2 / Nível 3</th><th>Efeito provável</th></tr>
+    <tr><td><b>A · Literal</b></td><td>10 ciclos completos (100 lavagens) por nível</td><td>100 / 200</td><td>Quase ninguém sobe de nível; os níveis 2 e 3 tornam-se simbólicos</td></tr>
+    <tr><td><b>B · Um ciclo por nível</b></td><td>Sobe após cada ciclo completo</td><td>10 / 20</td><td>Progressão rápida; o custo cresce cedo (D-07)</td></tr>
+    <tr><td><b>C · N ciclos configurável</b></td><td>Sobe após N ciclos (N a decidir)</td><td>10×N / 20×N</td><td>Equilíbrio ajustável com os dados do piloto</td></tr>
+    <tr><td><b>D · Frequência num período</b></td><td>Nível segundo as lavagens num período móvel (ex.: 12 meses)</td><td>Depende dos limiares</td><td>Premeia a regularidade; exige regras de descida de nível</td></tr>
+  </table>
+  <p class="small">Em todas as alternativas há que decidir também se o nível é <b>por classe ou por cliente</b> (D-04) e se pode descer.</p>
+  <h3>11.4 Outras regras a definir <span class="st n">Pendente</span></h3>
+  <table class="tbl-sm">
+    <tr><th>ID</th><th>Questão</th></tr>
+    <tr><td class="idc">D-02</td><td>O benefício é uma <b>lavagem gratuita</b> (de que plano?) ou um <b>crédito com limite de valor</b> por classe?</td></tr>
+    <tr><td class="idc">D-03</td><td>Um serviço gratuito conta para o progresso seguinte?</td></tr>
+    <tr><td class="idc">D-04</td><td>Como se contabilizam as lavagens por classe e se o nível é por classe ou por cliente</td></tr>
+    <tr><td class="idc">D-05</td><td>Tratamento de cancelamentos e reembolsos (proposta na secção 11.6)</td></tr>
+    <tr><td class="idc">D-06</td><td>Os benefícios acumulam-se com outras promoções (ex.: a proposta de carimbo a dobrar em dias fracos)?</td></tr>
+    <tr><td class="idc">D-07</td><td>Como se calcula o custo real de cada benefício (secção 11.5)</td></tr>
+    <tr><td class="idc">D-08</td><td>Que controlos adicionais contra registos duplicados ou fraudulentos (secção 13.3)</td></tr>
+  </table>
+  <h3>11.5 Sustentabilidade: como avaliar o custo <span class="st v">A validar</span></h3>
+  <p>As percentagens nominais ("1 em 10", "3 em 10") <b>não provam</b> que o programa é sustentável. O custo de um benefício depende do serviço e da capacidade. Proposta de método:</p>
+  <ul class="small">
+    <li><b>Custo variável do serviço</b> (por plano e classe): água + energia + produtos + mão-de-obra directa.</li>
+    <li><b>Custo de capacidade:</b> se o serviço gratuito ocupa um posto que estaria a servir um cliente pagante, perde-se essa margem; se ocupa capacidade parada, este custo é menor.</li>
+    <li><b>Margem por serviço</b> = preço − custo variável. O benefício só é sustentável se a margem adicional das visitas induzidas o compensar.</li>
+    <li><b>Dados a recolher:</b> custos por plano e classe, ocupação por dia e hora, frequência de retorno antes e depois do programa (piloto, capítulo 18).</li>
+  </ul>
+  <div class="callout warn">O Nível 3 ("3 em 10") tem um benefício nominal elevado. Não deve ser activado sem a análise de custos acima (D-07) e sem a decisão D-01.</div>
+  <h3>11.6 Implementação no protótipo <span class="st p">Proposto</span></h3>
+  <ul class="small">
+    <li><b>Motor de fidelização parametrizável:</b> tamanho do ciclo (proposto 10), benefícios por ciclo em cada nível, regra de passagem de nível (alternativas A–D), tipo de benefício (gratuito ou crédito, com valor máximo por classe), se o serviço gratuito conta e se acumula com promoções. Nenhum destes parâmetros fica fixo no código.</li>
+    <li><b>Cancelamento</b> de um serviço que usou benefício: o benefício é devolvido (movimento de devolução com referência única).</li>
+    <li><b>Reembolso</b> de um serviço que contou para o progresso: o progresso é revertido se ainda existir; se já foi consumido num benefício, regista-se uma "reversão não aplicada" para auditoria, sem saldo negativo.</li>
+    <li>Na demonstração, os parâmetros por omissão serão os que a equipa escolher depois de decidir D-01 e D-02, e aparecem na interface como <b>parâmetros de demonstração, por validar</b>.</li>
+  </ul>
+  <p class="small">Nota de versão: a v2 usava, para demonstração, 5 carimbos e um crédito fixo por classe (A 250, B 350, C 450 MZN). Esses valores deixam de ser a referência: passam a ser só um exemplo do modo "crédito com limite" da D-02.</p>
+</section>
+
+<!-- ================= 12 ================= -->
+<section id="c12" class="brk">
+  <div class="kicker">12 · Filas, capacidade e marcações</div>
+  <h2>Dois fluxos, uma capacidade</h2>
+  <h3>12.1 Fluxos <span class="st d">Decidido</span></h3>
+  <div class="grid2">
+    <div class="card"><h4>Sem marcação (fila)</h4><p class="small">O cliente chega e entra na fila. A posição e a estimativa são recalculadas a cada mudança no pátio.</p></div>
+    <div class="card"><h4>Com marcação</h4><p class="small">O cliente marca um horário. Depois de confirmado, esse horário fica reservado na capacidade da lavadora.</p></div>
+  </div>
+  <p>Os dois fluxos são coordenados por um <b>mecanismo de gestão de capacidade</b> <span class="st d">Decidido</span>.</p>
+  <h3>12.2 Gestão de capacidade <span class="st p">Proposto</span></h3>
+  <ul class="small">
+    <li><b>Capacidade</b> num intervalo = postos de lavagem disponíveis, limitados pelos trabalhadores disponíveis, descontando pausas e indisponibilidades (avarias, ausências).</li>
+    <li>As <b>marcações confirmadas</b> ocupam blocos de tempo (duração estimada + margem de segurança) num posto.</li>
+    <li>A <b>fila sem marcação</b> preenche a capacidade livre entre marcações. Pode reservar-se uma parte da capacidade para clientes sem marcação (D-12).</li>
+    <li>A cada evento (início, fim, atraso, cancelamento, avaria) as estimativas são recalculadas.</li>
+  </ul>
+  <h3>12.3 Previsão do atendimento <span class="st p">Proposto</span></h3>
+  <p>Sempre que houver dados suficientes, a previsão considera: tipo de serviço; classe da viatura; duração estimada; postos e trabalhadores disponíveis; serviços em execução; marcações confirmadas; pausas e indisponibilidades; e uma margem de segurança para atrasos. A previsão aparece sempre como <b>estimativa</b>, nunca como garantia.</p>
+  <p class="small">No protótipo actual, a estimativa da fila usa a duração do plano e os postos ocupados. A duração por classe (D-20), os trabalhadores e as pausas entram quando houver dados.</p>
+  <h3>12.4 Regra obrigatória sobre antecipação <span class="st d">Decidido</span></h3>
+  <div class="callout red"><b>Uma marcação confirmada para as 15h00 não é antecipada automaticamente para as 12h00</b>, mesmo que haja cancelamentos ou capacidade livre. O sistema pode <b>propor</b> um horário anterior; a alteração só acontece se o cliente <b>aceitar</b>. Sem resposta, mantém-se o horário original.</div>
+  <div class="flow"><span>Capacidade livre antes do horário</span><i>→</i><span>Proposta ao cliente (com prazo de resposta)</span><i>→ aceita →</i><span>Remarcada</span><i>· recusa ou sem resposta →</i><span>Mantém 15h00</span></div>
+  <h3>12.5 Estados da marcação <span class="st p">Proposto</span></h3>
+  <div class="flow"><span>requested</span><i>→</i><span>confirmed</span><i>→ chegada →</i><span>checked_in</span><i>→ cria serviço →</i><span>serviço em fila</span></div>
+  <div class="flow"><span>confirmed</span><i>→</i><span>rescheduled</span><i>·</i><span>cancelled</span><i>·</i><span>no_show</span></div>
+  <p class="small">Uma marcação nunca conta como serviço concluído; só o serviço criado a partir dela pode chegar a <code>completed</code>. Quando passa de <code>requested</code> a <code>confirmed</code> depende da política D-09.</p>
+  <h3>12.6 Políticas pendentes <span class="st n">Pendente</span></h3>
+  <table class="tbl-sm">
+    <tr><th>ID</th><th>Política</th><th>Exemplos de alternativas</th></tr>
+    <tr><td class="idc">D-09</td><td>Confirmação de marcações</td><td>Automática se houver capacidade · confirmação manual pela lavadora · confirmação só com depósito</td></tr>
+    <tr><td class="idc">D-10</td><td>Tolerância para atrasos</td><td>Mantém o horário até X minutos · passa à fila · perde a marcação</td></tr>
+    <tr><td class="idc">D-11</td><td>Cancelamentos, faltas sem aviso e remarcações</td><td>Sem penalização · limite de remarcações · restrição a novas marcações após faltas</td></tr>
+    <tr><td class="idc">D-12</td><td>Capacidade reservada para clientes sem marcação</td><td>Nenhuma · percentagem fixa · janelas horárias só para a fila</td></tr>
+    <tr><td class="idc">D-13</td><td>Pagamentos antecipados ou depósitos</td><td>Sem depósito · depósito em horários de pico · pagamento total antecipado</td></tr>
+    <tr><td class="idc">D-14</td><td>Avarias e indisponibilidade de trabalhadores</td><td>Remarcar automaticamente com aceitação · avisar e propor alternativas · prioridade às marcações sobre a fila</td></tr>
+  </table>
+  <p class="small">O impacto de cada alternativa está no capítulo 21. Nenhuma política de confirmação foi escolhida.</p>
+</section>
+
+<!-- ================= 13 ================= -->
+<section id="c13" class="brk">
+  <div class="kicker">13 · Dados, pagamentos e indicadores</div>
+  <h2>Cada dado com a sua origem</h2>
+  <h3>13.1 Origens da informação <span class="st d">Decidido</span></h3>
+  <table class="tbl-sm">
+    <tr><th>Origem</th><th>Como é obtida</th><th>Fiabilidade</th><th>Como aparece</th></tr>
+    <tr><td>Pagamento digital confirmado (simulado)</td><td>Mecanismo de pagamento simulado do protótipo</td><td>Confirmado <b>dentro da simulação</b>; não é uma transacção real</td><td>"Digital confirmado (simulado)"</td></tr>
+    <tr><td>Numerário declarado</td><td>Declaração explícita de um operador identificado</td><td>Declarado; não verificado por fonte externa</td><td>"Numerário declarado por &lt;operador&gt;"</td></tr>
+    <tr><td>Serviço registado</td><td>Registo na plataforma e transições de estado</td><td>Registado pela operação; auditável</td><td>Estados e datas</td></tr>
+    <tr><td>Dados declarados pelo responsável</td><td>Introduzidos pelo gestor (horários, custos, número de trabalhadores)</td><td>Declarados</td><td>"Declarado pela lavadora"</td></tr>
+    <tr><td>Indicadores calculados</td><td>Calculados a partir dos registos</td><td>Tão fiáveis quanto os dados de origem</td><td>Com a definição e a origem</td></tr>
+    <tr><td>Estimativas do sistema</td><td>Previsões de fila e de marcações</td><td>Estimativa</td><td>"Estimativa", nunca "garantido"</td></tr>
+  </table>
+  <h3>13.2 Regras de fiabilidade <span class="st d">Decidido</span></h3>
+  <ul class="small">
+    <li>Um serviço só conta como lavagem realizada quando o estado é <code>completed</code>.</li>
+    <li>Para a fidelização exige-se também pagamento digital simulado confirmado ou declaração explícita de numerário.</li>
+    <li>Digital confirmado e numerário declarado nunca são somados como se fossem a mesma coisa; o valor por receber nunca é receita.</li>
+    <li>Dados declarados nunca são apresentados como comprovados por uma fonte externa.</li>
+  </ul>
+  <h3>13.3 Integridade, histórico e auditoria</h3>
+  <table class="tbl-sm">
+    <tr><th>Mecanismo</th><th>Descrição</th><th>Estado</th></tr>
+    <tr><td>Prevenção de duplicação</td><td>Chaves de idempotência nos pagamentos; referências únicas nos movimentos de fidelização; um pagamento efectivo por serviço; telefone e matrícula únicos</td><td><span class="st d">Decidido</span></td></tr>
+    <tr><td>Transições válidas</td><td>Só as transições do capítulo 10 são aceites</td><td><span class="st d">Decidido</span></td></tr>
+    <tr><td>Retrato de preços</td><td>Preço base, desconto, benefício e preço final guardados em cada serviço</td><td><span class="st d">Decidido</span></td></tr>
+    <tr><td>Histórico de alterações</td><td>Transições de estado auditadas; registo das alterações de preços e parâmetros (quem, quando, valor anterior e novo)</td><td><span class="st d">Decidido</span> (estados) · <span class="st p">Proposto</span> (preços)</td></tr>
+    <tr><td>Reconciliação</td><td>Fecho diário por operador: numerário declarado vs. contado; lista de inconsistências (concluídos sem pagamento, pendentes antigos, reembolsos) com correcção registada, nunca apagada</td><td><span class="st p">Proposto</span></td></tr>
+    <tr><td>Sinais de fraude</td><td>Alertas: muitos serviços da mesma matrícula num dia, declarações fora do horário, benefícios consecutivos</td><td><span class="st n">Pendente</span> (D-08)</td></tr>
+    <tr><td>Auditoria de acessos</td><td>Consultas e exportações da vertente Banco registadas</td><td><span class="st d">Decidido</span> (princípio)</td></tr>
+  </table>
+  <h3>13.4 Dicionário de indicadores</h3>
+  <table class="tbl-sm">
+    <tr><th>Indicador</th><th>Definição</th><th>Origem</th><th>Vertente</th></tr>
+    <tr><td>Serviços concluídos</td><td>Serviços <code>completed</code> no período</td><td>Registado</td><td>Cliente · Banco</td></tr>
+    <tr><td>Elegíveis para fidelização</td><td>Concluídos com pagamento confirmado ou declarado e sem exclusões</td><td>Registado + pagamento</td><td>Cliente</td></tr>
+    <tr><td>Digital confirmado</td><td>Soma dos pagamentos <code>confirmed</code> no período (sem reembolsados)</td><td>Simulado</td><td>Cliente · Banco</td></tr>
+    <tr><td>Numerário declarado</td><td>Soma dos pagamentos <code>declared</code> no período (sem reembolsados)</td><td>Declarado</td><td>Cliente · Banco</td></tr>
+    <tr><td>Por receber</td><td>Serviços não cancelados sem pagamento efectivo; <b>não é receita</b></td><td>Calculado</td><td>Cliente</td></tr>
+    <tr><td>Ocupação</td><td>Tempo de serviço ÷ capacidade disponível, por dia e hora</td><td>Calculado</td><td>Cliente · Banco (agregado)</td></tr>
+    <tr><td>Erro de previsão</td><td>Diferença entre a hora estimada e a real (início e fim)</td><td>Calculado</td><td>Cliente · Piloto</td></tr>
+    <tr><td>Marcações cumpridas</td><td>Marcações atendidas dentro do intervalo confirmado ÷ marcações confirmadas</td><td>Registado</td><td>Cliente · Piloto</td></tr>
+    <tr><td>Clientes que regressam</td><td>Clientes com mais de um serviço concluído no período ÷ clientes no período</td><td>Calculado</td><td>Cliente · Banco (agregado)</td></tr>
+  </table>
+</section>
+
+<!-- ================= 14 ================= -->
+<section id="c14" class="brk">
+  <div class="kicker">14 · Segurança, privacidade e governação</div>
+  <h2>O banco vê só o necessário, com autorização</h2>
+  <h3>14.1 Princípios <span class="st d">Decidido</span></h3>
+  <ul>
+    <li><b>Autorização explícita</b> da lavadora para cada instituição, com finalidade, âmbito, período e validade; revogação a qualquer momento.</li>
+    <li><b>Perfis de acesso</b> e princípio do menor privilégio (matriz no capítulo 7).</li>
+    <li><b>Registo</b> de consultas, exportações e operações relevantes.</li>
+    <li><b>Minimização:</b> a vertente Banco usa dados agregados; os dados pessoais dos clientes finais não são partilhados.</li>
+    <li><b>Limitação da finalidade:</b> os dados partilhados só servem a finalidade autorizada.</li>
+    <li>Nenhuma instituição consulta automaticamente todos os dados da plataforma.</li>
+  </ul>
+  <h3>14.2 Três consentimentos separados <span class="st d">Decidido</span></h3>
+  <table class="tbl-sm">
+    <tr><th>Consentimento</th><th>Quem dá</th><th>Para quê</th><th>Revogação</th></tr>
+    <tr><td>Fidelização</td><td>Cliente final</td><td>Acumular progresso e receber benefícios</td><td>A qualquer momento; o histórico de serviços mantém-se</td></tr>
+    <tr><td>Marketing</td><td>Cliente final</td><td>Receber ofertas (módulo de campanhas reservado)</td><td>A qualquer momento (ex.: "PARAR")</td></tr>
+    <tr><td>Partilha com instituição bancária</td><td>Lavadora</td><td>Disponibilizar o relatório de actividade a uma instituição</td><td>A qualquer momento; termina as novas consultas</td></tr>
+  </table>
+  <h3>14.3 Por definir <span class="st n">Pendente</span> / <span class="st v">A validar</span></h3>
+  <ul class="small">
+    <li><b>Enquadramento legal, contratual e de segurança em Moçambique</b> (D-18): validar com apoio jurídico os requisitos aplicáveis à partilha de dados de negócio e de dados pessoais com instituições financeiras, e o que os bancos exigem contratualmente.</li>
+    <li><b>Conservação e correcção</b> dos dados: prazos de conservação, pedidos de correcção e de eliminação, efeito da revogação sobre relatórios já emitidos.</li>
+    <li>Requisitos de alojamento, cifragem e cópias de segurança para uma versão com dados reais.</li>
+  </ul>
+  <h3>14.4 Limites do protótipo</h3>
+  <p class="small">Sem autenticação (D-16); dados de demonstração fictícios; reposição da demonstração desactivada por omissão e protegida por token, confirmação escrita e acesso local; consultas parametrizadas; ficheiro SQLite fora da pasta pública; erros sem detalhes internos. <b>Não usar com dados reais.</b></p>
+</section>
+
+<!-- ================= 15 ================= -->
+<section id="c15" class="brk">
+  <div class="kicker">15 · Arquitectura técnica do protótipo</div>
+  <h2>Restrições, dados e API</h2>
+  <h3>15.1 Restrições técnicas <span class="st d">Decidido</span></h3>
+  <ul class="small">
+    <li>Monorepositório.</li>
+    <li>Frontend em HTML, CSS e JavaScript puro (vanilla); <b>sem</b> React, Next.js, TypeScript, Tailwind CSS, Bootstrap ou equivalentes; sem processo de compilação.</li>
+    <li>Backend em Node.js com Express; API REST com respostas JSON.</li>
+    <li>Base de dados SQLite, com o ficheiro fora do directório público.</li>
+    <li>Simulador de WhatsApp Web com um endereço por número: <code>/simulador/whatsapp/258841234567</code>.</li>
+    <li>Sem integração real com a API do WhatsApp nem com gateways de pagamento nesta fase.</li>
+    <li>Painéis e indicadores calculados a partir dos dados armazenados; sem números fictícios apresentados como reais.</li>
+    <li>Módulo de campanhas reservado, sem campanhas automáticas.</li>
+  </ul>
+  <p class="small">Alterar qualquer destas restrições exige uma decisão arquitectural explícita, registada no capítulo 21.</p>
+  <h3>15.2 Arquitectura</h3>
+  <div style="margin:12px 0 18px"><svg viewBox="0 0 680 330" width="100%" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Arquitectura técnica do protótipo" style="font-family:Inter,sans-serif;max-width:720px;display:block;margin:0 auto"><defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#5E6873"/></marker></defs><rect x="0" y="0" width="680" height="330" rx="14" fill="#F5F6F8"/><text x="20" y="24" text-anchor="start" font-size="10.5" font-weight="700" fill="#5E6873">BROWSER · HTML + CSS + JAVASCRIPT PURO</text><rect x="20.0" y="34" width="116" height="48" rx="9" fill="#fff" stroke="#16191D" stroke-width="1.5"/><text x="78.0" y="55" text-anchor="middle" font-size="12" font-weight="700" fill="#16191D">Simulador</text><text x="78.0" y="71" text-anchor="middle" font-size="8.6" font-weight="400" fill="#5E6873" font-family="JetBrains Mono,monospace">/simulador/whatsapp/:tel</text><line x1="78.0" y1="84" x2="78.0" y2="112" stroke="#5E6873" stroke-width="1.3" marker-end="url(#ah)" marker-start="url(#ah)"/><rect x="151.0" y="34" width="116" height="48" rx="9" fill="#fff" stroke="#16191D" stroke-width="1.5"/><text x="209.0" y="55" text-anchor="middle" font-size="12" font-weight="700" fill="#16191D">Pátio</text><text x="209.0" y="71" text-anchor="middle" font-size="8.6" font-weight="400" fill="#5E6873" font-family="JetBrains Mono,monospace">/patio</text><line x1="209.0" y1="84" x2="209.0" y2="112" stroke="#5E6873" stroke-width="1.3" marker-end="url(#ah)" marker-start="url(#ah)"/><rect x="282.0" y="34" width="116" height="48" rx="9" fill="#fff" stroke="#16191D" stroke-width="1.5"/><text x="340.0" y="55" text-anchor="middle" font-size="12" font-weight="700" fill="#16191D">Painel</text><text x="340.0" y="71" text-anchor="middle" font-size="8.6" font-weight="400" fill="#5E6873" font-family="JetBrains Mono,monospace">/painel</text><line x1="340.0" y1="84" x2="340.0" y2="112" stroke="#5E6873" stroke-width="1.3" marker-end="url(#ah)" marker-start="url(#ah)"/><rect x="413.0" y="34" width="116" height="48" rx="9" fill="#fff" stroke="#16191D" stroke-width="1.5"/><text x="471.0" y="55" text-anchor="middle" font-size="12" font-weight="700" fill="#16191D">Catálogo</text><text x="471.0" y="71" text-anchor="middle" font-size="8.6" font-weight="400" fill="#5E6873" font-family="JetBrains Mono,monospace">/catalogo</text><line x1="471.0" y1="84" x2="471.0" y2="112" stroke="#5E6873" stroke-width="1.3" marker-end="url(#ah)" marker-start="url(#ah)"/><rect x="544.0" y="34" width="116" height="48" rx="9" fill="#fff" stroke="#1F5FA8" stroke-width="1.5"/><text x="602.0" y="55" text-anchor="middle" font-size="12" font-weight="700" fill="#16191D">Banco</text><text x="602.0" y="71" text-anchor="middle" font-size="8.6" font-weight="400" fill="#5E6873" font-family="JetBrains Mono,monospace">/banco</text><line x1="602.0" y1="84" x2="602.0" y2="112" stroke="#5E6873" stroke-width="1.3" marker-end="url(#ah)" marker-start="url(#ah)"/><rect x="20" y="116" width="640" height="122" rx="11" fill="#fff" stroke="#C8102E" stroke-width="1.8"/><text x="36" y="136" text-anchor="start" font-size="12.5" font-weight="700" fill="#16191D">Node.js + Express · API REST (JSON)</text><rect x="36" y="148" width="145" height="44" rx="7" fill="#F5F6F8" stroke="#E2E5E9"/><text x="108.5" y="166" text-anchor="middle" font-size="11" font-weight="700" fill="#16191D" font-family="JetBrains Mono,monospace">routes/</text><text x="108.5" y="182" text-anchor="middle" font-size="9.5" font-weight="400" fill="#5E6873">URLs e métodos</text><rect x="188" y="148" width="145" height="44" rx="7" fill="#F5F6F8" stroke="#E2E5E9"/><text x="260.5" y="166" text-anchor="middle" font-size="11" font-weight="700" fill="#16191D" font-family="JetBrains Mono,monospace">controllers/</text><text x="260.5" y="182" text-anchor="middle" font-size="9.5" font-weight="400" fill="#5E6873">HTTP e validação</text><rect x="340" y="148" width="145" height="44" rx="7" fill="#F5F6F8" stroke="#E2E5E9"/><text x="412.5" y="166" text-anchor="middle" font-size="11" font-weight="700" fill="#16191D" font-family="JetBrains Mono,monospace">services/</text><text x="412.5" y="182" text-anchor="middle" font-size="9.5" font-weight="400" fill="#5E6873">regras, transacções</text><rect x="492" y="148" width="145" height="44" rx="7" fill="#F5F6F8" stroke="#E2E5E9"/><text x="564.5" y="166" text-anchor="middle" font-size="11" font-weight="700" fill="#16191D" font-family="JetBrains Mono,monospace">middleware/</text><text x="564.5" y="182" text-anchor="middle" font-size="9.5" font-weight="400" fill="#5E6873">erros centralizados</text><text x="36" y="222" text-anchor="start" font-size="10" font-weight="400" fill="#5E6873">express.static só serve public/ · Pátio e Simulador consultam a API a cada 3 s</text><line x1="340" y1="240" x2="340" y2="266" stroke="#5E6873" stroke-width="1.3" marker-end="url(#ah)"/><rect x="170" y="270" width="340" height="48" rx="10" fill="#fff" stroke="#1E7B47" stroke-width="1.6"/><text x="340" y="290" text-anchor="middle" font-size="12.5" font-weight="700" fill="#16191D">SQLite · data/lavaja.db</text><text x="340" y="307" text-anchor="middle" font-size="9.5" font-weight="400" fill="#5E6873">migrações · FKs · índices únicos parciais · fora de public/</text></svg></div>
+  <h3>15.3 Stack e decisões de implementação</h3>
+  <table class="tbl-sm">
+    <tr><th>Camada</th><th>Escolha</th><th>Estado</th></tr>
+    <tr><td>Frontend</td><td>HTML5 semântico, CSS3, módulos ES nativos, <code>fetch()</code> com JSON; actualização por consulta periódica (3 s)</td><td><span class="st d">Decidido</span> / <span class="st p">Proposto</span> (consulta periódica)</td></tr>
+    <tr><td>Backend</td><td>Node.js + Express 4; camadas rotas → controladores → serviços → SQLite; erros centralizados</td><td><span class="st d">Decidido</span></td></tr>
+    <tr><td>SQLite</td><td><code>node:sqlite</code> (Node.js ≥ 22.13, sem compilação nativa); alternativa: <code>better-sqlite3</code></td><td><span class="st p">Proposto</span></td></tr>
+    <tr><td>Migrações</td><td>Ficheiros SQL numerados, aplicados por ordem, com chaves estrangeiras e modo WAL</td><td><span class="st p">Proposto</span></td></tr>
+    <tr><td>Testes</td><td><code>node:test</code> e <code>fetch</code> nativo</td><td><span class="st p">Proposto</span></td></tr>
+    <tr><td>Relógio injectável</td><td>Permite gerar histórico de demonstração e testar regras dependentes de datas</td><td><span class="st p">Proposto</span></td></tr>
+  </table>
+  <h3>15.4 Modelo de dados</h3>
+  <table class="tbl-sm">
+    <tr><th>Tabela</th><th>Conteúdo</th><th>Restrições principais</th><th>Estado</th></tr>
+    <tr><td><code>vehicle_classes</code></td><td>A, B, C; descrição; parâmetros de benefício por classe</td><td><code>CHECK (code IN ('A','B','C'))</code></td><td><span class="st d">Decidido</span></td></tr>
+    <tr><td><code>wash_plans</code> · <code>class_plan_prices</code></td><td>Planos; preço por plano e classe (centavos)</td><td>PK (plano, classe); preço ≥ 0</td><td><span class="st d">Decidido</span></td></tr>
+    <tr><td><code>customers</code> · <code>vehicles</code></td><td>Telefone normalizado; viaturas com matrícula normalizada e jurisdição</td><td>Telefone único; único (jurisdição, matrícula)</td><td><span class="st d">Decidido</span></td></tr>
+    <tr><td><code>washes</code> · <code>wash_status_events</code></td><td>Serviços com retrato de preços, estado, pagamento, posto; auditoria de transições</td><td>FK composta (viatura, cliente); <code>final = base − desconto − benefício ≥ 0</code></td><td><span class="st d">Decidido</span></td></tr>
+    <tr><td><code>payments</code></td><td>Método, estado, valor, idempotência, quem declarou, datas</td><td>1 pendente e 1 efectivo por serviço (índices parciais)</td><td><span class="st d">Decidido</span></td></tr>
+    <tr><td><code>loyalty_accounts</code> · <code>loyalty_progress</code> · <code>loyalty_transactions</code></td><td>Conta por cliente; progresso e nível por classe; livro de movimentos</td><td>Conta única por cliente; único (conta, classe); referência única</td><td><span class="st d">Decidido</span> (estrutura) · regras <span class="st n">Pendente</span></td></tr>
+    <tr><td><code>loyalty_rules</code></td><td>Parâmetros do programa (ciclo, níveis, tipo de benefício, limites)</td><td>Versões com data de vigência</td><td><span class="st p">Proposto</span></td></tr>
+    <tr><td><code>appointments</code></td><td>Marcações: horário, plano, viatura, estado, propostas de antecipação</td><td>Não sobrepõe capacidade confirmada</td><td><span class="st p">Proposto</span></td></tr>
+    <tr><td><code>capacity_resources</code> · <code>availability</code></td><td>Postos, trabalhadores, horários, pausas e indisponibilidades</td><td>—</td><td><span class="st p">Proposto</span></td></tr>
+    <tr><td><code>consents</code></td><td>Consentimentos do cliente (fidelização, marketing)</td><td>Tipo e data; revogação</td><td><span class="st p">Proposto</span></td></tr>
+    <tr><td><code>institutions</code> · <code>data_sharing_authorizations</code> · <code>access_logs</code></td><td>Instituições; autorizações da lavadora; registo de consultas</td><td>Autorização com âmbito, finalidade e validade</td><td><span class="st p">Proposto</span></td></tr>
+    <tr><td><code>change_log</code></td><td>Alterações de preços e parâmetros</td><td>Só acrescenta registos</td><td><span class="st p">Proposto</span></td></tr>
+    <tr><td><code>message_threads</code> · <code>messages</code></td><td>Conversas do simulador por telefone</td><td>Telefone único; ordem por id</td><td><span class="st d">Decidido</span></td></tr>
+    <tr><td><code>settings</code></td><td>Parâmetros configuráveis com marca "por validar"</td><td>—</td><td><span class="st p">Proposto</span></td></tr>
+  </table>
+  <h3>15.5 API REST (JSON)</h3>
+  <table class="tbl-sm">
+    <tr><th>Grupo</th><th>Rotas</th><th>Estado</th></tr>
+    <tr><td>Catálogo</td><td><code>GET /api/vehicle-classes</code> · <code>GET /api/plans?classId=</code> · <code>PATCH /api/plans/:id</code> · <code>PUT /api/plans/:id/prices/:classId</code></td><td><span class="st d">Decidido</span></td></tr>
+    <tr><td>Clientes e viaturas</td><td><code>GET /api/customers?phone=</code> · <code>POST /api/customers</code> · <code>POST /api/customers/:id/vehicles</code> · <code>GET /api/vehicles?classId=</code> · <code>GET /api/vehicles/:id/wash-history/summary</code> · <code>GET /api/vehicles/:id/wash-history</code></td><td><span class="st d">Decidido</span></td></tr>
+    <tr><td>Serviços</td><td><code>GET /api/washes</code> · <code>POST /api/washes</code> · <code>POST /api/washes/:id/transitions</code></td><td><span class="st d">Decidido</span></td></tr>
+    <tr><td>Pagamentos (simulados)</td><td><code>POST /api/washes/:id/payments/digital</code> · <code>POST /api/payments/:id/simulate</code> · <code>POST /api/washes/:id/payments/cash</code> · <code>POST /api/payments/:id/refund</code> (com <code>Idempotency-Key</code>)</td><td><span class="st d">Decidido</span></td></tr>
+    <tr><td>Fidelização</td><td><code>GET /api/customers/:id/loyalty</code> · <code>GET /api/loyalty/rules</code></td><td><span class="st p">Proposto</span> (regras)</td></tr>
+    <tr><td>Marcações e capacidade</td><td><code>GET /api/availability?date=&amp;planId=&amp;classId=</code> · <code>POST /api/appointments</code> · <code>POST /api/appointments/:id/transitions</code> · <code>POST /api/appointments/:id/offers</code> · <code>POST /api/appointment-offers/:id/respond</code></td><td><span class="st p">Proposto</span></td></tr>
+    <tr><td>Vertente Banco</td><td><code>GET|POST /api/sharing/authorizations</code> · <code>POST /api/sharing/authorizations/:id/revoke</code> · <code>GET /api/institutions/:id/reports/activity?washerId=</code> · <code>GET /api/sharing/access-logs</code></td><td><span class="st p">Proposto</span> (acesso: D-16)</td></tr>
+    <tr><td>Painel</td><td><code>GET /api/dashboard/summary?days=</code> · <code>GET /api/dashboard/weekly</code></td><td><span class="st d">Decidido</span></td></tr>
+    <tr><td>Simulador</td><td><code>GET /api/simulator/threads</code> · <code>GET|POST /api/simulator/threads/:phone/messages</code></td><td><span class="st d">Decidido</span></td></tr>
+    <tr><td>Demonstração</td><td><code>POST /api/admin/demo/reset</code> (token, <code>{ confirm: "REPOR" }</code>, acesso local)</td><td><span class="st p">Proposto</span></td></tr>
+  </table>
+  <p class="small">Erros num formato único: <code>{ "error": { "code", "message", "details?" } }</code>, com 400 (dados inválidos), 403, 404, 409 (conflito com uma regra de negócio) e 500 (sem detalhes internos).</p>
+  <h3>15.6 Assistente do simulador</h3>
+  <p class="small">Menu proposto: <b>1</b> Planos e preços · <b>2</b> Entrar na fila · <b>3</b> Marcar horário · <b>4</b> Estado · <b>5</b> Pagar (simulado) · <b>6</b> Histórico · <b>7</b> Fidelização · <b>MENU</b> a qualquer momento. É uma máquina de estados guardada na conversa (<code>ASK_NAME</code>, <code>ASK_CONSENTS</code>, <code>MENU</code>, <code>CHOOSE_VEHICLE</code>, <code>ASK_PLATE</code>, <code>ASK_CLASS</code>, <code>CHOOSE_PLAN</code>, <code>CHOOSE_SLOT</code>, <code>OFFER_RESPONSE</code>, <code>CHOOSE_PAY</code>, <code>CONFIRM_PAY</code>). Usa os mesmos serviços e regras do Pátio. Os avisos do sistema aparecem distintos das respostas do assistente.</p>
+  <h3>15.7 Estrutura do monorepositório e comandos</h3>
+<pre>lavaja-pass/
+├─ package.json            <span class="c">scripts: start, dev, db:migrate, db:seed, db:reset, test</span>
+├─ src/
+│  ├─ server.js · app.js · config.js
+│  ├─ db/          connection · migrate · tx · seed-demo · migrations/*.sql
+│  ├─ lib/         errors · money · phone · plate · clock · validate
+│  ├─ services/    catalog · customers · vehicles · washes · payments · loyalty · appointments
+│  │               capacity · sharing · reports · history · dashboard · messages · bot · demo
+│  ├─ controllers/ · routes/ · middleware/
+├─ public/         index · painel · patio · catalogo · simulador · banco (HTML) · css/ · js/
+├─ data/           lavaja.db (gerado; fora de public/)
+├─ test/           *.test.js
+├─ docs/           este documento
+├─ README.md · changelogs.md · .env.example</pre>
+<pre>npm install        <span class="c"># Express (única dependência de execução)</span>
+npm run db:reset   <span class="c"># apaga a base, aplica migrações e carrega dados de demonstração</span>
+npm start          <span class="c"># http://localhost:3000</span>
+npm test           <span class="c"># suite completa (base em memória)</span></pre>
+</section>
+
+<!-- ================= 16 MOCKS ================= -->
+<section id="c16" class="brk">
+  <div class="kicker">16 · Mocks</div>
+  <h2>Telas do protótipo</h2>
+  <p class="lead">Dezasseis ecrãs, na ordem das jornadas. Preços e parâmetros são de demonstração; os números do painel e do relatório são exemplos ilustrativos e, na aplicação, são calculados a partir da base. A fidelização mostra a proposta de ciclos de 10 com os parâmetros ainda pendentes (D-01, D-02).</p>
+  <table class="tbl-sm">
+    <tr><th>#</th><th>Ecrã</th><th>Vertente</th><th>#</th><th>Ecrã</th><th>Vertente</th></tr>
+    <tr><td>M1</td><td>Cartaz do pátio</td><td>Cliente</td><td>M9</td><td>Pátio: declarar numerário</td><td>Cliente</td></tr>
+    <tr><td>M2</td><td>Simulador: conversas, novo cliente, consentimentos</td><td>Cliente</td><td>M10</td><td>Gestor: capacidade e agenda do dia</td><td>Cliente</td></tr>
+    <tr><td>M3</td><td>Simulador: entrar na fila</td><td>Cliente</td><td>M11</td><td>Painel: indicadores com origem</td><td>Cliente</td></tr>
+    <tr><td>M4</td><td>Simulador: marcação e proposta de antecipação</td><td>Cliente</td><td>M12</td><td>Painel: viaturas por classe</td><td>Cliente</td></tr>
+    <tr><td>M5</td><td>Simulador: pronto, pagamento, progresso</td><td>Cliente</td><td>M13</td><td>Histórico por matrícula</td><td>Cliente</td></tr>
+    <tr><td>M6</td><td>Simulador: cartão de fidelização</td><td>Cliente</td><td>M14</td><td>Catálogo e parâmetros</td><td>Cliente</td></tr>
+    <tr><td>M7</td><td>Pátio: quadro com marcações</td><td>Cliente</td><td>M15</td><td>Lavadora: autorizações e acessos</td><td>Banco</td></tr>
+    <tr><td>M8</td><td>Pátio: registar serviço</td><td>Cliente</td><td>M16</td><td>Banco: relatório de actividade</td><td>Banco</td></tr>
+  </table>
+
+  <!-- M1 + M2 -->
+  <div class="mock-title"><span class="n">M1 · M2</span><h4>Cartaz do pátio · simulador: novo cliente e consentimentos</h4></div>
+  <div class="mock">
+    <div class="phones">
+      <div class="poster" style="width:240px">
+        <div class="top"><b>Lava sem esperar.</b><span>Lava Já – Matola · LavaJá Pass</span></div>
+        <div class="mid">
+          <div style="font-weight:700;color:var(--ink);font-size:13px">Lê o código com a câmara</div>
+          <div class="qr"><svg viewBox="-1 -1 27 27" width="120" height="120" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges" role="img" aria-label="Código QR ilustrativo"><rect x="-1" y="-1" width="27" height="27" fill="#fff"/><g fill="#16191D"><rect x="0" y="0" width="1" height="1"/><rect x="1" y="0" width="1" height="1"/><rect x="2" y="0" width="1" height="1"/><rect x="3" y="0" width="1" height="1"/><rect x="4" y="0" width="1" height="1"/><rect x="5" y="0" width="1" height="1"/><rect x="6" y="0" width="1" height="1"/><rect x="8" y="0" width="1" height="1"/><rect x="9" y="0" width="1" height="1"/><rect x="10" y="0" width="1" height="1"/><rect x="11" y="0" width="1" height="1"/><rect x="12" y="0" width="1" height="1"/><rect x="14" y="0" width="1" height="1"/><rect x="15" y="0" width="1" height="1"/><rect x="18" y="0" width="1" height="1"/><rect x="19" y="0" width="1" height="1"/><rect x="20" y="0" width="1" height="1"/><rect x="21" y="0" width="1" height="1"/><rect x="22" y="0" width="1" height="1"/><rect x="23" y="0" width="1" height="1"/><rect x="24" y="0" width="1" height="1"/><rect x="0" y="1" width="1" height="1"/><rect x="6" y="1" width="1" height="1"/><rect x="8" y="1" width="1" height="1"/><rect x="9" y="1" width="1" height="1"/><rect x="10" y="1" width="1" height="1"/><rect x="12" y="1" width="1" height="1"/><rect x="13" y="1" width="1" height="1"/><rect x="15" y="1" width="1" height="1"/><rect x="16" y="1" width="1" height="1"/><rect x="18" y="1" width="1" height="1"/><rect x="24" y="1" width="1" height="1"/><rect x="0" y="2" width="1" height="1"/><rect x="2" y="2" width="1" height="1"/><rect x="3" y="2" width="1" height="1"/><rect x="4" y="2" width="1" height="1"/><rect x="6" y="2" width="1" height="1"/><rect x="11" y="2" width="1" height="1"/><rect x="15" y="2" width="1" height="1"/><rect x="18" y="2" width="1" height="1"/><rect x="20" y="2" width="1" height="1"/><rect x="21" y="2" width="1" height="1"/><rect x="22" y="2" width="1" height="1"/><rect x="24" y="2" width="1" height="1"/><rect x="0" y="3" width="1" height="1"/><rect x="2" y="3" width="1" height="1"/><rect x="3" y="3" width="1" height="1"/><rect x="4" y="3" width="1" height="1"/><rect x="6" y="3" width="1" height="1"/><rect x="9" y="3" width="1" height="1"/><rect x="10" y="3" width="1" height="1"/><rect x="11" y="3" width="1" height="1"/><rect x="13" y="3" width="1" height="1"/><rect x="14" y="3" width="1" height="1"/><rect x="18" y="3" width="1" height="1"/><rect x="20" y="3" width="1" height="1"/><rect x="21" y="3" width="1" height="1"/><rect x="22" y="3" width="1" height="1"/><rect x="24" y="3" width="1" height="1"/><rect x="0" y="4" width="1" height="1"/><rect x="2" y="4" width="1" height="1"/><rect x="3" y="4" width="1" height="1"/><rect x="4" y="4" width="1" height="1"/><rect x="6" y="4" width="1" height="1"/><rect x="8" y="4" width="1" height="1"/><rect x="15" y="4" width="1" height="1"/><rect x="18" y="4" width="1" height="1"/><rect x="20" y="4" width="1" height="1"/><rect x="21" y="4" width="1" height="1"/><rect x="22" y="4" width="1" height="1"/><rect x="24" y="4" width="1" height="1"/><rect x="0" y="5" width="1" height="1"/><rect x="6" y="5" width="1" height="1"/><rect x="8" y="5" width="1" height="1"/><rect x="9" y="5" width="1" height="1"/><rect x="12" y="5" width="1" height="1"/><rect x="13" y="5" width="1" height="1"/><rect x="14" y="5" width="1" height="1"/><rect x="15" y="5" width="1" height="1"/><rect x="16" y="5" width="1" height="1"/><rect x="18" y="5" width="1" height="1"/><rect x="24" y="5" width="1" height="1"/><rect x="0" y="6" width="1" height="1"/><rect x="1" y="6" width="1" height="1"/><rect x="2" y="6" width="1" height="1"/><rect x="3" y="6" width="1" height="1"/><rect x="4" y="6" width="1" height="1"/><rect x="5" y="6" width="1" height="1"/><rect x="6" y="6" width="1" height="1"/><rect x="12" y="6" width="1" height="1"/><rect x="13" y="6" width="1" height="1"/><rect x="14" y="6" width="1" height="1"/><rect x="18" y="6" width="1" height="1"/><rect x="19" y="6" width="1" height="1"/><rect x="20" y="6" width="1" height="1"/><rect x="21" y="6" width="1" height="1"/><rect x="22" y="6" width="1" height="1"/><rect x="23" y="6" width="1" height="1"/><rect x="24" y="6" width="1" height="1"/><rect x="10" y="7" width="1" height="1"/><rect x="14" y="7" width="1" height="1"/><rect x="15" y="7" width="1" height="1"/><rect x="16" y="7" width="1" height="1"/><rect x="0" y="8" width="1" height="1"/><rect x="5" y="8" width="1" height="1"/><rect x="6" y="8" width="1" height="1"/><rect x="8" y="8" width="1" height="1"/><rect x="11" y="8" width="1" height="1"/><rect x="12" y="8" width="1" height="1"/><rect x="15" y="8" width="1" height="1"/><rect x="16" y="8" width="1" height="1"/><rect x="17" y="8" width="1" height="1"/><rect x="20" y="8" width="1" height="1"/><rect x="24" y="8" width="1" height="1"/><rect x="1" y="9" width="1" height="1"/><rect x="2" y="9" width="1" height="1"/><rect x="7" y="9" width="1" height="1"/><rect x="10" y="9" width="1" height="1"/><rect x="11" y="9" width="1" height="1"/><rect x="12" y="9" width="1" height="1"/><rect x="13" y="9" width="1" height="1"/><rect x="15" y="9" width="1" height="1"/><rect x="16" y="9" width="1" height="1"/><rect x="17" y="9" width="1" height="1"/><rect x="19" y="9" width="1" height="1"/><rect x="20" y="9" width="1" height="1"/><rect x="23" y="9" width="1" height="1"/><rect x="3" y="10" width="1" height="1"/><rect x="4" y="10" width="1" height="1"/><rect x="5" y="10" width="1" height="1"/><rect x="6" y="10" width="1" height="1"/><rect x="8" y="10" width="1" height="1"/><rect x="9" y="10" width="1" height="1"/><rect x="12" y="10" width="1" height="1"/><rect x="16" y="10" width="1" height="1"/><rect x="18" y="10" width="1" height="1"/><rect x="19" y="10" width="1" height="1"/><rect x="0" y="11" width="1" height="1"/><rect x="5" y="11" width="1" height="1"/><rect x="7" y="11" width="1" height="1"/><rect x="12" y="11" width="1" height="1"/><rect x="16" y="11" width="1" height="1"/><rect x="17" y="11" width="1" height="1"/><rect x="18" y="11" width="1" height="1"/><rect x="19" y="11" width="1" height="1"/><rect x="20" y="11" width="1" height="1"/><rect x="21" y="11" width="1" height="1"/><rect x="0" y="12" width="1" height="1"/><rect x="3" y="12" width="1" height="1"/><rect x="6" y="12" width="1" height="1"/><rect x="8" y="12" width="1" height="1"/><rect x="9" y="12" width="1" height="1"/><rect x="12" y="12" width="1" height="1"/><rect x="13" y="12" width="1" height="1"/><rect x="15" y="12" width="1" height="1"/><rect x="16" y="12" width="1" height="1"/><rect x="17" y="12" width="1" height="1"/><rect x="19" y="12" width="1" height="1"/><rect x="21" y="12" width="1" height="1"/><rect x="22" y="12" width="1" height="1"/><rect x="23" y="12" width="1" height="1"/><rect x="1" y="13" width="1" height="1"/><rect x="5" y="13" width="1" height="1"/><rect x="6" y="13" width="1" height="1"/><rect x="7" y="13" width="1" height="1"/><rect x="9" y="13" width="1" height="1"/><rect x="10" y="13" width="1" height="1"/><rect x="11" y="13" width="1" height="1"/><rect x="14" y="13" width="1" height="1"/><rect x="15" y="13" width="1" height="1"/><rect x="19" y="13" width="1" height="1"/><rect x="20" y="13" width="1" height="1"/><rect x="22" y="13" width="1" height="1"/><rect x="23" y="13" width="1" height="1"/><rect x="2" y="14" width="1" height="1"/><rect x="4" y="14" width="1" height="1"/><rect x="6" y="14" width="1" height="1"/><rect x="7" y="14" width="1" height="1"/><rect x="10" y="14" width="1" height="1"/><rect x="11" y="14" width="1" height="1"/><rect x="13" y="14" width="1" height="1"/><rect x="14" y="14" width="1" height="1"/><rect x="15" y="14" width="1" height="1"/><rect x="16" y="14" width="1" height="1"/><rect x="17" y="14" width="1" height="1"/><rect x="18" y="14" width="1" height="1"/><rect x="19" y="14" width="1" height="1"/><rect x="21" y="14" width="1" height="1"/><rect x="23" y="14" width="1" height="1"/><rect x="24" y="14" width="1" height="1"/><rect x="0" y="15" width="1" height="1"/><rect x="1" y="15" width="1" height="1"/><rect x="2" y="15" width="1" height="1"/><rect x="5" y="15" width="1" height="1"/><rect x="6" y="15" width="1" height="1"/><rect x="8" y="15" width="1" height="1"/><rect x="10" y="15" width="1" height="1"/><rect x="11" y="15" width="1" height="1"/><rect x="13" y="15" width="1" height="1"/><rect x="17" y="15" width="1" height="1"/><rect x="21" y="15" width="1" height="1"/><rect x="22" y="15" width="1" height="1"/><rect x="23" y="15" width="1" height="1"/><rect x="24" y="15" width="1" height="1"/><rect x="0" y="16" width="1" height="1"/><rect x="2" y="16" width="1" height="1"/><rect x="3" y="16" width="1" height="1"/><rect x="4" y="16" width="1" height="1"/><rect x="8" y="16" width="1" height="1"/><rect x="9" y="16" width="1" height="1"/><rect x="10" y="16" width="1" height="1"/><rect x="11" y="16" width="1" height="1"/><rect x="12" y="16" width="1" height="1"/><rect x="13" y="16" width="1" height="1"/><rect x="14" y="16" width="1" height="1"/><rect x="18" y="16" width="1" height="1"/><rect x="20" y="16" width="1" height="1"/><rect x="21" y="16" width="1" height="1"/><rect x="22" y="16" width="1" height="1"/><rect x="23" y="16" width="1" height="1"/><rect x="24" y="16" width="1" height="1"/><rect x="8" y="17" width="1" height="1"/><rect x="9" y="17" width="1" height="1"/><rect x="10" y="17" width="1" height="1"/><rect x="17" y="17" width="1" height="1"/><rect x="18" y="17" width="1" height="1"/><rect x="20" y="17" width="1" height="1"/><rect x="23" y="17" width="1" height="1"/><rect x="0" y="18" width="1" height="1"/><rect x="1" y="18" width="1" height="1"/><rect x="2" y="18" width="1" height="1"/><rect x="3" y="18" width="1" height="1"/><rect x="4" y="18" width="1" height="1"/><rect x="5" y="18" width="1" height="1"/><rect x="6" y="18" width="1" height="1"/><rect x="14" y="18" width="1" height="1"/><rect x="15" y="18" width="1" height="1"/><rect x="16" y="18" width="1" height="1"/><rect x="17" y="18" width="1" height="1"/><rect x="18" y="18" width="1" height="1"/><rect x="24" y="18" width="1" height="1"/><rect x="0" y="19" width="1" height="1"/><rect x="6" y="19" width="1" height="1"/><rect x="8" y="19" width="1" height="1"/><rect x="9" y="19" width="1" height="1"/><rect x="10" y="19" width="1" height="1"/><rect x="12" y="19" width="1" height="1"/><rect x="15" y="19" width="1" height="1"/><rect x="16" y="19" width="1" height="1"/><rect x="17" y="19" width="1" height="1"/><rect x="22" y="19" width="1" height="1"/><rect x="23" y="19" width="1" height="1"/><rect x="24" y="19" width="1" height="1"/><rect x="0" y="20" width="1" height="1"/><rect x="2" y="20" width="1" height="1"/><rect x="3" y="20" width="1" height="1"/><rect x="4" y="20" width="1" height="1"/><rect x="6" y="20" width="1" height="1"/><rect x="9" y="20" width="1" height="1"/><rect x="11" y="20" width="1" height="1"/><rect x="12" y="20" width="1" height="1"/><rect x="13" y="20" width="1" height="1"/><rect x="15" y="20" width="1" height="1"/><rect x="18" y="20" width="1" height="1"/><rect x="19" y="20" width="1" height="1"/><rect x="22" y="20" width="1" height="1"/><rect x="23" y="20" width="1" height="1"/><rect x="24" y="20" width="1" height="1"/><rect x="0" y="21" width="1" height="1"/><rect x="2" y="21" width="1" height="1"/><rect x="3" y="21" width="1" height="1"/><rect x="4" y="21" width="1" height="1"/><rect x="6" y="21" width="1" height="1"/><rect x="11" y="21" width="1" height="1"/><rect x="13" y="21" width="1" height="1"/><rect x="14" y="21" width="1" height="1"/><rect x="15" y="21" width="1" height="1"/><rect x="16" y="21" width="1" height="1"/><rect x="17" y="21" width="1" height="1"/><rect x="18" y="21" width="1" height="1"/><rect x="19" y="21" width="1" height="1"/><rect x="20" y="21" width="1" height="1"/><rect x="21" y="21" width="1" height="1"/><rect x="23" y="21" width="1" height="1"/><rect x="0" y="22" width="1" height="1"/><rect x="2" y="22" width="1" height="1"/><rect x="3" y="22" width="1" height="1"/><rect x="4" y="22" width="1" height="1"/><rect x="6" y="22" width="1" height="1"/><rect x="10" y="22" width="1" height="1"/><rect x="11" y="22" width="1" height="1"/><rect x="12" y="22" width="1" height="1"/><rect x="13" y="22" width="1" height="1"/><rect x="14" y="22" width="1" height="1"/><rect x="16" y="22" width="1" height="1"/><rect x="18" y="22" width="1" height="1"/><rect x="19" y="22" width="1" height="1"/><rect x="21" y="22" width="1" height="1"/><rect x="22" y="22" width="1" height="1"/><rect x="0" y="23" width="1" height="1"/><rect x="6" y="23" width="1" height="1"/><rect x="8" y="23" width="1" height="1"/><rect x="11" y="23" width="1" height="1"/><rect x="12" y="23" width="1" height="1"/><rect x="14" y="23" width="1" height="1"/><rect x="15" y="23" width="1" height="1"/><rect x="16" y="23" width="1" height="1"/><rect x="17" y="23" width="1" height="1"/><rect x="20" y="23" width="1" height="1"/><rect x="22" y="23" width="1" height="1"/><rect x="24" y="23" width="1" height="1"/><rect x="0" y="24" width="1" height="1"/><rect x="1" y="24" width="1" height="1"/><rect x="2" y="24" width="1" height="1"/><rect x="3" y="24" width="1" height="1"/><rect x="4" y="24" width="1" height="1"/><rect x="5" y="24" width="1" height="1"/><rect x="6" y="24" width="1" height="1"/><rect x="8" y="24" width="1" height="1"/><rect x="9" y="24" width="1" height="1"/><rect x="10" y="24" width="1" height="1"/><rect x="11" y="24" width="1" height="1"/><rect x="12" y="24" width="1" height="1"/><rect x="13" y="24" width="1" height="1"/><rect x="14" y="24" width="1" height="1"/><rect x="15" y="24" width="1" height="1"/><rect x="19" y="24" width="1" height="1"/><rect x="20" y="24" width="1" height="1"/><rect x="22" y="24" width="1" height="1"/><rect x="23" y="24" width="1" height="1"/><rect x="24" y="24" width="1" height="1"/></g></svg></div>
+          <div style="margin-top:4px;font-size:11.5px;text-align:left;line-height:1.7">✓ Entra na fila ou marca um horário<br>✓ Sabe quando o carro fica pronto<br>✓ Fidelização por classe de viatura</div>
+        </div>
+        <div class="bot">Protótipo: conversa e pagamentos simulados.</div>
+      </div>
+      <div class="desk" style="flex:1;min-width:430px">
+        <div class="bar"><i></i><i></i><i></i><span class="url">localhost:3000/simulador/whatsapp/258879990011</span></div>
+        <div class="simbanner">Simulador de demonstração — não é o WhatsApp e não envia mensagens reais</div>
+        <div class="waw">
+          <div class="list">
+            <div class="search"><div>Abrir número… ex.: 84 123 4567</div></div>
+            <div class="th"><div class="wa-av">CM</div><div><b>258841234567</b><small>Carla M. · Menu</small></div></div>
+            <div class="th on"><div class="wa-av">?</div><div><b>258879990011</b><small>Novo número</small></div></div>
+            <div class="th"><div class="wa-av">BN</div><div><b>258862223344</b><small>Bento N. · Pronto ✓</small></div></div>
+          </div>
+          <div class="chat">
+            <div class="wa-head"><div class="wa-av">LJ</div><div><b>Lava Já – Matola</b><small>Assistente simulado</small></div></div>
+            <div class="wa-body">
+              <div class="msg out">Olá<time>10:30</time></div>
+              <div class="msg in">Bem-vindo(a) ao Lava Já – Matola! Como se chama?<time>10:30</time></div>
+              <div class="msg out">Sónia Pondeca<time>10:31</time></div>
+              <div class="msg in">Obrigado, Sónia. Duas perguntas independentes:<br>1) Aderir à <b>fidelização</b>? (SIM/NÃO)<br>2) Receber <b>ofertas</b> no futuro? (SIM/NÃO)<br><br>Os seus dados não são partilhados com bancos: a lavadora só partilha indicadores agregados do negócio, com autorização própria.<time>10:31</time></div>
+              <div class="msg out">SIM, NÃO<time>10:32</time></div>
+              <div class="msg in">Registado. 👋<br>1 · Planos e preços · 2 · Entrar na fila<br>3 · Marcar horário · 4 · Estado<br>5 · Pagar (simulado) · 6 · Histórico<br>7 · Fidelização<time>10:32</time></div>
+            </div>
+            <div class="composer"><div>Escreva uma mensagem</div><span>Enviar</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="cap"><b>M1</b> Num piloto real, o cartaz levaria à conversa no WhatsApp. <b>M2</b> No protótipo, cada número tem o seu endereço. O consentimento para fidelização é separado do consentimento para marketing (capítulo 14).</div>
+  </div>
+
+  <!-- M3 + M4 -->
+  <div class="mock-title brk"><span class="n">M3 · M4</span><h4>Entrar na fila · marcar horário e proposta de antecipação</h4></div>
+  <div class="mock">
+    <div class="phones">
+      <div class="phone"><div class="notch"></div><div class="screen">
+        <div class="wa-head"><div class="wa-av">LJ</div><div><b>Lava Já – Matola</b><small>Simulador</small></div></div>
+        <div class="wa-body">
+          <div class="msg out">2<time>10:37</time></div>
+          <div class="msg in">Qual viatura?<br>1 · AHM 482 MP (Classe A)<br>2 · ABC 123 MC (Classe B)<br>N · Nova viatura<time>10:37</time></div>
+          <div class="msg out">1<time>10:37</time></div>
+          <div class="msg in">Planos para a <b>Classe A</b>:<br>1 · Simples — 250,00 MZN<br>2 · Completa — 450,00 MZN<br>3 · Completa + Motor — 700,00 MZN<time>10:37</time></div>
+          <div class="msg out">2<time>10:38</time></div>
+          <div class="msg in">✅ Na fila: Ref. <b>LJ-0142</b><br>AHM 482 MP · Completa · <b>450,00 MZN</b><br>🚗 Posição: <b>2</b><br>🕐 <b>Estimativa</b>: pronto por volta das 11:45 (pode mudar com a operação)<time>10:38</time></div>
+        </div>
+      </div></div>
+      <div class="phone"><div class="notch"></div><div class="screen">
+        <div class="wa-head"><div class="wa-av">LJ</div><div><b>Lava Já – Matola</b><small>Simulador</small></div></div>
+        <div class="wa-body">
+          <div class="msg out">3<time>08:10</time></div>
+          <div class="msg in">Marcação para AHM 482 MP · Completa (Classe A). Horários disponíveis <b>hoje</b>:<br>1 · 14:00 · 2 · 15:00 · 3 · 16:30<time>08:10</time></div>
+          <div class="msg out">2<time>08:11</time></div>
+          <div class="msg in">📅 Marcação <b>confirmada</b> para hoje às <b>15:00</b>. Ref. M-0031.<time>08:11</time></div>
+          <div class="msg in" style="background:#FFF8E1">🔔 Ficou livre um horário às <b>12:00</b>. Quer antecipar?<br>1 · Sim, passar para as 12:00<br>2 · Não, manter as 15:00<br><br>Se não responder até às 11:30, mantém-se às 15:00.<time>10:55</time></div>
+          <div class="msg out">2<time>11:02</time></div>
+          <div class="msg in">Mantida às 15:00. Até logo!<time>11:02</time></div>
+        </div>
+      </div></div>
+    </div>
+    <div class="cap"><b>M3</b> Os preços mostrados são os da classe da viatura; os tempos aparecem sempre como estimativas. <b>M4</b> Uma marcação confirmada nunca é antecipada automaticamente: o sistema propõe e o cliente decide. A política de confirmação (aqui imediata) é a D-09, ainda pendente.</div>
+  </div>
+
+  <!-- M5 + M6 -->
+  <div class="mock-title brk"><span class="n">M5 · M6</span><h4>Pronto, pagamento simulado e progresso · cartão de fidelização</h4></div>
+  <div class="mock">
+    <div class="phones">
+      <div class="phone"><div class="notch"></div><div class="screen">
+        <div class="wa-head"><div class="wa-av">LJ</div><div><b>Lava Já – Matola</b><small>Simulador</small></div></div>
+        <div class="wa-body">
+          <div class="msg in" style="background:#FFF8E1">🔔 <b>Aviso:</b> LJ-0142 está <b>pronto</b> (Posto 2). Valor: 450,00 MZN.<time>11:41</time></div>
+          <div class="msg out">5<time>11:42</time></div>
+          <div class="msg in">Pagamento <b>simulado</b> de 450,00 MZN (LJ-0142).<br>1 · Confirmar · 2 · Simular falha<br>(Demonstração: não há transacção real.)<time>11:42</time></div>
+          <div class="msg out">1<time>11:42</time></div>
+          <div class="msg in">✅ Pagamento digital simulado confirmado: 450,00 MZN.<time>11:42</time></div>
+          <div class="msg in" style="background:#FFF8E1">🔔 LJ-0142 <b>concluído</b>. Lavagem contada na fidelização · Classe A: <b>7 de 10</b> (Nível 1).<time>11:44</time></div>
+        </div>
+      </div></div>
+      <div class="phone"><div class="notch"></div><div class="screen">
+        <div class="wa-head"><div class="wa-av">LJ</div><div><b>Lava Já – Matola</b><small>Simulador</small></div></div>
+        <div class="wa-body">
+          <div class="msg out">7<time>09:10</time></div>
+          <div class="msg in">⭐ <b>Fidelização · Carla M.</b><br>Uma conta, progresso por classe:<br><br>Classe A · Nível 1 · <b>7 de 10</b><br>Classe B · Nível 1 · <b>2 de 10</b><br>Classe C · sem lavagens<br><br>Contam lavagens <b>concluídas e pagas</b>. Os benefícios só valem na mesma classe.<br><i>Parâmetros de demonstração, em validação.</i><time>09:10</time></div>
+        </div>
+      </div></div>
+    </div>
+    <div class="cap"><b>M5</b> Os avisos do sistema (fundo amarelo) distinguem-se das respostas do assistente. A lavagem só conta para a fidelização depois de concluída e paga. <b>M6</b> Um único cartão por cliente com progresso por classe. O texto do benefício (gratuito ou crédito) depende da D-02.</div>
+  </div>
+
+  <!-- M7 -->
+  <div class="mock-title brk"><span class="n">M7</span><h4>Pátio: quadro com marcações do dia</h4></div>
+  <div class="mock">
+    <div class="desk">
+      <div class="bar"><i></i><i></i><i></i><span class="url">localhost:3000/patio</span></div>
+      <div class="appnav"><span class="logo">LavaJá <em>Pass</em></span><a>Painel</a><a class="on">Pátio</a><a>Catálogo</a><a>Banco</a><a>Simulador</a><span class="demo">DADOS DE DEMONSTRAÇÃO</span></div>
+      <div class="appbody">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><div><h5>Pátio</h5><div class="sub">Postos: P1 ocupado · P2 pronto · P3 livre · P4 reservado 15:00 · 3 trabalhadores · actualiza a cada 3 s</div></div><span class="btn r sm" style="margin:0;padding:7px 12px">+ Registar serviço</span></div>
+        <div class="box2" style="margin-bottom:8px"><div class="t"><span>Marcações de hoje</span><span style="color:var(--muted);font-weight:500">3 confirmadas</span></div>
+          <div class="bayrow"><span><b>14:00</b> · ACX 731 MC · Completa (B)</span><span class="pill b">Confirmada</span></div>
+          <div class="bayrow"><span><b>15:00</b> · AHM 482 MP · Completa (A)</span><span class="pill b">Confirmada · proposta 12:00 recusada</span></div>
+          <div class="bayrow"><span><b>16:30</b> · ANT 145 MC · Simples (C)</span><span class="pill a">Por confirmar (D-09)</span></div>
+        </div>
+        <div class="board">
+          <div class="col"><h6><span>Em fila</span><span>2</span></h6>
+            <div class="car queue"><div class="row" style="margin:0"><span class="plate">ABC 123 MC</span><span class="chip-s">Classe B</span></div><div class="row"><span>Completa · 600,00</span><span class="pill a">Por pagar</span></div><div class="row"><span>Estimativa: início 11:50</span></div><div class="btnrow"><span class="btn p sm">▶ Iniciar · P3</span><span class="btn o sm">Cancelar</span></div></div>
+            <div class="car queue"><div class="row" style="margin:0"><span class="plate">AAZ 219 MP</span><span class="chip-s">Classe A</span></div><div class="row"><span>Simples · 250,00</span><span class="pill g">Pago · digital (sim.)</span></div><div class="row"><span>Estimativa: início 12:35</span></div></div>
+          </div>
+          <div class="col"><h6><span>Em execução</span><span>1</span></h6>
+            <div class="car wash"><div class="row" style="margin:0"><span class="plate">MMC 552 MP</span><span class="chip-s">Classe C</span></div><div class="row"><span>Completa + Motor · P1</span><span>22 de 75 min</span></div><div class="row"><span>1.100,00</span><span class="pill a">Pendente</span></div><div class="btnrow"><span class="btn k sm">✓ Marcar pronto</span></div></div>
+          </div>
+          <div class="col"><h6><span>Pronto</span><span>1</span></h6>
+            <div class="car ready"><div class="row" style="margin:0"><span class="plate">AGB 550 MP</span><span class="chip-s">Classe A</span></div><div class="row"><span>Completa · P2</span><span>pronto há 3 min</span></div><div class="row"><span>450,00</span><span class="pill a">Por pagar</span></div><div class="btnrow"><span class="btn o sm">Numerário…</span><span class="btn p sm">Concluir…</span></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="cap"><b>M7</b> As marcações do dia aparecem acima do quadro e reservam capacidade (o P4 está reservado para as 15:00). Cada cartão mostra a origem do pagamento. "Concluir…" sem pagamento pede confirmação explícita.</div>
+  </div>
+
+  <!-- M8 + M9 -->
+  <div class="mock-title brk"><span class="n">M8 · M9</span><h4>Registar serviço · declarar numerário</h4></div>
+  <div class="mock">
+    <div class="phones">
+      <div class="phone"><div class="notch"></div><div class="screen">
+        <div class="sheet"><div class="panel">
+          <div class="grab"></div>
+          <div style="font-weight:800;font-size:15px;color:var(--ink)">Registar serviço</div>
+          <div class="lbl">Telefone do cliente</div>
+          <div class="field"><span>84 555 0101</span><span class="pill g">Cliente encontrado</span></div>
+          <div class="lbl">Viatura</div>
+          <div class="chips"><span class="on">ACX 731 MC · B</span><span>+ Nova</span></div>
+          <div class="lbl">Plano (preços da Classe B)</div>
+          <div class="chips"><span>Simples · 350</span><span class="on">Completa · 600</span><span>C+Motor · 900</span></div>
+          <div style="margin-top:10px;padding:8px 10px;border-radius:10px;background:var(--soft);font-size:11.5px">Preço 600,00 MZN · <b>estimativa</b> de início 12:10 · valor final calculado pelo servidor</div>
+          <div class="btn r">Entrar na fila</div>
+          <div class="btn o">Cancelar</div>
+        </div></div>
+      </div></div>
+      <div class="desk" style="flex:1;min-width:380px;max-width:520px">
+        <div class="bar"><i></i><i></i><i></i><span class="url">localhost:3000/patio</span></div>
+        <div class="modal-wrap" style="padding:18px"><div class="modal">
+          <h5>Declarar numerário · AGB 550 MP</h5>
+          <div class="kv"><span>Serviço</span><b>LJ-0139 · Completa · Classe A</b></div>
+          <div class="kv"><span>Valor em dívida</span><b>450,00 MZN</b></div>
+          <div class="lbl">Valor recebido (MZN)</div>
+          <div class="field"><b>450,00</b><span style="color:var(--muted)">igual ao valor em dívida</span></div>
+          <div class="lbl">Declarado por</div>
+          <div class="field"><span>Amílcar</span><span style="color:var(--muted)">obrigatório</span></div>
+          <div class="radio on" style="margin-top:10px"><i></i><div>Confirmo que recebi este valor em numerário. Fica registado como <b>declarado</b> em meu nome, com data e hora.</div></div>
+          <div style="display:flex;gap:8px;margin-top:10px"><div class="btn o" style="flex:1">Voltar</div><div class="btn p" style="flex:1.4">Declarar 450,00 MZN</div></div>
+          <div class="wrapnote">Fica separado do digital confirmado. Repetir o pedido não cria um segundo registo.</div>
+        </div></div>
+      </div>
+    </div>
+    <div class="cap"><b>M8</b> O operador regista o serviço a partir do telefone; o preço é sempre calculado pelo servidor. <b>M9</b> O numerário só entra por esta acção explícita, com o operador identificado e o valor validado.</div>
+  </div>
+
+  <!-- M10 -->
+  <div class="mock-title brk"><span class="n">M10</span><h4>Gestor: capacidade e agenda do dia</h4></div>
+  <div class="mock">
+    <div class="desk">
+      <div class="bar"><i></i><i></i><i></i><span class="url">localhost:3000/painel#capacidade</span></div>
+      <div class="appnav"><span class="logo">LavaJá <em>Pass</em></span><a class="on">Painel</a><a>Pátio</a><a>Catálogo</a><a>Banco</a><a>Simulador</a><span class="demo">DADOS DE DEMONSTRAÇÃO</span></div>
+      <div class="appbody">
+        <h5>Capacidade de hoje</h5><div class="sub">4 postos · 3 trabalhadores (declarado pela lavadora) · margem de segurança 10 min (proposta) · <b>estimativas</b></div>
+        <div class="panel2">
+          <div class="box2">
+            <div class="t"><span>Agenda por posto (12:00–17:00)</span></div>
+            <div class="slot"><div class="t">P1</div><div><div class="b walk">12:00–13:15 · fila · MMC 552 MP</div><div class="b free">13:15–17:00 · livre</div></div></div>
+            <div class="slot"><div class="t">P2</div><div><div class="b walk">12:00–12:40 · fila · AAZ 219 MP</div><div class="b res">14:00–15:00 · marcação · ACX 731 MC</div></div></div>
+            <div class="slot"><div class="t">P3</div><div><div class="b walk">12:10–13:00 · fila · ABC 123 MC</div><div class="b free">13:00–17:00 · livre</div></div></div>
+            <div class="slot"><div class="t">P4</div><div><div class="b res">15:00–16:00 · marcação · AHM 482 MP</div><div class="b res">16:30–17:10 · marcação · ANT 145 MC</div></div></div>
+          </div>
+          <div class="box2">
+            <div class="t"><span>Disponibilidade</span></div>
+            <div class="bayrow"><span>Pausa almoço</span><b>13:00–13:45 (1 trabalhador)</b></div>
+            <div class="bayrow"><span>Posto P3</span><b>Disponível</b></div>
+            <div class="bayrow"><span>Reserva para a fila</span><b>Por decidir (D-12)</b></div>
+            <div class="bayrow"><span>Antecipações propostas</span><b>1 (recusada)</b></div>
+            <div class="wrapnote">Registar uma avaria ou ausência recalcula as estimativas e gera propostas de remarcação, que dependem da aceitação dos clientes (D-14).</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="cap"><b>M10</b> As marcações confirmadas (azul) reservam blocos; a fila (âmbar) preenche o resto. Os horários aqui são ilustrativos.</div>
+  </div>
+
+  <!-- M11 -->
+  <div class="mock-title"><span class="n">M11</span><h4>Painel: indicadores com a origem dos dados</h4></div>
+  <div class="mock">
+    <div class="desk">
+      <div class="bar"><i></i><i></i><i></i><span class="url">localhost:3000/painel</span></div>
+      <div class="appnav"><span class="logo">LavaJá <em>Pass</em></span><a class="on">Painel</a><a>Pátio</a><a>Catálogo</a><a>Banco</a><a>Simulador</a><span class="demo">DADOS DE DEMONSTRAÇÃO</span></div>
+      <div class="appbody">
+        <h5>Painel</h5><div class="sub">Últimos 30 dias · calculado a partir da base de demonstração · exemplo ilustrativo</div>
+        <div class="kpis">
+          <div class="kpi"><span>Serviços concluídos</span><b>88</b> <em>registado</em></div>
+          <div class="kpi"><span>Elegíveis p/ fidelização</span><b>79</b> <em>concluídos e pagos</em></div>
+          <div class="kpi"><span>Marcações cumpridas</span><b>—</b> <em>sem dados ainda</em></div>
+          <div class="kpi"><span>Agora no pátio</span><b>4</b> <em>2 fila · 1 exec. · 1 pronto</em></div>
+        </div>
+        <div class="kpis">
+          <div class="kpi" style="border-color:var(--green)"><span>Digital confirmado</span><b>22.800</b> <em>MZN · simulado</em></div>
+          <div class="kpi"><span>Numerário declarado</span><b>11.850</b> <em>MZN · declarado</em></div>
+          <div class="kpi"><span>Por receber</span><b>2.150</b> <em>não é receita</em></div>
+          <div class="kpi"><span>Reembolsado</span><b>200</b> <em>MZN · fora da receita</em></div>
+        </div>
+        <div class="panel2">
+          <div class="box2"><div class="t"><span>Concluídos por dia da semana</span></div>
+            <div class="bars"><div><small>10</small><i style="height:43%"></i></div><div><small>4</small><i class="low" style="height:17%"></i></div><div><small>9</small><i style="height:39%"></i></div><div><small>8</small><i style="height:35%"></i></div><div><small>21</small><i style="height:91%"></i></div><div><small>23</small><i class="hi" style="height:100%"></i></div><div><small>13</small><i style="height:57%"></i></div></div>
+            <div class="blabels"><span>Seg</span><span>Ter</span><span>Qua</span><span>Qui</span><span>Sex</span><span>Sáb</span><span>Dom</span></div></div>
+          <div class="box2"><div class="t"><span>Módulos</span></div>
+            <div class="bayrow"><span>Campanhas</span><span class="pill a">Reservado</span></div>
+            <div class="bayrow"><span>Pontuação de crédito</span><span class="pill r">Não existe</span></div>
+            <div class="bayrow"><span>Partilha com bancos</span><span class="pill b">1 autorização activa</span></div>
+            <div class="wrapnote">Cada indicador mostra a definição e a origem (ⓘ).</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="cap"><b>M11</b> A receita conta só os pagamentos confirmados (simulados) e o numerário declarado, em separado. O valor por receber e os reembolsos aparecem à parte. Os números são ilustrativos.</div>
+  </div>
+
+  <!-- M12 + M13 -->
+  <div class="mock-title brk"><span class="n">M12 · M13</span><h4>Viaturas por classe · histórico por matrícula</h4></div>
+  <div class="mock">
+    <div class="desk">
+      <div class="bar"><i></i><i></i><i></i><span class="url">localhost:3000/painel#classe-1</span></div>
+      <div class="appnav"><span class="logo">LavaJá <em>Pass</em></span><a class="on">Painel</a><a>Pátio</a><a>Catálogo</a><a>Banco</a><a>Simulador</a><span class="demo">DADOS DE DEMONSTRAÇÃO</span></div>
+      <div class="appbody">
+        <h5>Viaturas por classe</h5><div class="sub">Classe A — viaturas ligeiras de passageiros (hatchbacks, sedans)</div>
+        <div class="segment"><span class="on">Classe A · 10</span><span>Classe B · 4</span><span>Classe C · 2</span></div>
+        <table class="mtable">
+          <tr><th>Matrícula</th><th>Cliente</th><th class="num">Concluídas</th><th>Última concluída</th><th></th></tr>
+          <tr><td><a>AHM 482 MP</a></td><td>Carla M.</td><td class="num">10</td><td>15/10/2026 10:20</td><td><a>Histórico →</a></td></tr>
+          <tr><td><a>AAZ 219 MP</a></td><td>Rui T.</td><td class="num">7</td><td>14/10/2026 09:20</td><td><a>Histórico →</a></td></tr>
+          <tr><td><a>ADK 774 MC</a></td><td>Sónia P.</td><td class="num">0</td><td>—</td><td><a>Histórico →</a></td></tr>
+        </table>
+      </div>
+    </div>
+    <div class="desk" style="margin-top:12px">
+      <div class="bar"><i></i><i></i><i></i><span class="url">localhost:3000/painel · histórico AHM 482 MP</span></div>
+      <div class="hist-modal"><div class="modal">
+        <h5>AHM 482 MP · Carla M. · classe actual A</h5>
+        <table class="mtable">
+          <tr><th>Data</th><th>Plano</th><th>Cl.</th><th>Estado</th><th class="num">Base</th><th class="num">Desc.</th><th class="num">Benefício</th><th class="num">Final</th><th>Pagamento</th><th>Fidelização</th></tr>
+          <tr><td>18/09</td><td>Simples</td><td>A</td><td><span class="pill g">Concluído</span></td><td class="num">200,00</td><td class="num">0,00</td><td class="num">0,00</td><td class="num">200,00</td><td>Digital (sim.)</td><td><span class="pill g">Contou</span></td></tr>
+          <tr><td>26/09</td><td>Completa</td><td>A</td><td><span class="pill r">Cancelado</span></td><td class="num">450,00</td><td class="num">0,00</td><td class="num">0,00</td><td class="num">450,00</td><td>—</td><td><span class="pill r">Não</span></td></tr>
+          <tr><td>03/10</td><td>Completa</td><td>A</td><td><span class="pill g">Concluído</span></td><td class="num">450,00</td><td class="num">0,00</td><td class="num">450,00</td><td class="num">0,00</td><td>—</td><td><span class="pill a">Benefício usado</span></td></tr>
+          <tr><td>15/10</td><td>Simples</td><td>A</td><td><span class="pill g">Concluído</span></td><td class="num">250,00</td><td class="num">0,00</td><td class="num">0,00</td><td class="num">250,00</td><td>Numerário (decl.)</td><td><span class="pill g">Contou</span></td></tr>
+        </table>
+        <div class="wrapnote">Em 18/09 a Simples custava 200,00; o catálogo actual (250,00) não altera o histórico. Se um serviço gratuito conta para o progresso é a D-03.</div>
+      </div></div>
+    </div>
+    <div class="cap"><b>M12</b> "Concluídas" conta apenas o estado <code>completed</code>. <b>M13</b> Histórico cronológico com os valores guardados no serviço, a origem do pagamento e o efeito na fidelização.</div>
+  </div>
+
+  <!-- M14 -->
+  <div class="mock-title brk"><span class="n">M14</span><h4>Catálogo, classes e parâmetros de fidelização</h4></div>
+  <div class="mock">
+    <div class="desk">
+      <div class="bar"><i></i><i></i><i></i><span class="url">localhost:3000/catalogo</span></div>
+      <div class="appnav"><span class="logo">LavaJá <em>Pass</em></span><a>Painel</a><a>Pátio</a><a class="on">Catálogo</a><a>Banco</a><a>Simulador</a><span class="demo">DADOS DE DEMONSTRAÇÃO</span></div>
+      <div class="appbody">
+        <h5>Catálogo</h5><div class="sub">Preços ilustrativos, por validar. Alterar um preço afecta só os serviços futuros.</div>
+        <table class="mtable">
+          <tr><th>Plano</th><th>Duração</th><th class="num">A</th><th class="num">B</th><th class="num">C</th><th>Estado</th><th></th></tr>
+          <tr><td><b>Simples</b></td><td>30 min</td><td class="num">250,00</td><td class="num">350,00</td><td class="num">450,00</td><td><span class="pill g">Activo</span></td><td><a>Editar</a></td></tr>
+          <tr><td><b>Completa</b></td><td>50 min</td><td class="num">450,00</td><td class="num">600,00</td><td class="num">750,00</td><td><span class="pill g">Activo</span></td><td><a>Editar</a></td></tr>
+          <tr><td><b>Completa + Motor</b></td><td>75 min</td><td class="num">700,00</td><td class="num">900,00</td><td class="num">1.100,00</td><td><span class="pill g">Activo</span></td><td><a>Editar</a></td></tr>
+          <tr><td><b>Polimento</b></td><td>120 min</td><td class="num">1.500,00</td><td class="num">2.000,00</td><td class="num" style="color:var(--muted)">sem preço</td><td><span class="pill a">Indisponível</span></td><td><a>Editar</a></td></tr>
+        </table>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px">
+          <div class="box2"><div class="t"><span>Classes (exactamente A, B, C)</span></div>
+            <div class="bayrow"><span>A</span><span>Ligeiros de passageiros</span></div>
+            <div class="bayrow"><span>B</span><span>SUV, 4x4, algumas carrinhas de caixa aberta</span></div>
+            <div class="bayrow"><span>C</span><span>Vans, minibus</span></div></div>
+          <div class="box2"><div class="t"><span>Fidelização</span><span class="pill r">Parâmetros pendentes</span></div>
+            <div class="bayrow"><span>Ciclo</span><b>10 lavagens (proposto)</b></div>
+            <div class="bayrow"><span>Benefícios por nível</span><b>1 · 2 · 3 por ciclo (proposto)</b></div>
+            <div class="bayrow"><span>Passagem de nível</span><b>D-01</b></div>
+            <div class="bayrow"><span>Tipo de benefício</span><b>D-02</b></div>
+            <div class="bayrow"><span>Gratuito conta para progresso</span><b>D-03</b></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="cap"><b>M14</b> A edição de preços demonstra que o histórico se mantém (M13). Os parâmetros de fidelização aparecem como pendentes até serem decididos.</div>
+  </div>
+
+  <!-- M15 -->
+  <div class="mock-title brk"><span class="n">M15</span><h4>Lavadora: autorizações de partilha e registo de acessos</h4></div>
+  <div class="mock">
+    <div class="desk">
+      <div class="bar"><i></i><i></i><i></i><span class="url">localhost:3000/banco#autorizacoes</span></div>
+      <div class="appnav"><span class="logo">LavaJá <em>Pass</em></span><a>Painel</a><a>Pátio</a><a>Catálogo</a><a class="on">Banco</a><a>Simulador</a><span class="demo">DADOS DE DEMONSTRAÇÃO</span></div>
+      <div class="appbody">
+        <h5>Partilha com instituições</h5><div class="sub">Só o que autorizar, a quem autorizar, pelo tempo que autorizar. Pode revogar a qualquer momento.</div>
+        <div class="panel2">
+          <div class="box2">
+            <div class="t"><span>Nova autorização</span></div>
+            <div class="lbl">Instituição</div><div class="field"><span>Banco de demonstração</span></div>
+            <div class="lbl">Finalidade</div><div class="field"><span>Análise de oportunidade de financiamento de equipamento</span></div>
+            <div class="lbl">Âmbito</div>
+            <div class="chips"><span class="on">Actividade</span><span class="on">Recebimentos por origem</span><span class="on">Qualidade dos dados</span><span>Clientes (agregado)</span></div>
+            <div class="lbl">Dados de · validade</div><div class="field"><span>últimos 6 meses · válida 30 dias</span></div>
+            <div class="radio on" style="margin-top:8px"><i></i><div>Autorizo a partilha destes indicadores agregados. Os dados pessoais dos meus clientes não são partilhados.</div></div>
+            <div class="btn p sm">Autorizar</div>
+          </div>
+          <div class="box2">
+            <div class="t"><span>Autorizações e acessos</span></div>
+            <div class="bayrow"><span><b>AUT-003</b> · Banco de demonstração</span><span class="pill g">Activa até 16/11</span></div>
+            <div class="bayrow"><span>17/10 10:12 · analista.demo · consultou o relatório</span><span>AUT-003</span></div>
+            <div class="bayrow"><span>17/10 10:15 · analista.demo · exportou</span><span>AUT-003</span></div>
+            <div class="bayrow"><span><b>AUT-001</b> · Banco de demonstração</span><span class="pill r">Revogada 02/10</span></div>
+            <div class="btn o sm">Revogar AUT-003</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="cap"><b>M15</b> A lavadora controla finalidade, âmbito, período e validade, e vê cada acesso. No protótipo, sem autenticação, esta página é demonstrativa (D-16).</div>
+  </div>
+
+  <!-- M16 -->
+  <div class="mock-title brk"><span class="n">M16</span><h4>Banco: relatório de actividade</h4></div>
+  <div class="mock">
+    <div class="desk">
+      <div class="bar"><i></i><i></i><i></i><span class="url">localhost:3000/banco#relatorio</span></div>
+      <div class="appnav"><span class="logo">LavaJá <em>Pass</em> · Banco</span><a class="on">Relatórios autorizados</a><span class="demo">DADOS DE DEMONSTRAÇÃO</span></div>
+      <div class="appbody">
+        <h5>Lava Já – Matola · relatório de actividade</h5><div class="sub">Autorização AUT-003 · finalidade: análise de oportunidade de financiamento · dados de 18/09 a 17/10 · emitido 17/10 10:12 · consulta registada</div>
+        <div class="kpis">
+          <div class="kpi"><span>Serviços concluídos</span><b>88</b> <em>registado</em></div>
+          <div class="kpi"><span>Digital confirmado</span><b>22.800</b> <em>MZN · simulado</em></div>
+          <div class="kpi"><span>Numerário declarado</span><b>11.850</b> <em>MZN · declarado</em></div>
+          <div class="kpi"><span>Clientes que regressam</span><b>57%</b> <em>agregado</em></div>
+        </div>
+        <div class="panel2">
+          <div class="box2"><div class="t"><span>Recebimentos por semana · por origem</span></div>
+            <div class="bars"><div><small>8,1k</small><i style="height:60%;background:var(--green)"></i></div><div><small>9,4k</small><i style="height:70%;background:var(--green)"></i></div><div><small>8,8k</small><i style="height:65%;background:var(--green)"></i></div><div><small>8,3k</small><i style="height:62%;background:var(--green)"></i></div></div>
+            <div class="blabels"><span>Sem −3</span><span>Sem −2</span><span>Sem −1</span><span>Últimos 7 d</span></div>
+            <div class="wrapnote">Cada barra separa digital confirmado (simulado) e numerário declarado.</div></div>
+          <div class="box2"><div class="t"><span>Qualidade dos dados</span></div>
+            <div class="bayrow"><span>Antiguidade do histórico</span><b>30 dias</b></div>
+            <div class="bayrow"><span>Dias com registo</span><b>29 de 30</b></div>
+            <div class="bayrow"><span>Concluídos com pagamento registado</span><b>100%</b></div>
+            <div class="bayrow"><span>Peso do digital confirmado</span><b>66%</b></div>
+            <div class="bayrow"><span>Cancelamentos · reembolsos</span><b>3 · 1</b></div>
+            <div class="wrapnote">Indicadores descritivos. Este relatório não é uma avaliação nem uma pontuação de crédito e não substitui a análise do banco.</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="cap"><b>M16</b> O analista vê apenas o âmbito autorizado, com a origem de cada valor e sem dados pessoais dos clientes finais. Os números são ilustrativos.</div>
+  </div>
+</section>
+
+<!-- ================= 17 ================= -->
+<section id="c17" class="brk">
+  <div class="kicker">17 · Plano de implementação</div>
+  <h2>Ordem de construção do protótipo</h2>
+  <p class="lead">Marcos incrementais, cada um testável. Para trabalhar com o Claude Code: dar como contexto os capítulos 10 a 15 e o marco em curso, pedir testes automáticos para os critérios de aceitação, e nunca fixar no código uma decisão marcada como pendente.</p>
+  <table class="tbl-sm">
+    <tr><th>Marco</th><th>Entregável</th><th>Critérios de aceitação (resumo)</th><th>Depende de</th><th>Demo</th></tr>
+    <tr><td class="idc">I-0</td><td>Monorepositório, Express, SQLite, migrações, dados de demonstração, testes</td><td><code>npm run db:reset</code>, <code>npm start</code> e <code>npm test</code> funcionam; base fora de <code>public/</code></td><td>—</td><td>Essencial</td></tr>
+    <tr><td class="idc">I-1</td><td>Catálogo, clientes e viaturas</td><td>Exactamente A, B, C; plano inactivo ou sem preço recusado; telefone e matrícula normalizados e únicos</td><td>I-0</td><td>Essencial</td></tr>
+    <tr><td class="idc">I-2</td><td>Serviços, fila, postos e estimativas; Pátio</td><td>Transições do capítulo 10; contagem só de <code>completed</code>; retrato de preços preservado</td><td>I-1</td><td>Essencial</td></tr>
+    <tr><td class="idc">I-3</td><td>Pagamentos simulados e numerário declarado</td><td>Idempotência; um pagamento efectivo por serviço; origem separada; transacções</td><td>I-2</td><td>Essencial</td></tr>
+    <tr><td class="idc">I-4</td><td>Motor de fidelização parametrizável</td><td>Conta única por cliente; progresso por classe; elegibilidade (concluído e pago); sem duplicados; parâmetros pendentes configuráveis</td><td>I-3 · D-01, D-02 para valores por omissão</td><td>Essencial</td></tr>
+    <tr><td class="idc">I-5</td><td>Simulador de WhatsApp e assistente</td><td>Um URL por número; conversas isoladas e persistentes; avisos distintos</td><td>I-2, I-3, I-4</td><td>Essencial</td></tr>
+    <tr><td class="idc">I-6</td><td>Painel, viaturas por classe, histórico por matrícula, catálogo</td><td>Indicadores com definição e origem; histórico com valores guardados</td><td>I-3, I-4</td><td>Essencial</td></tr>
+    <tr><td class="idc">I-7</td><td>Vertente Banco (demonstrativa)</td><td>Autorização com âmbito e validade; relatório agregado; registo de acessos; revogação</td><td>I-6 · D-16</td><td>Recomendado</td></tr>
+    <tr><td class="idc">I-8</td><td>Marcações e capacidade</td><td>Marcação confirmada nunca antecipada sem aceitação; propostas com resposta; estimativas recalculadas</td><td>I-2 · D-09 a D-14</td><td>Se houver tempo</td></tr>
+    <tr><td class="idc">I-9</td><td>Consentimentos, registo de alterações, reconciliação</td><td>Três consentimentos separados; alterações de preços registadas; fecho diário</td><td>I-3</td><td>Opcional</td></tr>
+    <tr><td class="idc">I-10</td><td>Documentação e changelog</td><td>README com comandos reais; <code>changelogs.md</code> actualizado; limitações e pendências listadas</td><td>Todos</td><td>Essencial</td></tr>
+  </table>
+  <h3>17.1 Calendário do hackathon</h3>
+  <table class="tbl-sm">
+    <tr><th>Quando</th><th>O quê</th></tr>
+    <tr><td><b>Até 21/10</b></td><td>Confirmar que a inscrição foi submetida (o prazo era 16/10); visita a uma lavadora; decidir D-01, D-02 e D-16 para a demo; Node.js 22.13+ instalado em todos os portáteis</td></tr>
+    <tr><td><b>22/10</b></td><td>Validar as regras com o caso apresentado; fechar I-0 a I-6; dados de demonstração coerentes com a visita</td></tr>
+    <tr><td><b>23/10 manhã</b></td><td>I-7 (vertente Banco demonstrativa); congelar funcionalidades; testes; gravar um vídeo de 2 min como plano B</td></tr>
+    <tr><td><b>23/10 tarde</b></td><td>Ensaios cronometrados; <code>npm run db:reset</code> antes de subir ao palco</td></tr>
+  </table>
+  <p class="small">Equipa sugerida: A · backend (serviços, regras, testes) · B · Pátio e Painel · C · Simulador · D · dados e negócio (parâmetros, custos, relatório Banco) · E · pitch e validação no terreno. Confirmar no regulamento o que pode ser preparado antes do evento.</p>
+</section>
+
+<!-- ================= 18 ================= -->
+<section id="c18" class="brk">
+  <div class="kicker">18 · Projecto-piloto</div>
+  <h2>Validar o modelo com várias lavadoras</h2>
+  <div class="callout warn">Qualquer duração, amostra, meta percentual ou valor financeiro deste capítulo é uma <b>proposta a validar</b>. As metas de versões anteriores (ex.: "−50% de tempo no pátio") deixam de ser referência e só voltam a sê-lo se forem confirmadas com dados de base.</div>
+  <h3>18.1 Fases <span class="st p">Proposto</span></h3>
+  <table class="tbl-sm">
+    <tr><th>#</th><th>Fase</th><th>Actividades</th><th>Saída</th></tr>
+    <tr><td>1</td><td>Levantamento da situação inicial</td><td>Visitas; volumes, preços, custos, capacidade, formas de pagamento; interesse em partilhar dados</td><td>Linha de base por lavadora</td></tr>
+    <tr><td>2</td><td>Selecção e integração</td><td>Critérios de selecção; acordo de participação; configuração do catálogo e da capacidade</td><td>Lavadoras configuradas</td></tr>
+    <tr><td>3</td><td>Formação e acompanhamento</td><td>Formação de gestores e operadores; materiais; canal de apoio</td><td>Equipas capazes de usar a plataforma</td></tr>
+    <tr><td>4</td><td>Utilização assistida</td><td>Uso diário com acompanhamento; correcção de problemas</td><td>Registos contínuos</td></tr>
+    <tr><td>5</td><td>Recolha e análise de indicadores</td><td>Indicadores da secção 18.2; qualidade dos dados</td><td>Relatório de piloto</td></tr>
+    <tr><td>6</td><td>Avaliação com participantes e potenciais parceiros bancários</td><td>Sessões com lavadoras e bancos; utilidade dos relatórios; disposição para pagar</td><td>Conclusões validadas</td></tr>
+    <tr><td>7</td><td>Decisão</td><td>Continuar, alterar ou interromper</td><td>Decisão registada</td></tr>
+  </table>
+  <p class="small">Proposta inicial para discussão: 3 a 5 lavadoras na zona Maputo–Matola, durante cerca de 90 dias <span class="st v">A validar</span>. A expansão para outros sectores (barbearias, salões, oficinas) é uma possibilidade futura, dependente dos resultados do piloto e da validação comercial.</p>
+  <h3>18.2 Indicadores de sucesso</h3>
+  <table class="tbl-sm">
+    <tr><th>Indicador</th><th>Como se mede</th><th>Meta</th></tr>
+    <tr><td>Serviços registados na plataforma</td><td>Registados ÷ realizados (contagem de controlo no terreno)</td><td>A definir após a linha de base</td></tr>
+    <tr><td>Erro de previsão</td><td>Diferença média entre a hora estimada e a real</td><td>A definir</td></tr>
+    <tr><td>Marcações atendidas no intervalo confirmado</td><td>Atendidas no intervalo ÷ confirmadas</td><td>A definir</td></tr>
+    <tr><td>Utilização da capacidade</td><td>Tempo de serviço ÷ capacidade disponível</td><td>A definir</td></tr>
+    <tr><td>Tempo de inactividade</td><td>Tempo de posto livre em horário de funcionamento</td><td>A definir</td></tr>
+    <tr><td>Frequência de retorno</td><td>Clientes com mais de um serviço no período ÷ clientes</td><td>Comparar com a linha de base</td></tr>
+    <tr><td>Custo e margem da fidelização</td><td>Custo dos benefícios (secção 11.5) vs. margem das visitas</td><td>Sustentável segundo o método da secção 11.5</td></tr>
+    <tr><td>Completude e qualidade dos dados</td><td>Indicadores da secção 9.4</td><td>A definir</td></tr>
+    <tr><td>Interesse formal das instituições bancárias</td><td>Reuniões, pedidos de informação, cartas de intenção</td><td>A definir</td></tr>
+    <tr><td>Utilidade dos relatórios</td><td>Avaliação estruturada pelos analistas</td><td>A definir</td></tr>
+    <tr><td>Disposição para pagar</td><td>Respostas das instituições ao modelo do capítulo 6</td><td>A definir</td></tr>
+  </table>
+</section>
+
+<!-- ================= 19 ================= -->
+<section id="c19" class="brk">
+  <div class="kicker">19 · Pitch</div>
+  <h2>Guião, mensagens e perguntas do júri</h2>
+  <h3>19.1 Guião (5 minutos, dois ecrãs)</h3>
+  <table class="tbl-sm">
+    <tr><th class="num">Tempo</th><th>O que se diz</th><th>Ecrã</th></tr>
+    <tr><td class="num">0:00</td><td>O desafio: tráfego e fidelização num car wash comunitário. O que vimos no terreno.</td><td>Foto do pátio</td></tr>
+    <tr><td class="num">0:40</td><td>"A Carla entra na fila pela conversa; o preço é o da classe do carro dela." "Outro cliente marca para as 15:00."</td><td>M3 · M4 · M7</td></tr>
+    <tr><td class="num">1:40</td><td>"Ficou livre um horário às 12:00: o sistema propõe, o cliente decide. Nunca mudamos uma marcação sem aceitação."</td><td>M4 · M10</td></tr>
+    <tr><td class="num">2:10</td><td>"Pronto, pago (simulado), concluído: a fidelização da classe A avança. Repetir o pedido não duplica."</td><td>M5 · M6</td></tr>
+    <tr><td class="num">2:50</td><td>"Pagamento em numerário: fica declarado em nome do operador, separado do digital."</td><td>M9 · M11</td></tr>
+    <tr><td class="num">3:20</td><td>"Mudamos um preço: o histórico não muda."</td><td>M14 · M13</td></tr>
+    <tr><td class="num">3:50</td><td>"E o banco? A lavadora autoriza, o banco vê actividade agregada com a origem de cada valor, e cada acesso fica registado. Não é uma pontuação de crédito."</td><td>M15 · M16</td></tr>
+    <tr><td class="num">4:30</td><td>O pedido: um piloto com várias lavadoras e conversas com bancos para validar o modelo.</td><td>Slide final</td></tr>
+  </table>
+  <div class="callout"><b>Frase de fecho (proposta):</b> «O LavaJá Pass ajuda as lavadoras a organizar o pátio e a fidelizar clientes e, com a sua autorização, transforma essa actividade em informação que os bancos podem considerar. Propomos um piloto com várias lavadoras para validar, com dados reais, o valor para as lavadoras e para os bancos.»</div>
+  <h3>19.2 Perguntas prováveis</h3>
+  <table class="tbl-sm">
+    <tr><th>Pergunta</th><th>Resposta curta</th></tr>
+    <tr><td>"Isto dá crédito às lavadoras?"</td><td>Não. Organiza e regista a actividade; com autorização, o banco recebe informação adicional. A decisão e o modelo de risco são do banco.</td></tr>
+    <tr><td>"Quem paga?"</td><td>A hipótese principal é o licenciamento ou subscrição institucional pelos bancos. Ainda não está validada: é um dos objectivos do piloto.</td></tr>
+    <tr><td>"Os dados são fiáveis?"</td><td>Cada valor indica a origem: o digital confirmado e o numerário declarado nunca se misturam, e os indicadores de qualidade mostram as lacunas.</td></tr>
+    <tr><td>"E a privacidade?"</td><td>São três consentimentos separados. O banco só vê dados agregados da lavadora, com autorização revogável e cada acesso registado. O enquadramento legal vai ser validado.</td></tr>
+    <tr><td>"Isto envia WhatsApp e processa pagamentos?"</td><td>No protótipo, não: é um simulador. As integrações reais são uma fase seguinte, com custos e aprovações.</td></tr>
+    <tr><td>"A fidelização é sustentável?"</td><td>Ainda não sabemos. Temos um método de custo por serviço e capacidade e vamos medi-lo no piloto antes de activar níveis mais generosos.</td></tr>
+    <tr><td>"E se o cliente marcado chegar tarde?"</td><td>A política de tolerância está por decidir com as lavadoras; já está definido que nunca antecipamos uma marcação sem aceitação.</td></tr>
+  </table>
+</section>
+
+<!-- ================= 20 ================= -->
+<section id="c20" class="brk">
+  <div class="kicker">20 · Riscos</div>
+  <h2>Riscos, dependências e limitações</h2>
+  <table class="tbl-sm">
+    <tr><th>Risco</th><th>Impacto</th><th>Mitigação</th></tr>
+    <tr><td>Os bancos não consideram a informação útil ou não pagam</td><td>O modelo comercial principal cai</td><td>Validar cedo com 2–3 instituições; ter a alternativa D-15</td></tr>
+    <tr><td>Dados incompletos (serviços não registados, numerário não declarado)</td><td>Relatórios pouco úteis</td><td>Indicadores de qualidade; incentivos ao operador; reconciliação diária</td></tr>
+    <tr><td>Enquadramento legal da partilha de dados</td><td>Bloqueia a vertente Banco</td><td>Apoio jurídico (D-18); minimização; consentimentos separados</td></tr>
+    <tr><td>Fidelização demasiado generosa</td><td>Prejuízo para a lavadora</td><td>Método de custo (11.5); níveis só após D-01 e D-07</td></tr>
+    <tr><td>Complexidade das marcações</td><td>Atrasos no desenvolvimento; regras mal aplicadas</td><td>I-8 só depois de decididas as políticas; manter a regra de não antecipar</td></tr>
+    <tr><td>Adopção pelos operadores</td><td>Registos falham no pico</td><td>Interface com um botão por cartão; formação; registo rápido</td></tr>
+    <tr><td>Júri entende o pitch como fora do desafio</td><td>Perde pontos no hackathon</td><td>Abrir pelo desafio (tráfego e fidelização) e só depois a vertente Banco</td></tr>
+    <tr><td>Protótipo sem autenticação</td><td>Não pode ser usado com dados reais</td><td>D-16; aviso visível; dados fictícios</td></tr>
+    <tr><td>Dependência do npm e do Node.js 22.13+</td><td>Instalação falha num portátil</td><td>Instalar e testar antes do evento; portátil de reserva</td></tr>
+  </table>
+  <h3>20.1 Limitações do protótipo</h3>
+  <ul class="small">
+    <li>Conversas simuladas: sem integração com o WhatsApp. Pagamentos simulados: sem gateway real.</li>
+    <li>Sem autenticação nem perfis efectivos (D-16); não usar com dados reais.</li>
+    <li>Dados de demonstração fictícios; os indicadores são calculados a partir deles.</li>
+    <li>Estimativas baseadas em durações por plano e postos ocupados; trabalhadores, pausas e duração por classe dependem de dados (D-20).</li>
+    <li>Campanhas reservadas; nenhuma pontuação de crédito.</li>
+  </ul>
+</section>
+
+<!-- ================= 21 ================= -->
+<section id="c21" class="brk">
+  <div class="kicker">21 · Decisões</div>
+  <h2>Registo de decisões e decisões pendentes</h2>
+  <h3>21.1 Decisões tomadas <span class="st d">Decidido</span></h3>
+  <table class="tbl-sm">
+    <tr><th>ID</th><th>Decisão</th></tr>
+    <tr><td class="idc">DEC-01</td><td>Posicionamento: solução para instituições bancárias, começando pela digitalização e organização das pequenas lavadoras</td></tr>
+    <tr><td class="idc">DEC-02</td><td>Um único ecossistema com duas vertentes (Lavadora–Cliente e Lavadora–Banco), dados partilhados conforme autorizações e perfis diferentes</td></tr>
+    <tr><td class="idc">DEC-03</td><td>Não afirmar que o registo garante crédito, demonstra capacidade de reembolso ou substitui a avaliação de risco dos bancos</td></tr>
+    <tr><td class="idc">DEC-04</td><td>Fidelização associada ao cliente: uma conta, progresso separado por classe</td></tr>
+    <tr><td class="idc">DEC-05</td><td>Exactamente três classes iniciais (A, B, C), configuráveis, sem Classe D</td></tr>
+    <tr><td class="idc">DEC-06</td><td>Contagem de lavagens realizadas só com estado <code>completed</code>; fidelização exige também pagamento digital simulado confirmado ou numerário declarado</td></tr>
+    <tr><td class="idc">DEC-07</td><td>Distinção permanente entre digital confirmado (simulado) e numerário declarado; dados declarados nunca apresentados como comprovados</td></tr>
+    <tr><td class="idc">DEC-08</td><td>Retrato de preços e descontos em cada serviço; histórico não recalculado</td></tr>
+    <tr><td class="idc">DEC-09</td><td>Dois fluxos (fila e marcações) coordenados por gestão de capacidade; previsões apresentadas como estimativas</td></tr>
+    <tr><td class="idc">DEC-10</td><td>Marcação confirmada nunca antecipada automaticamente; só por proposta aceite pelo cliente</td></tr>
+    <tr><td class="idc">DEC-11</td><td>Partilha com bancos só com autorização explícita da lavadora; menor privilégio; registo de acessos; minimização; três consentimentos separados</td></tr>
+    <tr><td class="idc">DEC-12</td><td>Restrições técnicas do capítulo 15.1 (monorepositório, JavaScript puro, Node.js + Express, SQLite fora do directório público, simulador por número, sem integrações reais)</td></tr>
+    <tr><td class="idc">DEC-13</td><td>Campanhas reservadas para avaliação futura, sem campanhas automáticas</td></tr>
+    <tr><td class="idc">DEC-14</td><td>Sem preços, contratos, parcerias ou resultados inventados; hipóteses identificadas como tal</td></tr>
+  </table>
+
+  <h3>21.2 Decisões pendentes</h3>
+  <p class="small">Prioridade: <b>Alta</b> = bloqueia a demo ou uma regra central · <b>Média</b> = necessária antes do piloto · <b>Baixa</b> = pode esperar.</p>
+  <table class="tbl-sm dec">
+    <tr><th>ID</th><th>Questão e contexto</th><th>Alternativas e impacto</th><th>Informação necessária</th><th>Prior.</th><th>Estado</th></tr>
+    <tr><td class="idc">D-01</td><td><b>Como se passa de nível na fidelização?</b><div class="small muted">Contexto: "Depois de dez ciclos" pode significar 100 lavagens por nível</div></td><td>A literal · B 1 ciclo · C N ciclos · D frequência num período<div class="small muted">Impacto: A: níveis quase inatingíveis · B: custo cedo · C: ajustável · D: premeia regularidade, exige regra de descida</div></td><td>Frequência de visitas; custo por serviço; opinião dos donos</td><td>Alta</td><td><span class="st n">Pendente</span></td></tr>
+    <tr><td class="idc">D-02</td><td><b>Lavagem gratuita ou crédito com limite?</b><div class="small muted">Contexto: A v2 usava crédito fixo por classe; a proposta de níveis fala em lavagens gratuitas</div></td><td>Gratuita (plano definido) · gratuita (qualquer plano) · crédito com limite por classe<div class="small muted">Impacto: Gratuita: simples de comunicar, custo variável · crédito: custo controlado, menos apelativo</div></td><td>Custos por plano e classe; preferência dos clientes</td><td>Alta</td><td><span class="st n">Pendente</span></td></tr>
+    <tr><td class="idc">D-03</td><td><b>O serviço gratuito conta para o progresso?</b><div class="small muted">Contexto: Afecta a velocidade do ciclo</div></td><td>Sim · Não<div class="small muted">Impacto: Sim: mais generoso · Não: custo menor</div></td><td>Custos; regras de mercado</td><td>Média</td><td><span class="st n">Pendente</span></td></tr>
+    <tr><td class="idc">D-04</td><td><b>Contagem e nível por classe ou por cliente?</b><div class="small muted">Contexto: O progresso é por classe; o nível ainda não</div></td><td>Nível por classe · nível global do cliente<div class="small muted">Impacto: Global: premeia clientes com várias viaturas; mais difícil de custear</div></td><td>Perfil de clientes com várias viaturas</td><td>Média</td><td><span class="st n">Pendente</span></td></tr>
+    <tr><td class="idc">D-05</td><td><b>Cancelamentos e reembolsos na fidelização</b><div class="small muted">Contexto: Proposta na secção 11.6</div></td><td>Proposta actual · sem reversão · reversão com saldo negativo<div class="small muted">Impacto: A proposta evita saldos negativos e deixa auditoria</div></td><td>Validação com a lavadora</td><td>Média</td><td><span class="st p">Proposto</span></td></tr>
+    <tr><td class="idc">D-06</td><td><b>Acumulação com outras promoções</b><div class="small muted">Contexto: Existe a proposta de carimbo a dobrar em dias fracos</div></td><td>Não acumula · acumula com limite · acumula<div class="small muted">Impacto: Acumular aumenta o custo e a complexidade</div></td><td>Custos; estratégia para dias fracos</td><td>Baixa</td><td><span class="st n">Pendente</span></td></tr>
+    <tr><td class="idc">D-07</td><td><b>Método de custo real dos benefícios</b><div class="small muted">Contexto: Sem dados de custos</div></td><td>Método da secção 11.5 · custo médio simples<div class="small muted">Impacto: Determina a sustentabilidade</div></td><td>Água, energia, produtos, mão-de-obra, ocupação</td><td>Alta (antes do piloto)</td><td><span class="st v">A validar</span></td></tr>
+    <tr><td class="idc">D-08</td><td><b>Controlos adicionais anti-fraude</b><div class="small muted">Contexto: Os controlos básicos já existem (13.3)</div></td><td>Alertas · limites diários · revisão do gestor<div class="small muted">Impacto: Mais controlo, mais fricção</div></td><td>Padrões reais de uso</td><td>Média</td><td><span class="st n">Pendente</span></td></tr>
+    <tr><td class="idc">D-09</td><td><b>Política de confirmação de marcações</b><div class="small muted">Contexto: Nenhuma escolhida</div></td><td>Automática com capacidade · manual pela lavadora · com depósito<div class="small muted">Impacto: Automática: rápida, risco de faltas · manual: controlo, atrasa · depósito: menos faltas, barreira</div></td><td>Taxa de faltas; preferências do dono</td><td>Alta (para I-8)</td><td><span class="st n">Pendente</span></td></tr>
+    <tr><td class="idc">D-10</td><td><b>Tolerância para atrasos</b><div class="small muted">Contexto: Afecta fila e marcações seguintes</div></td><td>X minutos e depois fila · perde a marcação · remarcação proposta<div class="small muted">Impacto: Equilíbrio entre justiça e ocupação</div></td><td>Durações reais; atrasos típicos</td><td>Média</td><td><span class="st n">Pendente</span></td></tr>
+    <tr><td class="idc">D-11</td><td><b>Cancelamentos, faltas e remarcações</b><div class="small muted">Contexto: —</div></td><td>Sem penalização · limite de remarcações · restrições após faltas<div class="small muted">Impacto: Penalizar reduz faltas mas afasta clientes</div></td><td>Comportamento no piloto</td><td>Média</td><td><span class="st n">Pendente</span></td></tr>
+    <tr><td class="idc">D-12</td><td><b>Capacidade reservada para a fila</b><div class="small muted">Contexto: Marcações podem esgotar o pátio</div></td><td>Nenhuma · percentagem · janelas<div class="small muted">Impacto: Reservar protege a clientela habitual da fila</div></td><td>Proporção fila/marcações</td><td>Média</td><td><span class="st n">Pendente</span></td></tr>
+    <tr><td class="idc">D-13</td><td><b>Pagamentos antecipados ou depósitos</b><div class="small muted">Contexto: Ligado a D-09 e aos reembolsos</div></td><td>Nenhum · só em pico · total<div class="small muted">Impacto: Exige regras de reembolso</div></td><td>Aceitação pelos clientes</td><td>Baixa</td><td><span class="st n">Pendente</span></td></tr>
+    <tr><td class="idc">D-14</td><td><b>Avarias e indisponibilidade de trabalhadores</b><div class="small muted">Contexto: Afecta marcações confirmadas</div></td><td>Propor remarcação · prioridade às marcações · avisar e libertar<div class="small muted">Impacto: Comunicação e confiança do cliente</div></td><td>Frequência de avarias</td><td>Baixa</td><td><span class="st n">Pendente</span></td></tr>
+    <tr><td class="idc">D-15</td><td><b>Modelo comercial</b><div class="small muted">Contexto: Hipótese principal: bancos pagam</div></td><td>Licença institucional · subscrição por lavadora activa · lavadora paga · misto<div class="small muted">Impacto: Define preço, vendas e prioridades</div></td><td>Entrevistas com bancos e lavadoras</td><td>Alta (estratégia)</td><td><span class="st v">A validar</span></td></tr>
+    <tr><td class="idc">D-16</td><td><b>Âmbito da vertente Banco e autenticação no protótipo</b><div class="small muted">Contexto: O protótipo não tem autenticação</div></td><td>Demonstrativo com aviso · autenticação simples por perfil<div class="small muted">Impacto: Demonstrativo: rápido · autenticação: mais credível, mais trabalho, decisão arquitectural</div></td><td>Tempo disponível; expectativa do júri</td><td>Alta</td><td><span class="st n">Pendente</span></td></tr>
+    <tr><td class="idc">D-17</td><td><b>Indicadores de maturidade operacional</b><div class="small muted">Contexto: Só se forem bem definidos</div></td><td>Não ter · conjunto descritivo validado com bancos<div class="small muted">Impacto: Risco de parecer uma pontuação</div></td><td>Necessidades dos bancos</td><td>Baixa</td><td><span class="st n">Pendente</span></td></tr>
+    <tr><td class="idc">D-18</td><td><b>Enquadramento legal e contratual em Moçambique</b><div class="small muted">Contexto: Partilha de dados com instituições financeiras</div></td><td>—<div class="small muted">Impacto: Pode exigir alterações ao modelo de dados e aos consentimentos</div></td><td>Parecer jurídico; requisitos dos bancos</td><td>Alta (antes de dados reais)</td><td><span class="st v">A validar</span></td></tr>
+    <tr><td class="idc">D-19</td><td><b>Preços reais por plano e classe</b><div class="small muted">Contexto: Os valores actuais são ilustrativos</div></td><td>—<div class="small muted">Impacto: Afecta a demo e o custo da fidelização</div></td><td>Visita às lavadoras</td><td>Média</td><td><span class="st v">A validar</span></td></tr>
+    <tr><td class="idc">D-20</td><td><b>Durações por plano e classe; postos e trabalhadores</b><div class="small muted">Contexto: As estimativas dependem disto</div></td><td>Duração por plano · por plano e classe<div class="small muted">Impacto: Precisão das previsões</div></td><td>Medições no terreno</td><td>Média</td><td><span class="st v">A validar</span></td></tr>
+    <tr><td class="idc">D-21</td><td><b>Critérios de classificação (ex.: pickups)</b><div class="small muted">Contexto: Classe B inclui "determinadas" carrinhas de caixa aberta</div></td><td>Por dimensões · por cabine · por esforço medido<div class="small muted">Impacto: Justiça do preço e da fidelização</div></td><td>Prática das lavadoras</td><td>Média</td><td><span class="st n">Pendente</span></td></tr>
+    <tr><td class="idc">D-22</td><td><b>Piloto: amostra, duração e critérios de selecção</b><div class="small muted">Contexto: Proposta: 3–5 lavadoras, ~90 dias</div></td><td>—<div class="small muted">Impacto: Custo e robustez das conclusões</div></td><td>Recursos; parceiros</td><td>Média</td><td><span class="st v">A validar</span></td></tr>
+  </table>
+</section>
+
+<!-- ================= 22 ================= -->
+<section id="c22">
+  <div class="kicker">22 · Próximos passos</div>
+  <h2>O que fazer a seguir</h2>
+  <ol class="steps">
+    <li><b>Confirmar a inscrição</b> no hackathon (o prazo era 16/10) e ler o regulamento.</li>
+    <li><b>Decidir D-01, D-02 e D-16</b> para a demo, registando as alternativas rejeitadas.</li>
+    <li><b>Visitar uma lavadora</b> com as perguntas da secção 3.4; recolher preços, durações e custos (D-07, D-19, D-20).</li>
+    <li><b>Implementar os marcos I-0 a I-7</b> (capítulo 17), com testes e <code>changelogs.md</code>.</li>
+    <li><b>Preparar o pitch</b> (capítulo 19) e ensaiar com dados de demonstração repostos.</li>
+    <li><b>Depois do hackathon:</b> conversas com 2–3 instituições bancárias (secção 6.4), parecer jurídico (D-18) e desenho do piloto (capítulo 18).</li>
+  </ol>
+</section>
+
+<!-- ================= ANEXO A ================= -->
+<section id="anexoA" class="brk">
+  <div class="kicker">Anexo A</div>
+  <h2>Contradições identificadas e resolução</h2>
+  <table class="tbl-sm">
+    <tr><th>#</th><th>Contradição</th><th>Resolução</th></tr>
+    <tr><td>C1</td><td>A v2 posicionava o produto como ferramenta para o lava-jato; as orientações actuais posicionam-no como solução para bancos, começando pelas lavadoras</td><td>Aplicada (DEC-01)</td></tr>
+    <tr><td>C2</td><td>A v2 misturava receitas do banco ("adquirência, saldo médio") com o modelo do LavaJá Pass, e propunha "gratuito em troca de conta"</td><td>Separado no capítulo 6; o modelo passa a hipótese de licenciamento a validar (D-15)</td></tr>
+    <tr><td>C3</td><td>A v2 deixava o analista bancário fora do protótipo; agora existe a vertente Lavadora–Banco</td><td>Vertente incluída; âmbito no protótipo pendente (D-16)</td></tr>
+    <tr><td>C4</td><td>O protótipo não tem autenticação, mas a vertente Banco exige perfis e menor privilégio</td><td>Registada como decisão arquitectural pendente (D-16); aviso no capítulo 7</td></tr>
+    <tr><td>C5</td><td>A v2 fixava 5 carimbos e um crédito fixo por classe; a proposta actual é de níveis em ciclos de 10, com o tipo de benefício por decidir</td><td>Mantido pendente (D-01, D-02); os valores da v2 passam a exemplo do modo "crédito"</td></tr>
+    <tr><td>C6</td><td>O prompt de implementação anterior definia o benefício como crédito de valor fixo; as orientações actuais tratam essa escolha como pendente</td><td>Prevalece a orientação mais recente; o código deve tratar o tipo de benefício como parâmetro</td></tr>
+    <tr><td>C7</td><td>A v2 usava percentagens de "desconto efectivo" para argumentar sustentabilidade</td><td>Removido; substituído pelo método de custo (11.5)</td></tr>
+    <tr><td>C8</td><td>A Classe C da v2 incluía "carrinhas"; as orientações colocam "determinadas carrinhas de caixa aberta" na B e "vans e minibus" na C</td><td>Alinhado; critérios finos pendentes (D-21)</td></tr>
+    <tr><td>C9</td><td>A v2 não tinha marcações nem gestão de capacidade</td><td>Acrescentadas (capítulo 12) com a regra de não antecipar (DEC-10); políticas pendentes</td></tr>
+    <tr><td>C10</td><td>A v2 propunha um piloto de 90 dias só no Lava Já, com metas numéricas</td><td>Piloto com várias lavadoras; metas passam a "a definir" ou "a validar" (capítulo 18)</td></tr>
+    <tr><td>C11</td><td>A v1 continha uma pontuação de crédito e um montante indicativo (já retirados na v2)</td><td>Mantido fora; reforçado em DEC-03</td></tr>
+    <tr><td>C12</td><td>O prazo de inscrição (16/10) aparecia como tarefa futura</td><td>Actualizado: confirmar que a inscrição foi submetida</td></tr>
+  </table>
+</section>
+
+<!-- ================= ANEXO B ================= -->
+<section id="anexoB">
+  <div class="kicker">Anexo B</div>
+  <h2>Histórico de versões</h2>
+  <table class="tbl-sm">
+    <tr><th>Versão</th><th>Data</th><th>Alterações principais</th><th>Ficheiro</th></tr>
+    <tr><td>v1</td><td>09/10/2026</td><td>Proposta inicial: fila, selos, pagamento, score de crédito indicativo; stack Next.js/Supabase</td><td><code>arquivo/LavaJa-Pass-Proposta-Final-v1.html</code></td></tr>
+    <tr><td>v2</td><td>17/10/2026</td><td>Stack Node.js/Express/SQLite/JavaScript puro; classes A/B/C; pagamentos simulados; score retirado; campanhas reservadas</td><td><code>arquivo/LavaJa-Pass-Proposta-Final-v2.html</code></td></tr>
+    <tr><td>v3</td><td>17/10/2026</td><td>Posicionamento para bancos; duas vertentes; fidelização por níveis com pendências; marcações e capacidade; origem dos dados; privacidade; piloto; decisões pendentes</td><td><code>LavaJa-Pass-Proposta-Final.html</code> (este documento)</td></tr>
+  </table>
+  <hr>
+  <p class="small">LavaJá Pass · Hackathon Moza xLab – UEM, 1.ª edição · Helio Simango &amp; Equipa · Documento de referência v3. Protótipo demonstrativo: conversas e pagamentos simulados; preços e parâmetros ilustrativos; sem parcerias nem compromissos de instituições bancárias. O Moza Banco e a UEM são referidos apenas como promotores do desafio. Contexto de mercado: Lusa (27/03/2026), indicadores de inclusão financeira do Banco de Moçambique.</p>
+</section>
+
+</div>
+
+</body>
+</html>

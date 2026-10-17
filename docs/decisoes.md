@@ -1,0 +1,52 @@
+# Decisões
+
+Complementa o capítulo 21 do [documento de referência v3](referencia/LavaJa-Pass-Documento-Referencia-v3.pdf). Regista as decisões tomadas depois da v3 e as decisões de implementação. Nada marcado como pendente fica fixo no código: fica configurável.
+
+## Decisões da equipa posteriores à v3
+
+### Foco no Moza Banco (17/10/2026)
+
+A solução continua a ser **para instituições bancárias** (DEC-01). No contexto do hackathon, a vertente Lavadora–Banco e o pitch **dirigem-se ao Moza Banco**, que trouxe o desafio e patrocina o evento.
+
+Consequências:
+
+- **Demonstração:** na vertente Banco (I-7), a instituição autorizada é o Moza Banco. Fica definida no parâmetro `demo.institution`, marcado como "por validar".
+- **Código:** o modelo de dados continua multi-instituição. O foco é de apresentação, não de arquitectura.
+- **Pitch:**
+  - abre pelo desafio do Moza (tráfego e fidelização da Lava Já – Matola);
+  - depois mostra o valor para o Moza Banco: um canal para pequenos comerciantes informais, com a actividade registada e autorizada.
+- **Hipótese de negócio:** o Moza Banco como primeiro cliente institucional e parceiro de um piloto. Continua por validar (cap. 6).
+- **No evento:** usar os mentores do Moza para as perguntas da secção 6.4.
+
+Limites que se mantêm:
+
+- Não afirmar parceria, interesse ou compromisso do Moza Banco sem evidência (DEC-14).
+- Não usar o logótipo nem a identidade visual do Moza sem confirmar no regulamento.
+- O relatório não é uma avaliação de crédito (DEC-03).
+
+> A actualização do documento de referência para v4, com este foco, está adiada por decisão da equipa.
+
+## Decisões de implementação (I-0 a I-2)
+
+| ID | Decisão | Motivo |
+|---|---|---|
+| IMP-01 | `node:sqlite` (Node ≥ 22.13) em vez de better-sqlite3 | Sem compilação nativa nos portáteis da equipa |
+| IMP-02 | Migrações numeradas, uma por marco (`001_foundation`, `002_catalog_customers`, `003_washes`) | Rastreabilidade por marco |
+| IMP-03 | `classId` aceita o id ou o código (`A`, `B`, `C`) | URLs legíveis (`/api/plans?classId=B`) |
+| IMP-04 | Postos numa tabela `stations` (P1–P4 na demonstração) | O I-2 precisa de postos. Trabalhadores, pausas e indisponibilidades ficam para o I-8 (`capacity_resources`) |
+| IMP-05 | Uma viatura só pode ter um serviço activo (índice único parcial) | Evita registos duplicados no pátio (relacionado com D-08) |
+| IMP-06 | Um serviço "pronto" ocupa o posto até à entrega. Para a estimativa, considera-se que liberta o posto já | Coerente com a regra "ocupado = em execução ou pronto" sem penalizar a fila |
+| IMP-07 | Até ao I-3, concluir exige `allowUnpaid: true`, excepto se o valor final for 0 | Ainda não há pagamentos. A regra do cap. 10.3 aplica-se desde já |
+| IMP-08 | O autor das acções vem do cabeçalho `X-Actor` (ou do campo `actor`) | Não há autenticação (D-16). O autor é declarado e fica registado |
+| IMP-09 | Os registos de alterações e de transições são protegidos por triggers contra `UPDATE` e `DELETE` | "Só acrescenta registos" é garantido na base de dados, não só no código |
+| IMP-10 | O aviso ao cliente em `in_progress → ready` fica para o I-5 (simulador) | Ainda não existe o canal de conversa |
+
+## Pendentes que bloqueiam os próximos marcos
+
+| ID | Questão | Bloqueia |
+|---|---|---|
+| D-01 | Passagem de nível na fidelização (alternativas A–D) | Valores por omissão do I-4 |
+| D-02 | Lavagem gratuita ou crédito com limite | Valores por omissão do I-4 |
+| D-16 | Vertente Banco só como demonstração, ou com autenticação simples | I-7 |
+| D-09 a D-14 | Políticas de marcação | I-8 |
+| D-19, D-20 | Preços reais e duração por classe | Dados de demonstração (actualmente ilustrativos) |
