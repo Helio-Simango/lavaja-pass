@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import { ConflictError, NotFoundError, ValidationError } from '../../src/domain/errors.js';
-import { newQueuedWash, paymentStatusOf, planTransition, washCode, WashStatus } from '../../src/domain/wash.js';
+import { newQueuedWash, paymentStateOf, planTransition, washCode, WashStatus } from '../../src/domain/wash.js';
 
 const NOW = '2026-10-22T10:00:00.000Z';
 const freeStation = { station: { id: 3, code: 'P3', active: true }, stationOccupiedBy: null };
@@ -103,6 +103,11 @@ describe('ciclo de vida do serviço', () => {
       assert.deepEqual(decision.event.details, { allowUnpaid: true, amountDueCents: 60000 });
     });
 
+    it('com pagamento efectivo conclui sem confirmação e conta como pago', () => {
+      const decision = planTransition(ready(), { to: 'completed' }, { now: NOW, hasEffectivePayment: true });
+      assert.equal(decision.changes.completedUnpaid, false);
+    });
+
     it('um serviço de valor 0 conclui sem confirmação', () => {
       const decision = planTransition(ready({ finalPriceCents: 0 }), { to: 'completed' }, { now: NOW });
       assert.equal(decision.changes.completedUnpaid, false);
@@ -117,6 +122,13 @@ describe('ciclo de vida do serviço', () => {
       }
     });
 
+    it('com pagamento efectivo exige reembolso primeiro', () => {
+      assert.throws(
+        () => planTransition(wash(), { to: 'cancelled', reason: 'Cliente desistiu' }, { now: NOW, hasEffectivePayment: true }),
+        { code: 'REFUND_REQUIRED' },
+      );
+    });
+
     it('guarda o motivo no serviço e no evento', () => {
       const decision = planTransition(wash(), { to: 'cancelled', reason: ' Cliente desistiu ' }, { now: NOW });
       assert.equal(decision.changes.cancelReason, 'Cliente desistiu');
@@ -125,10 +137,19 @@ describe('ciclo de vida do serviço', () => {
   });
 });
 
-describe('estado do pagamento', () => {
-  it('distingue por pagar, entregue sem pagamento e sem valor', () => {
-    assert.equal(paymentStatusOf(wash()), 'unpaid');
-    assert.equal(paymentStatusOf(wash({ status: 'completed', completedUnpaid: true })), 'delivered_unpaid');
-    assert.equal(paymentStatusOf(wash({ finalPriceCents: 0 })), 'not_required');
+describe('estado do pagamento do serviço', () => {
+  const payment = (method, status) => ({ method, status });
+
+  it('distingue cada situação', () => {
+    const cases = [
+      [wash(), [], 'unpaid'],
+      [wash({ finalPriceCents: 0 }), [], 'not_required'],
+      [wash(), [payment('digital', 'pending')], 'pending'],
+      [wash(), [payment('digital', 'failed'), payment('digital', 'confirmed')], 'paid_digital'],
+      [wash(), [payment('digital', 'failed'), payment('cash', 'declared')], 'paid_cash'],
+      [wash({ status: 'completed' }), [payment('cash', 'refunded')], 'refunded'],
+      [wash({ status: 'completed', completedUnpaid: true }), [], 'delivered_unpaid'],
+    ];
+    for (const [subject, payments, expected] of cases) assert.equal(paymentStateOf(subject, payments), expected, expected);
   });
 });

@@ -3,6 +3,7 @@ import { api } from '../core/api-client.js';
 import { $, formatTime, hideMessage, showMessage } from '../core/dom.js';
 import { bindOperatorInput } from '../core/operator.js';
 import { renderBoard, renderStationsLine } from './board-view.js';
+import { createCashDialog } from './cash-dialog.js';
 import { createConfirmDialog } from './confirm-dialog.js';
 import { createRegisterDialog } from './register-dialog.js';
 
@@ -14,6 +15,7 @@ const stationsLine = $('#stations-line');
 const actor = bindOperatorInput($('#operator'));
 const confirmDialog = createConfirmDialog($('#confirm-dialog'));
 const registerDialog = createRegisterDialog($('#register-dialog'), { actor, onRegistered: announceRegistered });
+const cashDialog = createCashDialog($('#cash-dialog'), { actor, onDeclared: () => refresh() });
 
 const state = {
   washes: [],
@@ -54,6 +56,10 @@ const cardActions = {
     await runFromButton(button, () => transition(wash.id, { to: 'ready' }));
   },
 
+  cash(wash) {
+    cashDialog.open(wash);
+  },
+
   cancel(wash) {
     confirmDialog.open({
       title: `Cancelar ${wash.code}`,
@@ -65,12 +71,12 @@ const cardActions = {
   },
 
   complete(wash) {
-    const unpaid = wash.payment.status === 'unpaid';
+    const unpaid = ['unpaid', 'pending'].includes(wash.payment.status);
     confirmDialog.open({
       title: `Concluir ${wash.code}`,
       text: unpaid
-        ? `Este serviço não tem pagamento registado (${wash.price.final.display}). Entregar sem pagamento fica registado em seu nome e não conta para a fidelização.`
-        : 'Confirmar a entrega da viatura ao cliente.',
+        ? `Este serviço não tem pagamento efectivo (${wash.price.final.display}). Entregar sem pagamento fica registado em seu nome e não conta para a fidelização.`
+        : `Confirmar a entrega da viatura ao cliente (${wash.payment.label}).`,
       okLabel: unpaid ? 'Entregar sem pagamento' : 'Concluir',
       onConfirm: () => transition(wash.id, { to: 'completed', allowUnpaid: unpaid }),
     });

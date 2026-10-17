@@ -57,7 +57,7 @@ export const CUSTOMERS = [
 ];
 
 // Pátio coerente com o mock M7, construído ao longo de 90 min antes de "agora":
-// P1 em execução, P2 pronto, dois serviços em fila.
+// P1 em execução, P2 pronto (por pagar), dois serviços em fila, um deles já pago em digital (simulado).
 export const YARD_TIMELINE = [
   { atMin: 0, register: { key: 'ready', plate: 'AGB550MP', plan: 'COMPLETA' } },
   { atMin: 0, transition: { key: 'ready', to: 'in_progress', station: 'P2', actor: 'Amílcar' } },
@@ -66,6 +66,7 @@ export const YARD_TIMELINE = [
   { atMin: 80, register: { key: 'queued1', plate: 'ABC123MC', plan: 'COMPLETA' } },
   { atMin: 87, transition: { key: 'ready', to: 'ready', actor: 'Amílcar' } },
   { atMin: 88, register: { key: 'queued2', plate: 'AAZ219MP', plan: 'SIMPLES' } },
+  { atMin: 89, payDigital: { key: 'queued2' } },
 ];
 
 export const YARD_START_OFFSET_MIN = 90;

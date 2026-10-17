@@ -1,6 +1,7 @@
 import { ConflictError, NotFoundError } from '../domain/errors.js';
 import { estimateQueue } from '../domain/queue-estimates.js';
-import { isActive, newQueuedWash, parseWashSource, planTransition, WashStatus } from '../domain/wash.js';
+import { isEffective } from '../domain/payment.js';
+import { isActive, newQueuedWash, parseWashSource, paymentStateOf, planTransition, WashStatus } from '../domain/wash.js';
 
 const DEFAULT_LIST_LIMIT = 200;
 
@@ -8,15 +9,28 @@ export class WashService {
   #washes;
   #vehicles;
   #stations;
+  #payments;
   #catalogService;
+  #paymentService;
   #unitOfWork;
   #clock;
 
-  constructor({ washRepository, vehicleRepository, stationRepository, catalogService, unitOfWork, clock }) {
+  constructor({
+    washRepository,
+    vehicleRepository,
+    stationRepository,
+    paymentRepository,
+    catalogService,
+    paymentService,
+    unitOfWork,
+    clock,
+  }) {
     this.#washes = washRepository;
     this.#vehicles = vehicleRepository;
     this.#stations = stationRepository;
+    this.#payments = paymentRepository;
     this.#catalogService = catalogService;
+    this.#paymentService = paymentService;
     this.#unitOfWork = unitOfWork;
     this.#clock = clock;
   }
@@ -43,28 +57,25 @@ export class WashService {
   transition(id, command) {
     const changed = this.#unitOfWork.run(() => {
       const wash = this.#getWash(id);
-      const decision = planTransition(wash, command, this.#transitionContext(command));
+      const decision = planTransition(wash, command, this.#transitionContext(wash, command));
       if (!decision.changed) return false;
 
       const now = this.#clock.nowIso();
       const applied = this.#washes.applyTransition(id, wash.status, decision.changes, now);
       if (!applied) throw new ConflictError('CONCURRENT_UPDATE', 'O serviço foi alterado entretanto. Tente de novo.');
       this.#washes.appendEvent(id, decision.event, now);
+      if (decision.changes.status === WashStatus.CANCELLED) this.#paymentService.failPendingForCancelledWash(id);
       return true;
     });
     return { wash: this.get(id), changed };
   }
 
   get(id) {
-    const wash = this.#getWash(id);
-    return { ...wash, estimate: isActive(wash) ? this.#currentEstimates().get(id) ?? null : null };
+    return this.#withDetails([this.#getWash(id)])[0];
   }
 
   list({ statuses, date, limit = DEFAULT_LIST_LIMIT } = {}) {
-    const estimates = this.#currentEstimates();
-    return this.#washes
-      .list({ statuses, date, limit })
-      .map((wash) => ({ ...wash, estimate: estimates.get(wash.id) ?? null }));
+    return this.#withDetails(this.#washes.list({ statuses, date, limit }));
   }
 
   history(id) {
@@ -88,8 +99,26 @@ export class WashService {
     }
   }
 
-  #transitionContext({ to, stationId }) {
-    const context = { now: this.#clock.nowIso() };
+  /** Acrescenta a estimativa (serviços activos) e o estado do pagamento. */
+  #withDetails(washes) {
+    const estimates = washes.some(isActive) ? this.#currentEstimates() : new Map();
+    const paymentsByWash = this.#payments.listByWashes(washes.map((wash) => wash.id));
+    return washes.map((wash) => {
+      const payments = paymentsByWash.get(wash.id);
+      return {
+        ...wash,
+        estimate: isActive(wash) ? estimates.get(wash.id) ?? null : null,
+        paymentState: paymentStateOf(wash, payments),
+        effectivePayment: payments.find(isEffective) ?? null,
+      };
+    });
+  }
+
+  #transitionContext(wash, { to, stationId }) {
+    const context = {
+      now: this.#clock.nowIso(),
+      hasEffectivePayment: this.#payments.listByWash(wash.id).some(isEffective),
+    };
     if (to === WashStatus.IN_PROGRESS && stationId !== undefined && stationId !== null) {
       context.station = this.#stations.findById(stationId);
       context.stationOccupiedBy = this.#washes.findOccupyingStation(stationId)?.id ?? null;

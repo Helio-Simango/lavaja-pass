@@ -9,10 +9,12 @@ export class ApiError extends Error {
   }
 }
 
-export async function api(method, path, body, { actor } = {}) {
+/** @param options { actor?, idempotencyKey? } */
+export async function api(method, path, body, { actor, idempotencyKey } = {}) {
   const headers = { Accept: 'application/json' };
   if (body !== undefined) headers['Content-Type'] = 'application/json';
   if (actor) headers['X-Actor'] = actor;
+  if (idempotencyKey) headers['Idempotency-Key'] = idempotencyKey;
 
   const response = await fetch(`/api${path}`, {
     method,
@@ -22,4 +24,9 @@ export async function api(method, path, body, { actor } = {}) {
   const data = await response.json().catch(() => null);
   if (!response.ok) throw new ApiError(response.status, data?.error);
   return data;
+}
+
+/** Uma chave por intenção do utilizador: repetir o envio (duplo clique, rede) não duplica o registo. */
+export function newIdempotencyKey() {
+  return crypto.randomUUID?.() ?? `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 }

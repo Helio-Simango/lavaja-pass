@@ -36,10 +36,21 @@ Limites que se mantêm:
 | IMP-04 | Postos numa tabela `stations` (P1–P4 na demonstração) | O I-2 precisa de postos. Trabalhadores, pausas e indisponibilidades ficam para o I-8 (`capacity_resources`) |
 | IMP-05 | Uma viatura só pode ter um serviço activo (índice único parcial) | Evita registos duplicados no pátio (relacionado com D-08) |
 | IMP-06 | Um serviço "pronto" ocupa o posto até à entrega. Para a estimativa, considera-se que liberta o posto já | Coerente com a regra "ocupado = em execução ou pronto" sem penalizar a fila |
-| IMP-07 | Até ao I-3, concluir exige `allowUnpaid: true`, excepto se o valor final for 0 | Ainda não há pagamentos. A regra do cap. 10.3 aplica-se desde já |
+| IMP-07 | ~~Até ao I-3, concluir exige `allowUnpaid: true`, excepto se o valor final for 0~~ Substituída pela IMP-11 | — |
 | IMP-08 | O autor das acções vem do cabeçalho `X-Actor` (ou do campo `actor`) | Não há autenticação (D-16). O autor é declarado e fica registado |
 | IMP-09 | Os registos de alterações e de transições são protegidos por triggers contra `UPDATE` e `DELETE` | "Só acrescenta registos" é garantido na base de dados, não só no código |
 | IMP-10 | O aviso ao cliente em `in_progress → ready` fica para o I-5 (simulador) | Ainda não existe o canal de conversa |
+
+## Decisões de implementação (I-3)
+
+| ID | Decisão | Motivo |
+|---|---|---|
+| IMP-11 | Concluir sem `allowUnpaid` só com um pagamento efectivo (`confirmed` ou `declared`) ou com valor final 0 | Cap. 10.3 |
+| IMP-12 | Um serviço com pagamento efectivo só é cancelado depois do reembolso (`REFUND_REQUIRED`) | Cap. 10.3: o cancelamento é "sem pagamento efectivo"; o reembolso fica registado com motivo e autor |
+| IMP-13 | O numerário declarado substitui um digital pendente, que passa a `failed` ("Substituído por numerário") | Cap. 10.4: `failed` inclui o "pagamento pendente substituído por numerário" |
+| IMP-14 | A chave de idempotência é obrigatória e única. A mesma chave noutro pedido (serviço, método ou valor diferentes) é recusada | Evita que um erro do cliente apague a protecção contra duplicados |
+| IMP-15 | Um serviço reembolsado pode voltar a receber um pagamento | O índice de "um efectivo por serviço" exclui os reembolsados |
+| IMP-16 | O reembolso fica, por agora, só na API. O Pátio não o oferece | É uma acção do gestor; o ecrã do gestor é o Painel (I-6) |
 
 ## Decisões de estrutura e arquitectura (v0.2.0)
 

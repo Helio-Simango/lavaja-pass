@@ -1,5 +1,29 @@
 # Changelog
 
+## [Unreleased]
+
+### I-3 · Pagamentos simulados e numerário declarado
+
+- Migração `004_payments`:
+  - métodos `digital` e `cash`;
+  - estados `pending`, `confirmed`, `declared`, `failed` e `refunded`;
+  - índices únicos parciais: um pagamento pendente e um efectivo por serviço;
+  - o numerário tem sempre um operador e o digital nunca tem.
+- Domínio `payment.js`:
+  - aceitação: valor exacto, serviço não cancelado, sem pagamento efectivo;
+  - simulação do digital;
+  - declaração de numerário com operador e confirmação explícita;
+  - reembolso com motivo e autor.
+- Idempotência obrigatória (`Idempotency-Key`) ao pagar e ao reembolsar. Uma chave reutilizada noutro pedido é recusada (`IDEMPOTENCY_KEY_REUSED`).
+- Ciclo de vida do serviço:
+  - concluir com pagamento efectivo dispensa `allowUnpaid`;
+  - cancelar um serviço pago exige reembolso (`REFUND_REQUIRED`);
+  - cancelar deixa sem efeito o digital pendente.
+- O estado do pagamento de cada serviço fica disponível na API: `unpaid`, `pending`, `paid_digital`, `paid_cash`, `refunded`, `delivered_unpaid` ou `not_required`.
+- Pátio: diálogo "Declarar numerário" (M9) e origem do pagamento em cada cartão.
+- Demonstração: um serviço em fila já pago em digital (simulado), como no mock M7.
+- Testes do cliente em `client/test` (`npm run test:client`), incluídos no `npm test`.
+
 ## [0.2.0] — 2026-10-17
 
 Refactor de estrutura e de arquitectura. **Sem alterações de comportamento:** a API, as regras e o ecrã do Pátio mantêm-se.
