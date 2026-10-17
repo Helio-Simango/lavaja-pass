@@ -24,6 +24,7 @@ export function createWashController({ washService, stationService, clock }) {
         vehicleId: parseId(body.vehicleId, 'vehicleId'),
         planId: parseId(body.planId, 'planId'),
         source: body.source,
+        useBenefit: optionalBoolean(body.useBenefit, 'useBenefit') ?? false,
         actor: actorOf(req, 'operador'),
       });
       res.status(201).json({ wash: presentWash(wash) });
