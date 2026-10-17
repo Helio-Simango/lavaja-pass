@@ -59,4 +59,11 @@ export class SqliteReportingRepository {
   firstWashAt() {
     return this.#db.prepare('SELECT MIN(queued_at) AS first FROM washes').get().first;
   }
+
+  /** Correcções registadas no fecho diário (marco I-9); 0 enquanto a tabela não existir. */
+  correctionsBetween(from, to) {
+    const table = this.#db.prepare("SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = 'reconciliation_notes'").get();
+    if (!table) return 0;
+    return this.#db.prepare('SELECT COUNT(*) AS total FROM reconciliation_notes WHERE created_at BETWEEN ? AND ?').get(from, to).total;
+  }
 }

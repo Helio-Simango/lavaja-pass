@@ -1,5 +1,6 @@
 // Conversão dos dados da aplicação para o formato JSON da API (inclui textos de apresentação).
-import { INDICATORS } from '../../domain/indicators.js';
+import { DATA_QUALITY_INDICATORS, INDICATORS } from '../../domain/indicators.js';
+import { SECTION_LABELS } from '../../domain/sharing.js';
 import { formatMoney } from '../../domain/money.js';
 import { formatPhone } from '../../domain/phone.js';
 import { formatPlate } from '../../domain/plate.js';
@@ -304,6 +305,7 @@ export function presentDashboard(summary) {
       cash: presentMoney(week.cashCents, currency),
     })),
     yardNow: summary.yardNow,
+    activeSharingAuthorizations: summary.activeSharingAuthorizations,
   };
 }
 
@@ -345,4 +347,145 @@ export function presentHistoryEntry(wash) {
     payment,
     loyaltyEffect: { code: wash.loyaltyEffect, label: LOYALTY_EFFECT_LABELS[wash.loyaltyEffect] },
   };
+}
+
+// ---------- Vertente Banco ----------
+
+const AUTHORIZATION_STATUS_LABELS = Object.freeze({ active: 'Activa', revoked: 'Revogada', expired: 'Expirada' });
+const ACCESS_ACTION_LABELS = Object.freeze({ view: 'consultou o relatório', export: 'exportou o relatório' });
+
+export function presentAuthorization(authorization) {
+  return {
+    id: authorization.id,
+    reference: authorization.reference,
+    institution: { id: authorization.institutionId, name: authorization.institutionName },
+    purpose: authorization.purpose,
+    sections: authorization.sections.map((key) => ({ key, label: SECTION_LABELS[key] })),
+    dataMonths: authorization.dataMonths,
+    validUntil: authorization.validUntil,
+    grantedBy: authorization.grantedBy,
+    grantedAt: authorization.grantedAt,
+    revokedAt: authorization.revokedAt,
+    revokedBy: authorization.revokedBy,
+    revokeReason: authorization.revokeReason,
+    status: authorization.status,
+    statusLabel: AUTHORIZATION_STATUS_LABELS[authorization.status],
+    accessCount: authorization.accessCount,
+  };
+}
+
+export function presentAccessLog(log) {
+  return {
+    id: log.id,
+    authorizationReference: log.reference,
+    institutionName: log.institutionName,
+    actor: log.actor,
+    action: log.action,
+    actionLabel: ACCESS_ACTION_LABELS[log.action],
+    sections: log.sections.map((key) => SECTION_LABELS[key]),
+    dataFrom: log.dataFrom,
+    dataTo: log.dataTo,
+    createdAt: log.createdAt,
+  };
+}
+
+const share = (value) => (value === null || value === undefined ? null : Math.round(value * 1000) / 10);
+const withMeta = (meta, value) => ({ ...meta, value });
+
+/** Relatório com a origem e a definição de cada valor; só as secções autorizadas. */
+export function presentActivityReport(report) {
+  const mzn = (cents) => presentMoney(cents, 'MZN');
+  const { activity, receipts, customers, data_quality: quality } = report.sections;
+  const sections = {};
+  if (activity) {
+    sections.activity = {
+      completed: withMeta(INDICATORS.completed, activity.completed),
+      cancelled: withMeta(INDICATORS.cancelled, activity.cancelled),
+      byWeek: activity.byWeek,
+      byWeekday: activity.byWeekday,
+      byClass: activity.byClass,
+      byPlan: activity.byPlan,
+    };
+  }
+  if (receipts) {
+    sections.receipts = {
+      digitalConfirmed: withMeta(INDICATORS.digitalConfirmed, mzn(receipts.digitalConfirmedCents)),
+      cashDeclared: withMeta(INDICATORS.cashDeclared, mzn(receipts.cashDeclaredCents)),
+      refunded: withMeta(INDICATORS.refunded, mzn(receipts.refundedCents)),
+      receivable: withMeta(INDICATORS.receivable, mzn(receipts.receivableCents)),
+      byWeek: receipts.byWeek.map((week) => ({ label: week.label, from: week.from, to: week.to, digital: mzn(week.digitalCents), cash: mzn(week.cashCents) })),
+    };
+  }
+  if (customers) {
+    sections.customers = {
+      distinctCustomers: customers.distinctCustomers,
+      returningCustomers: withMeta(INDICATORS.returningCustomers, share(customers.returningRate)),
+      returningCount: customers.returningCustomers,
+    };
+  }
+  if (quality) {
+    const q = DATA_QUALITY_INDICATORS;
+    sections.dataQuality = [
+      withMeta(q.historyAgeDays, `${quality.historyAgeDays} dias`),
+      withMeta(q.daysWithRecords, `${quality.daysWithRecords.days} de ${quality.daysWithRecords.operatingDays}`),
+      withMeta(q.completedWithPayment, percent(quality.completedWithPayment.share)),
+      withMeta(q.digitalShare, percent(quality.digitalShare)),
+      withMeta(q.deliveredUnpaid, `${quality.deliveredUnpaid.count} (${percent(quality.deliveredUnpaid.share)})`),
+      withMeta(
+        q.cancellationsAndRefunds,
+        `${quality.cancellationsAndRefunds.cancelled} cancelados (${percent(quality.cancellationsAndRefunds.cancelledShare)}) · ${quality.cancellationsAndRefunds.refunds} reembolsos`,
+      ),
+      withMeta(q.corrections, String(quality.corrections)),
+    ];
+  }
+  return {
+    business: report.business,
+    institution: report.institution,
+    authorization: {
+      ...report.authorization,
+      sections: report.authorization.sections.map((key) => ({ key, label: SECTION_LABELS[key] })),
+    },
+    period: report.period,
+    issuedAt: report.issuedAt,
+    sections,
+    notes: report.notes,
+  };
+}
+
+function percent(value) {
+  return value === null || value === undefined ? '—' : `${Math.round(value * 100)}%`;
+}
+
+/** Exportação: uma linha por indicador, com a origem; separador ";" (Excel em português). */
+export function activityReportToCsv(presented) {
+  const rows = [['secção', 'indicador', 'valor', 'origem']];
+  const add = (section, label, value, origin = '') => rows.push([section, label, value, origin]);
+  add('identificação', 'lavadora', presented.business);
+  add('identificação', 'instituição', presented.institution.name);
+  add('identificação', 'autorização', `${presented.authorization.reference} · ${presented.authorization.purpose}`);
+  add('identificação', 'período', `${presented.period.from} a ${presented.period.to}`);
+  add('identificação', 'emitido', presented.issuedAt);
+  const { activity, receipts, customers, dataQuality: quality } = presented.sections;
+  if (activity) {
+    add('actividade', activity.completed.label, activity.completed.value, activity.completed.origin);
+    add('actividade', activity.cancelled.label, activity.cancelled.value, activity.cancelled.origin);
+    for (const week of activity.byWeek) add('actividade', `concluídos · ${week.label}`, week.completed, 'Registado');
+  }
+  if (receipts) {
+    for (const key of ['digitalConfirmed', 'cashDeclared', 'refunded', 'receivable']) {
+      add('recebimentos', receipts[key].label, receipts[key].value.display, receipts[key].origin);
+    }
+  }
+  if (customers) {
+    add('clientes', 'clientes distintos', customers.distinctCustomers, 'Registado');
+    add('clientes', customers.returningCustomers.label, `${customers.returningCustomers.value ?? '—'}%`, customers.returningCustomers.origin);
+  }
+  if (quality) for (const item of quality) add('qualidade dos dados', item.label, item.value, item.origin);
+  for (const note of presented.notes) add('notas', '', note);
+  return rows.map((row) => row.map(csvCell).join(';')).join('\r\n');
+}
+
+function csvCell(value) {
+  const text = String(value ?? '');
+  return /[;"\r\n]/.test(text) ? `"${text.replaceAll('"', '""')}"` : text;
 }

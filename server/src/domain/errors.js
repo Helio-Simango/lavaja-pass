@@ -25,3 +25,6 @@ export class NotFoundError extends DomainError {
 
 /** O pedido é válido mas viola uma regra de negócio. */
 export class ConflictError extends DomainError {}
+
+/** O pedido é válido mas não há autorização para o acesso (ex.: autorização revogada ou expirada). */
+export class AccessDeniedError extends DomainError {}

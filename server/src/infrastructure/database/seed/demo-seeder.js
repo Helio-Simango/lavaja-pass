@@ -5,6 +5,10 @@ import { createFixedClock, systemClock } from '../../clock.js';
 import {
   CASH_OPERATORS,
   CUSTOMERS,
+  DEMO_ANALYST,
+  DEMO_AUTHORIZATIONS,
+  DEMO_BUSINESS_OWNER,
+  DEMO_INSTITUTION,
   DEMO_LOYALTY_RULES,
   HISTORY_DAYS,
   SETTINGS,
@@ -36,6 +40,7 @@ export function seedDemo(db, { clock = systemClock } = {}) {
     services.loyaltyService.publishRules(DEMO_LOYALTY_RULES, { actor: SEED_ACTOR, toValidate: true });
     CUSTOMERS.forEach((customer) => services.customerService.register(customer));
     playHistory(db, services, demoClock, nowMs);
+    seedSharing(repositories.sharingRepository, services, demoClock, nowMs);
     demoClock.set(new Date(nowMs - YARD_START_OFFSET_MIN * MINUTE_MS).toISOString());
     playYardTimeline(db, services, demoClock);
   });
@@ -71,6 +76,24 @@ function insertReferenceData(db, stationRepository, now) {
   });
 
   STATIONS.forEach((code, index) => stationRepository.insert({ code, name: `Posto ${index + 1}`, sortOrder: index + 1 }));
+}
+
+/** Autorizações da lavadora ao Moza Banco: uma revogada e uma activa, já consultada. */
+function seedSharing(sharingRepository, { sharingService, bankReportService }, demoClock, nowMs) {
+  const at = (daysAgo) => demoClock.set(new Date(nowMs - daysAgo * DAY_MS).toISOString());
+  const institutionId = sharingRepository.insertInstitution(DEMO_INSTITUTION, demoClock.nowIso());
+  for (const demo of DEMO_AUTHORIZATIONS) {
+    at(demo.daysAgo);
+    const authorization = sharingService.grant({ institutionId, ...demo, confirmed: true }, DEMO_BUSINESS_OWNER);
+    if (demo.revoke) {
+      at(demo.revoke.daysAgo);
+      sharingService.revoke(authorization.id, { reason: demo.revoke.reason, actor: DEMO_BUSINESS_OWNER });
+    }
+    if (demo.viewedDaysAgo) {
+      at(demo.viewedDaysAgo);
+      bankReportService.activityReport({ institutionId, authorizationId: authorization.id, actor: DEMO_ANALYST });
+    }
+  }
 }
 
 /** Lavagens passadas, uma de cada vez no P1, espalhadas pelos últimos dias de forma determinística. */

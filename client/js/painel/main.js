@@ -48,6 +48,8 @@ function yardTileHtml(yard) {
 
 async function loadDashboard() {
   const summary = await api('GET', `/dashboard/summary?days=${state.days}`);
+  const sharing = summary.activeSharingAuthorizations;
+  $('#sharing-status').innerHTML = `<a class="pill ${sharing > 0 ? 'green' : ''}" href="/banco">${sharing} autorização(ões) activa(s)</a>`;
   $('#period-line').textContent = `Últimos ${state.days} dias · calculado a partir dos registos da base de demonstração`;
   $('#tiles').innerHTML = summary.indicators.map(tileHtml).join('') + yardTileHtml(summary.yardNow);
 

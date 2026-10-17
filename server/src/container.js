@@ -1,5 +1,6 @@
 // Raiz de composição: o único ponto que liga as implementações concretas (SQLite, relógio,
 // avisos na conversa) aos casos de uso. Nenhuma outra camada instancia repositórios.
+import { BankReportService } from './application/bank-report-service.js';
 import { CatalogService } from './application/catalog-service.js';
 import { ConsentService } from './application/consent-service.js';
 import { ConversationService } from './application/conversation-service.js';
@@ -8,6 +9,7 @@ import { DashboardService } from './application/dashboard-service.js';
 import { LoyaltyService } from './application/loyalty-service.js';
 import { PaymentService } from './application/payment-service.js';
 import { SettingsService } from './application/settings-service.js';
+import { SharingService } from './application/sharing-service.js';
 import { StationService } from './application/station-service.js';
 import { VehicleHistoryService } from './application/vehicle-history-service.js';
 import { WashService } from './application/wash-service.js';
@@ -21,6 +23,7 @@ import { SqliteLoyaltyRepository } from './infrastructure/database/repositories/
 import { SqlitePaymentRepository } from './infrastructure/database/repositories/payment-repository.js';
 import { SqliteReportingRepository } from './infrastructure/database/repositories/reporting-repository.js';
 import { SqliteSettingsRepository } from './infrastructure/database/repositories/settings-repository.js';
+import { SqliteSharingRepository } from './infrastructure/database/repositories/sharing-repository.js';
 import { SqliteStationRepository } from './infrastructure/database/repositories/station-repository.js';
 import { SqliteVehicleRepository } from './infrastructure/database/repositories/vehicle-repository.js';
 import { SqliteWashRepository } from './infrastructure/database/repositories/wash-repository.js';
@@ -39,6 +42,7 @@ export function createContainer({ db, clock = systemClock }) {
     paymentRepository: new SqlitePaymentRepository(db),
     reportingRepository: new SqliteReportingRepository(db),
     settingsRepository: new SqliteSettingsRepository(db),
+    sharingRepository: new SqliteSharingRepository(db),
     stationRepository: new SqliteStationRepository(db),
     vehicleRepository: new SqliteVehicleRepository(db),
     washRepository: new SqliteWashRepository(db),
@@ -54,14 +58,17 @@ export function createContainer({ db, clock = systemClock }) {
   const paymentService = new PaymentService({ ...shared, loyaltyService, notifier });
   const washService = new WashService({ ...shared, catalogService, paymentService, loyaltyService, notifier });
   const stationService = new StationService(shared);
-  const dashboardService = new DashboardService(shared);
   const vehicleHistoryService = new VehicleHistoryService({ ...shared, catalogService });
   const settingsService = new SettingsService(shared);
+  const sharingService = new SharingService(shared);
+  const bankReportService = new BankReportService({ ...shared, sharingService, settingsService });
+  const dashboardService = new DashboardService({ ...shared, sharingService });
 
   return {
     unitOfWork,
     repositories,
     services: {
+      bankReportService,
       catalogService,
       consentService,
       conversationService,
@@ -72,6 +79,7 @@ export function createContainer({ db, clock = systemClock }) {
       washService,
       stationService,
       settingsService,
+      sharingService,
       vehicleHistoryService,
     },
   };

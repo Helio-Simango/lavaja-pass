@@ -2,6 +2,22 @@
 
 ## [Unreleased]
 
+### I-7 · Vertente Banco (demonstrativa)
+
+- Migração `007_bank_sharing`:
+  - instituições;
+  - autorizações de partilha, imutáveis e revogáveis uma única vez;
+  - registo de acessos, que só acrescenta.
+- Domínio `sharing.js`:
+  - pedido de autorização com confirmação explícita, estado, período autorizado e revogação;
+  - acesso só para a instituição autorizada e só enquanto a autorização estiver activa (`AccessDeniedError`, 403);
+  - notas fixas do relatório.
+- `indicators.js`: indicadores de qualidade dos dados do cap. 9.4.
+- `BankReportService`: relatório do cap. 9.3 com as secções autorizadas, registando cada consulta e exportação na mesma transacção.
+- API de instituições, autorizações, relatório (JSON e CSV) e registo de acessos.
+- `/banco`: vista da lavadora (M15) e vista do analista (M16), com aviso de demonstração sem autenticação.
+- Demonstração: Moza Banco como instituição de demonstração (sem parceria); AUT-001 revogada; AUT-002 activa e já consultada.
+
 ### I-6 · Painel, viaturas por classe, histórico por matrícula e catálogo
 
 - Domínio `indicators.js`, puro e partilhado com a vertente Banco:

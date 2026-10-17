@@ -63,6 +63,18 @@ Limites que se mantêm:
 | IMP-21 | O progresso é sempre calculado a partir do livro de movimentos; não há tabela `loyalty_progress` | O cap. 11.1 exige que o progresso mostrado resulte dos movimentos; evita duas fontes de verdade |
 | IMP-22 | O consentimento de fidelização (cap. 14.2) ainda não condiciona a acumulação | Os consentimentos são do marco I-9 |
 
+## Decisões de implementação (I-7)
+
+| ID | Decisão | Motivo |
+|---|---|---|
+| IMP-36 | **D-16**: adoptada a proposta do cap. 9.6, uma vertente Banco demonstrativa, sem autenticação e com aviso visível. **Por confirmar pela equipa** | Rápido e coerente com o protótipo. A matriz de perfis do cap. 7.1 continua proposta |
+| IMP-37 | O período de dados é dado em meses e conta a partir do momento da consulta; o relatório não começa antes do primeiro registo | M15: "dados dos últimos 6 meses" |
+| IMP-38 | Uma autorização não pode ser alterada, só revogada uma vez (triggers). Para mudar o âmbito, cria-se uma nova | Auditabilidade: cada acesso fica ligado a um âmbito que não muda |
+| IMP-39 | O relatório tem sempre a identificação e as notas; as restantes secções só se autorizadas | Cap. 9.3 e menor privilégio (cap. 14.1) |
+| IMP-40 | Os dias de funcionamento são um parâmetro declarado pela lavadora (`business.openWeekdays`, por validar) | Necessário para "dias com registo" (cap. 9.4) |
+| IMP-41 | O Moza Banco é a única instituição de demonstração. Não há logótipo nem identidade visual | Foco da equipa (17/10/2026), sem afirmar parceria (DEC-14) |
+| IMP-42 | Os indicadores de maturidade operacional (D-17) não foram implementados | Pendentes. Nunca combinados numa pontuação |
+
 ## Decisões de implementação (I-6)
 
 | ID | Decisão | Motivo |
