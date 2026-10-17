@@ -1,6 +1,7 @@
 import { ConflictError, NotFoundError } from '../domain/errors.js';
 import { estimateQueue } from '../domain/queue-estimates.js';
 import { isEffective } from '../domain/payment.js';
+import { silentNotifier } from './ports.js';
 import { isActive, newQueuedWash, parseWashSource, paymentStateOf, planTransition, WashStatus } from '../domain/wash.js';
 
 const DEFAULT_LIST_LIMIT = 200;
@@ -13,6 +14,7 @@ export class WashService {
   #catalogService;
   #paymentService;
   #loyaltyService;
+  #notifier;
   #unitOfWork;
   #clock;
 
@@ -24,6 +26,7 @@ export class WashService {
     catalogService,
     paymentService,
     loyaltyService,
+    notifier = silentNotifier,
     unitOfWork,
     clock,
   }) {
@@ -34,6 +37,7 @@ export class WashService {
     this.#catalogService = catalogService;
     this.#paymentService = paymentService;
     this.#loyaltyService = loyaltyService;
+    this.#notifier = notifier;
     this.#unitOfWork = unitOfWork;
     this.#clock = clock;
   }
@@ -81,14 +85,27 @@ export class WashService {
     return { wash: this.get(id), changed };
   }
 
-  /** Efeitos de uma transição noutras áreas, na mesma unidade de trabalho. */
+  /** Efeitos de uma transição noutras áreas e avisos ao cliente, na mesma unidade de trabalho. */
   #afterTransition(wash, context, actor) {
-    if (wash.status === WashStatus.COMPLETED) {
-      this.#loyaltyService.recordCompletion(wash, { hasEffectivePayment: context.hasEffectivePayment, actor });
-    }
-    if (wash.status === WashStatus.CANCELLED) {
-      this.#paymentService.failPendingForCancelledWash(wash.id);
-      this.#loyaltyService.restoreForCancellation(wash, actor);
+    switch (wash.status) {
+      case WashStatus.IN_PROGRESS:
+        this.#notifier.washStarted(this.get(wash.id));
+        break;
+      case WashStatus.READY:
+        this.#notifier.washReady(this.get(wash.id));
+        break;
+      case WashStatus.COMPLETED: {
+        const movements = this.#loyaltyService.recordCompletion(wash, {
+          hasEffectivePayment: context.hasEffectivePayment,
+          actor,
+        });
+        this.#notifier.washCompleted(this.get(wash.id), movements);
+        break;
+      }
+      case WashStatus.CANCELLED:
+        this.#paymentService.failPendingForCancelledWash(wash.id);
+        this.#loyaltyService.restoreForCancellation(wash, actor);
+        break;
     }
   }
 
@@ -96,8 +113,8 @@ export class WashService {
     return this.#withDetails([this.#getWash(id)])[0];
   }
 
-  list({ statuses, date, limit = DEFAULT_LIST_LIMIT } = {}) {
-    return this.#withDetails(this.#washes.list({ statuses, date, limit }));
+  list({ statuses, date, customerId, limit = DEFAULT_LIST_LIMIT } = {}) {
+    return this.#withDetails(this.#washes.list({ statuses, date, customerId, limit }));
   }
 
   history(id) {

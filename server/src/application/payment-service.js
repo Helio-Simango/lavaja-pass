@@ -5,6 +5,7 @@ import {
   assertCanReceivePayment,
   assertSameRequest,
   failPending,
+  isEffective,
   newCashDeclaration,
   newDigitalPayment,
   parseIdempotencyKey,
@@ -13,18 +14,21 @@ import {
   planRefund,
   planSimulation,
 } from '../domain/payment.js';
+import { silentNotifier } from './ports.js';
 
 export class PaymentService {
   #payments;
   #washes;
   #loyaltyService;
+  #notifier;
   #unitOfWork;
   #clock;
 
-  constructor({ paymentRepository, washRepository, loyaltyService, unitOfWork, clock }) {
+  constructor({ paymentRepository, washRepository, loyaltyService, notifier = silentNotifier, unitOfWork, clock }) {
     this.#payments = paymentRepository;
     this.#washes = washRepository;
     this.#loyaltyService = loyaltyService;
+    this.#notifier = notifier;
     this.#unitOfWork = unitOfWork;
     this.#clock = clock;
   }
@@ -58,7 +62,9 @@ export class PaymentService {
       const now = this.#clock.nowIso();
       const decision = planSimulation(payment, outcome, now);
       if (decision.changed) this.#applyOrFail(payment, decision.changes, now);
-      return { payment: this.#getPayment(paymentId), changed: decision.changed };
+      const updated = this.#getPayment(paymentId);
+      if (decision.changed && isEffective(updated)) this.#notifier.paymentReceived(this.#getWash(updated.washId), updated);
+      return { payment: updated, changed: decision.changed };
     });
   }
 
@@ -102,7 +108,9 @@ export class PaymentService {
       }
       const now = this.#clock.nowIso();
       const id = this.#payments.insert(build(wash, idempotencyKey, now, existing), now);
-      return { payment: this.#getPayment(id), created: true };
+      const payment = this.#getPayment(id);
+      if (isEffective(payment)) this.#notifier.paymentReceived(wash, payment);
+      return { payment, created: true };
     });
   }
 

@@ -44,6 +44,16 @@ describe('aplicação HTTP', () => {
     }
   });
 
+  it('serve o simulador num endereço por número, mas não os seus ficheiros internos', async () => {
+    for (const path of ['/simulador', '/simulador/whatsapp/258841234567']) {
+      const res = await fetch(`${t.base}${path}`);
+      assert.equal(res.status, 200, path);
+      assert.match(await res.text(), /Simulador de WhatsApp/);
+    }
+    assert.equal((await fetch(`${t.base}/simulador/js/main.js`)).status, 200);
+    assert.equal((await fetch(`${t.base}/simulador/test/whatsapp-format.test.js`)).status, 404);
+  });
+
   it('não expõe o cabeçalho X-Powered-By', async () => {
     const res = await t.api('GET', '/api/health');
     assert.equal(res.headers.get('x-powered-by'), null);

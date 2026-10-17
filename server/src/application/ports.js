@@ -84,6 +84,22 @@
  */
 
 /**
+ * @typedef {object} ConversationRepository
+ * @property {(phone: string) => object|null} findThreadByPhone
+ * @property {(thread: object, now: string) => number} insertThread
+ * @property {(id: number, state: object, now: string) => void} updateThread
+ * @property {() => object[]} listThreads
+ * @property {(threadId: number, message: object, now: string) => number} insertMessage
+ * @property {(threadId: number, options: {afterId?: number}) => object[]} listMessages
+ */
+
+/**
+ * @typedef {object} ConsentRepository
+ * @property {(consent: object, now: string) => void} insert
+ * @property {(customerId: number) => object} currentFor
+ */
+
+/**
  * @typedef {object} ChangeLogRepository
  * @property {(entry: object, now: string) => void} append
  * @property {(entity: string, entityId: string|number) => object[]} listFor
@@ -96,4 +112,19 @@
  * @property {(setting: object, now: string) => void} insertIfMissing
  */
 
-export {};
+/**
+ * Avisos ao cliente (no protótipo, mensagens do sistema na conversa do simulador).
+ * @typedef {object} CustomerNotifier
+ * @property {(wash: object) => void} washStarted
+ * @property {(wash: object) => void} washReady
+ * @property {(wash: object, loyaltyMovements: object[]) => void} washCompleted
+ * @property {(wash: object, payment: object) => void} paymentReceived
+ */
+
+/** @type {CustomerNotifier} Usado quando não há canal de avisos. */
+export const silentNotifier = Object.freeze({
+  washStarted() {},
+  washReady() {},
+  washCompleted() {},
+  paymentReceived() {},
+});

@@ -63,6 +63,19 @@ Limites que se mantêm:
 | IMP-21 | O progresso é sempre calculado a partir do livro de movimentos; não há tabela `loyalty_progress` | O cap. 11.1 exige que o progresso mostrado resulte dos movimentos; evita duas fontes de verdade |
 | IMP-22 | O consentimento de fidelização (cap. 14.2) ainda não condiciona a acumulação | Os consentimentos são do marco I-9 |
 
+## Decisões de implementação (I-5)
+
+| ID | Decisão | Motivo |
+|---|---|---|
+| IMP-23 | O assistente fica em `interfaces/chat`, como um canal de entrada ao lado da API HTTP, e chama os mesmos casos de uso | Cap. 15.6: "usa os mesmos serviços e regras do Pátio". Os textos da conversa são apresentação |
+| IMP-24 | Os avisos ao cliente passam por uma porta (`CustomerNotifier`); a implementação escreve mensagens do sistema na conversa | Os casos de uso não dependem do canal. Uma integração real (fora do protótipo) só substitui a implementação |
+| IMP-25 | Os avisos são gravados na mesma transacção da operação que os origina | Uma operação desfeita não deixa avisos falsos |
+| IMP-26 | Os consentimentos de fidelização e de marketing são pedidos no registo pela conversa e guardados com histórico. Ainda não condicionam a acumulação nem as campanhas | Cap. 14.2. A aplicação dos consentimentos e o consentimento de partilha com bancos ficam para o I-9 e o I-7 |
+| IMP-27 | Uma conversa nova começa sempre em `START`: o assistente cumprimenta pelo nome quem já é cliente (por exemplo, registado no Pátio) | Evita pedir o registo a quem já existe |
+| IMP-28 | O pagamento pela conversa é digital simulado e confirmado logo; a chave de idempotência depende da conversa e do serviço | Demonstração do fluxo M5. Repetir a confirmação não paga duas vezes |
+| IMP-29 | As horas na conversa usam o fuso de Maputo (`Africa/Maputo`) | O texto é gerado no servidor e não depende do fuso do browser |
+| IMP-30 | A opção 3 (marcar horário) responde que as marcações ainda não estão disponíveis | As marcações e as suas políticas são do I-8 (D-09 a D-14) |
+
 ## Decisões de estrutura e arquitectura (v0.2.0)
 
 | ID | Decisão | Motivo |

@@ -246,3 +246,28 @@ export function presentLoyaltyMovement(movement) {
     createdAt: movement.createdAt,
   };
 }
+
+// ---------- Simulador ----------
+
+export function presentThread(thread) {
+  return {
+    id: thread.id,
+    phone: thread.phone,
+    phoneDisplay: formatPhone(thread.phone),
+    customerId: thread.customerId,
+    customerName: thread.customerName ?? null,
+    state: thread.botState,
+    lastMessage: thread.lastMessage ?? null,
+    updatedAt: thread.updatedAt,
+  };
+}
+
+export function presentMessage(message) {
+  return {
+    id: message.id,
+    direction: message.direction,
+    kind: message.kind,
+    body: message.body,
+    createdAt: message.createdAt,
+  };
+}
