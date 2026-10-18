@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="pt">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <title>Gestor · LavaJá Pass</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/app.css">
+  <link rel="stylesheet" href="/css/gestor.css">
+</head>
+<body>
+  <div class="dash">
+    <nav class="side" aria-label="Painel do gestor">
+      <a class="brand" href="#visao">LavaJá <em>Pass</em></a>
+      <div class="org" id="org">Lava Já – Matola</div>
+      <a class="nav-item" href="#visao" data-nav="visao">Visão geral</a>
+      <a class="nav-item" href="#patio" data-nav="patio">Pátio ao vivo</a>
+      <a class="nav-item" href="#clientes" data-nav="clientes">Clientes <span id="nav-customers"></span></a>
+      <a class="nav-item" href="#campanhas" data-nav="campanhas">Campanhas</a>
+      <a class="nav-item" href="#conciliacao" data-nav="conciliacao">Conciliação</a>
+      <a class="nav-item" href="#catalogo" data-nav="catalogo">Catálogo e regras</a>
+      <div class="section-label">Moza Banco</div>
+      <a class="nav-item" href="#credito" data-nav="credito">Crédito</a>
+      <div class="who"><div><b id="who-name"></b><span id="who-role">Gestor</span></div><button class="btn link" id="logout" type="button">Sair</button></div>
+    </nav>
+
+    <main class="main">
+      <!-- M10 · Visão geral -->
+      <section class="view" data-view="visao">
+        <div class="main-head">
+          <div><h1 id="greeting">Bom dia</h1><div class="sub" id="today-line"></div></div>
+          <span class="demo-flag">DADOS DE DEMONSTRAÇÃO</span>
+        </div>
+        <div class="kpis" id="kpis"></div>
+        <div class="panel2">
+          <div class="box">
+            <div class="t">Ocupação média por dia (últimos 30 dias) <small>% da capacidade prática</small></div>
+            <div class="bars" id="occupancy" role="img" aria-label="Ocupação média por dia da semana"></div>
+            <div class="blabels" id="occupancy-labels"></div>
+            <div class="legend"><span><i style="background:var(--amber)"></i>capacidade parada (<span id="low-threshold">27</span>%)</span><span><i style="background:var(--red)"></i>dia de pico</span><span><i style="background:var(--bar)"></i>restantes</span></div>
+            <div class="alert" id="occupancy-alert" hidden></div>
+            <details><summary>Ver tabela e definição</summary><table class="data" id="occupancy-table"></table>
+              <p class="muted small" id="occupancy-def"></p></details>
+          </div>
+          <div>
+            <div class="box">
+              <div class="t">Pátio agora <span class="live">● ao vivo</span></div>
+              <div id="bays-now"></div>
+            </div>
+            <div class="box">
+              <div class="t">Conciliação de hoje <a class="small" href="#conciliacao">Fecho do dia →</a></div>
+              <div id="today-reconciliation"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Pátio ao vivo e capacidade -->
+      <section class="view" data-view="patio">
+        <div class="main-head"><div><h1>Pátio ao vivo</h1><div class="sub">Actualiza a cada 5 s. As horas são estimativas.</div></div>
+          <a class="btn o sm" href="/operador">Abrir o pátio do operador ↗</a></div>
+        <div class="panel2">
+          <div class="box"><div class="t">Viaturas no pátio <span class="live">● ao vivo</span></div><div class="table-scroll"><table class="data" id="yard-table"></table></div></div>
+          <div class="box"><div class="t">Baias</div><div id="yard-bays"></div></div>
+        </div>
+        <div class="box">
+          <div class="t">Capacidade e agenda <span class="segmented" id="capacity-days" role="group" aria-label="Dia" style="max-width:220px">
+            <button type="button" data-offset="0" aria-pressed="true">Hoje</button><button type="button" data-offset="1">Amanhã</button></span></div>
+          <p class="muted small" id="capacity-line"></p>
+          <ul class="chart-legend"><li><span class="swatch" style="background:var(--series-1)"></span>Marcação</li><li><span class="swatch" style="background:var(--series-2)"></span>Fila e pátio (estimativa)</li></ul>
+          <div id="agenda" class="agenda"></div>
+          <details><summary>Ver tabela</summary><table class="data" id="agenda-table"></table></details>
+          <details><summary>Regras de capacidade</summary><table class="data" id="policy-table"></table></details>
+        </div>
+      </section>
+
+      <!-- Clientes e viaturas -->
+      <section class="view" data-view="clientes">
+        <div class="main-head"><div><h1>Clientes e viaturas</h1><div class="sub" id="class-description"></div></div>
+          <div class="segmented" id="class-tabs" role="group" aria-label="Classe"></div></div>
+        <div class="box"><div class="table-scroll"><table class="data" id="vehicles-table"></table></div></div>
+        <div class="box" id="history" hidden>
+          <div class="t" id="history-title"></div>
+          <div class="table-scroll"><table class="data" id="history-table"></table></div>
+          <p class="muted small">Valores guardados em cada serviço no momento do registo: alterar o catálogo não muda o histórico.</p>
+        </div>
+      </section>
+
+      <!-- M11 · Campanha fora de pico -->
+      <section class="view" data-view="campanhas">
+        <div class="main-head"><div><h1>Campanhas fora de pico</h1><div class="sub">O sistema propõe o segmento e a mensagem; o gestor confirma. Nunca há envios automáticos.</div></div></div>
+        <div class="panel2">
+          <form class="modal-card" id="campaign-form" novalidate>
+            <h3 style="font-size:16px">Nova campanha fora de pico</h3>
+            <span class="lbl">Oferta</span>
+            <div id="campaign-offers" role="radiogroup" aria-label="Oferta"></div>
+            <span class="lbl">Para quem</span>
+            <div class="input" style="display:flex;justify-content:space-between;gap:8px"><span id="campaign-segment"></span><b class="live" id="campaign-count"></b></div>
+            <p class="hint" id="campaign-excluded"></p>
+            <label class="lbl" for="campaign-template">Mensagem</label>
+            <textarea class="input" id="campaign-template" rows="3" maxlength="600"></textarea>
+            <p class="hint">{nome}, {dias} e {matricula} são preenchidos para cada cliente. A forma de sair (PARAR) é acrescentada sempre.</p>
+            <span class="lbl">Pré-visualização</span>
+            <div class="wa-preview"><div class="msg" id="campaign-preview"></div><div class="btns"><span>LAVAR</span><span>PARAR ofertas</span></div></div>
+            <p class="error-box" id="campaign-error" hidden></p>
+            <div style="display:flex;gap:8px;margin-top:12px">
+              <button class="btn o" type="button" id="campaign-draft" style="flex:1">Guardar rascunho</button>
+              <button class="btn r" type="submit" id="campaign-send" style="flex:1.4">Enviar</button>
+            </div>
+            <p class="hint">Resultado medido no painel: lavagens feitas até 7 dias após o envio.</p>
+          </form>
+          <div class="box"><div class="t">Campanhas enviadas</div><div id="campaigns-sent"></div></div>
+        </div>
+      </section>
+
+      <!-- Conciliação e indicadores -->
+      <section class="view" data-view="conciliacao">
+        <div class="main-head"><div><h1>Conciliação</h1><div class="sub" id="period-line"></div></div>
+          <div class="segmented" id="period" role="group" aria-label="Período"><button type="button" data-days="7">7 dias</button><button type="button" data-days="30" aria-pressed="true">30 dias</button><button type="button" data-days="90">90 dias</button></div></div>
+        <div class="tiles" id="tiles"></div>
+        <div class="panel2 even">
+          <div class="box"><div class="t">Recebimentos por semana, por origem</div><div id="receipts-chart"></div>
+            <p class="muted small">Digital confirmado (simulado) e numerário declarado lado a lado, nunca somados.</p></div>
+          <div class="box"><div class="t">Concluídos por dia da semana</div><div id="weekday-chart"></div></div>
+        </div>
+        <div class="panel2 even">
+          <div class="box"><div class="t">Fecho do dia: caixa por operador</div><table class="data" id="closings-table"></table></div>
+          <div class="box"><div class="t">Inconsistências</div><div id="issues"></div></div>
+        </div>
+        <p class="error-box" id="closing-error" hidden></p>
+      </section>
+
+      <!-- Catálogo e regras -->
+      <section class="view" data-view="catalogo">
+        <div class="main-head"><div><h1>Catálogo e regras</h1><div class="sub">Preços ilustrativos, por validar (D-19). Alterar um preço afecta só os serviços futuros.</div></div></div>
+        <div class="box"><div class="table-scroll"><table class="data" id="plans-table"></table></div></div>
+        <div class="panel2 even">
+          <div class="box"><div class="t">Classes (A, B, C)</div><table class="data" id="classes-table"></table></div>
+          <div class="box"><div class="t">Fidelização <span class="pill" id="rules-version"></span></div><table class="data" id="rules-table"></table></div>
+        </div>
+        <div class="panel2 even">
+          <div class="box"><div class="t">Baias</div><table class="data" id="stations-table"></table>
+            <p class="muted small">Desactivar uma baia (ex.: avaria) tira-a da capacidade. Fica no registo de alterações.</p></div>
+          <div class="box"><div class="t">Registo de alterações</div><div class="table-scroll"><table class="data" id="changes-table"></table></div></div>
+        </div>
+      </section>
+
+      <!-- Crédito · partilha com o Moza Banco -->
+      <section class="view" data-view="credito">
+        <div class="main-head"><div><h1>Crédito · Moza Banco</h1><div class="sub">Só o que autorizar, a quem autorizar, pelo tempo que autorizar. Pode revogar a qualquer momento.</div></div></div>
+        <div class="panel2 even">
+          <form class="box" id="grant-form" novalidate>
+            <div class="t">Autorizar a partilha para avaliação de crédito</div>
+            <label class="lbl" for="grant-institution">Instituição</label>
+            <select class="input" id="grant-institution"></select>
+            <label class="lbl" for="grant-purpose">Finalidade</label>
+            <input class="input" id="grant-purpose" maxlength="200" value="Financiamento de equipamento: compressor de alta pressão e aspirador industrial">
+            <span class="lbl">Âmbito</span>
+            <div id="grant-sections"></div>
+            <div class="panel2 even" style="margin-top:6px">
+              <div><label class="lbl" for="grant-months">Dados de</label><select class="input" id="grant-months"><option value="3">últimos 3 meses</option><option value="6" selected>últimos 6 meses</option><option value="12">últimos 12 meses</option></select></div>
+              <div><label class="lbl" for="grant-days">Validade</label><select class="input" id="grant-days"><option value="15">15 dias</option><option value="30" selected>30 dias</option><option value="90">90 dias</option></select></div>
+            </div>
+            <label class="check"><input type="checkbox" id="grant-confirm"><span>Autorizo a partilha destes dados agregados. Os nomes e telefones dos meus clientes não são partilhados.</span></label>
+            <p class="error-box" id="grant-error" hidden></p>
+            <button class="btn k block" type="submit">Autorizar</button>
+          </form>
+          <div>
+            <div class="box"><div class="t">Autorizações</div><div id="authorizations"></div></div>
+            <div class="box"><div class="t">Pedidos de análise do banco</div><div id="credit-requests"></div></div>
+          </div>
+        </div>
+        <div class="box"><div class="t">Registo de acessos do banco</div><div class="table-scroll"><table class="data" id="access-logs"></table></div></div>
+      </section>
+    </main>
+  </div>
+
+  <dialog id="plan-dialog">
+    <form method="dialog" class="dialog-body" novalidate>
+      <h3 id="plan-dialog-title">Editar plano</h3>
+      <label class="lbl" for="plan-name">Nome</label><input class="input" id="plan-name" maxlength="60">
+      <label class="lbl" for="plan-duration">Duração base (min)</label><input class="input" id="plan-duration" type="number" min="5" max="600" step="5">
+      <label class="check"><input type="checkbox" id="plan-active"><span>Activo (disponível para novos serviços)</span></label>
+      <span class="lbl">Preços por classe (MZN)</span>
+      <div class="price-grid" id="plan-prices"></div>
+      <p class="error-box" id="plan-error" hidden></p>
+      <div class="dialog-actions"><button type="button" class="btn o" data-close>Cancelar</button><button type="submit" class="btn k">Guardar</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="revoke-dialog">
+    <form method="dialog" class="dialog-body" novalidate>
+      <h3 id="revoke-title">Revogar autorização</h3>
+      <p class="small">A partir da revogação o banco não faz novas consultas. Os relatórios já emitidos não são apagados.</p>
+      <label class="lbl" for="revoke-reason">Motivo (opcional)</label><input class="input" id="revoke-reason" maxlength="200">
+      <div class="dialog-actions"><button type="button" class="btn o" data-close>Voltar</button><button type="submit" class="btn r">Revogar</button></div>
+    </form>
+  </dialog>
+
+  <script type="module" src="/js/gestor/main.js"></script>
+</body>
+</html>
