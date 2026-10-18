@@ -8,12 +8,18 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/css/app.css">
+  <link rel="stylesheet" href="/css/inicio.css">
   <link rel="stylesheet" href="/css/entrar.css">
 </head>
-<body>
+<body class="login-page">
+  <header class="login-bar">
+    <a class="back" href="/">← Voltar ao início</a>
+    <a class="logo" href="/"><img src="/favicon.svg" alt="">LavaJá <em>Pass</em></a>
+    <span class="demo-flag">DEMONSTRAÇÃO</span>
+  </header>
   <main class="center-page">
-    <a class="cover-brand" href="/" style="text-decoration:none">LavaJá <em>Pass</em></a>
-    <p class="muted">Entrar no perfil · <span class="demo-flag">DEMONSTRAÇÃO</span></p>
+    <h1 class="login-title">Entrar no perfil</h1>
+    <p class="login-sub">Cada perfil só vê o que lhe compete.</p>
 
     <div class="segmented profile-switch" role="group" aria-label="Perfil">
       <button type="button" data-profile="operador">Operador</button>
@@ -77,7 +83,7 @@
       <p class="error-box" id="customer-error" hidden></p>
     </section>
 
-    <p class="muted small" style="margin-top:18px">Acesso por perfil (D-16): cada perfil só vê o que lhe compete. Dados de demonstração fictícios.</p>
+    <p class="login-foot">Dados de demonstração fictícios. <a href="/">Voltar ao início</a> · <a href="/simulador">Simulador</a> · <a href="/cartaz">Cartaz</a></p>
   </main>
   <script type="module" src="/js/entrar/main.js"></script>
 </body>
