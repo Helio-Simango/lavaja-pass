@@ -1,4 +1,4 @@
-import { presentDashboard, presentHistoryEntry, presentVehicle, presentVehicleWithStats } from '../presenters.js';
+import { presentDashboard, presentHistoryEntry, presentToday, presentVehicle, presentVehicleWithStats } from '../presenters.js';
 import { optionalQuery, parseId } from '../request.js';
 
 export function createDashboardController({ dashboardService, vehicleHistoryService }) {
@@ -7,6 +7,11 @@ export function createDashboardController({ dashboardService, vehicleHistoryServ
     summary(req, res) {
       const days = optionalQuery(req, 'days');
       res.json(presentDashboard(dashboardService.summary({ days: days === undefined ? undefined : Number(days) })));
+    },
+
+    /** O dia de hoje no painel (M10). */
+    today(req, res) {
+      res.json({ today: presentToday(dashboardService.today()) });
     },
 
     weekly(req, res) {

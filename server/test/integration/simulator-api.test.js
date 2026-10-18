@@ -164,13 +164,13 @@ describe('API do simulador de WhatsApp (I-5)', () => {
         })
       ).body;
       const { wash } = (await t.api('POST', '/api/washes', { vehicleId: customer.vehicles[0].id, planId: demoIds(t.db).plan('SIMPLES') })).body;
-      const station = demoIds(t.db).station('P3');
+      const station = demoIds(t.db).station('B3');
 
       await t.api('POST', `/api/washes/${wash.id}/transitions`, { to: 'in_progress', stationId: station });
-      assert.match((await systemMessages(PHONE)).at(-1), new RegExp(`🚿 AFR 100 MP começou a ser lavado no posto P3 \\(${wash.code}\\)\\. Conclusão estimada: \\d{2}:\\d{2}`));
+      assert.match((await systemMessages(PHONE)).at(-1), new RegExp(`🧽 Começámos a lavar AFR 100 MP na baia B3 \\(${wash.code}\\)\\. Conclusão estimada: \\d{2}:\\d{2}`));
 
       await t.api('POST', `/api/washes/${wash.id}/transitions`, { to: 'ready' });
-      assert.match((await systemMessages(PHONE)).at(-1), /✅ AFR 100 MP está pronto! Valor: 250,00 MZN\. Pode pagar aqui/);
+      assert.match((await systemMessages(PHONE)).at(-1), /✨ AFR 100 MP está pronto na baia B3!\nTotal: 250,00 MZN\nPague aqui com a sua carteira \(simulado\): http:\/\/localhost:3000\/pagar\/\d+#t=[\w-]+\.[\w-]+\.[\w-]+\nOu responda \*5\*/);
 
       await t.api(
         'POST',

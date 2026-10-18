@@ -19,6 +19,7 @@ import { SharingService } from './application/sharing-service.js';
 import { StationService } from './application/station-service.js';
 import { VehicleHistoryService } from './application/vehicle-history-service.js';
 import { WashService } from './application/wash-service.js';
+import { YardEntryService } from './application/yard-entry-service.js';
 import { systemClock } from './infrastructure/clock.js';
 import { SqliteAppointmentRepository } from './infrastructure/database/repositories/appointment-repository.js';
 import { SqliteCampaignRepository } from './infrastructure/database/repositories/campaign-repository.js';
@@ -46,8 +47,9 @@ import { ConversationNotifier } from './interfaces/chat/notifier.js';
 /**
  * @param security { tokenSecret?, passwordHasher? } — sem segredo, as sessões valem só até reiniciar
  * @param demoVolume volume da reposição da demonstração ("pitch" por omissão; os testes usam "compact")
+ * @param publicUrl endereço público, para os links enviados na conversa (ex.: pagamento)
  */
-export function createContainer({ db, clock = systemClock, security = {}, demoVolume }) {
+export function createContainer({ db, clock = systemClock, security = {}, demoVolume, publicUrl = 'http://localhost:3000' }) {
   const unitOfWork = new SqliteUnitOfWork(db);
   const passwordHasher = security.passwordHasher ?? new ScryptPasswordHasher();
   const tokenService = new HmacJwtTokenService({ secret: security.tokenSecret ?? randomSecret(), clock });
@@ -78,7 +80,8 @@ export function createContainer({ db, clock = systemClock, security = {}, demoVo
   const consentService = new ConsentService(shared);
   const customerService = new CustomerService({ ...shared, catalogService, consentService });
   const loyaltyService = new LoyaltyService(shared);
-  const notifier = new ConversationNotifier({ conversationService, loyaltyService, catalogService });
+  const authService = new AuthService({ ...shared, tokenService, passwordHasher, random: secureRandom, conversationService });
+  const notifier = new ConversationNotifier({ conversationService, loyaltyService, catalogService, paymentLinks: authService, publicUrl });
   const paymentService = new PaymentService({ ...shared, loyaltyService, notifier });
   const washService = new WashService({ ...shared, catalogService, paymentService, loyaltyService, notifier });
   const appointmentService = new AppointmentService({ ...shared, catalogService, washService, settingsService, notifier });
@@ -86,11 +89,11 @@ export function createContainer({ db, clock = systemClock, security = {}, demoVo
   const vehicleHistoryService = new VehicleHistoryService({ ...shared, catalogService });
   const sharingService = new SharingService(shared);
   const bankReportService = new BankReportService({ ...shared, sharingService, settingsService });
-  const dashboardService = new DashboardService({ ...shared, sharingService });
+  const dashboardService = new DashboardService({ ...shared, sharingService, settingsService });
   const reconciliationService = new ReconciliationService(shared);
   const changeLogService = new ChangeLogService(shared);
-  const authService = new AuthService({ ...shared, tokenService, passwordHasher, random: secureRandom, conversationService });
   const campaignService = new CampaignService({ ...shared, conversationService, settingsService });
+  const yardEntryService = new YardEntryService({ ...shared, customerService, catalogService, washService });
   const selfService = new SelfService({ customerService, consentService, washService, paymentService, loyaltyService, appointmentService });
 
   return {
@@ -115,6 +118,7 @@ export function createContainer({ db, clock = systemClock, security = {}, demoVo
       reconciliationService,
       selfService,
       washService,
+      yardEntryService,
       stationService,
       settingsService,
       sharingService,

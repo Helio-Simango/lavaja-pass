@@ -10,7 +10,7 @@ const applied = migrate(db);
 if (applied.length) console.log(`Migrações aplicadas: ${applied.join(', ')}`);
 
 if (!config.jwtSecret) console.warn('JWT_SECRET não definido: segredo aleatório, as sessões terminam ao reiniciar.');
-const { services } = createContainer({ db, security: { tokenSecret: config.jwtSecret ?? undefined } });
+const { services } = createContainer({ db, publicUrl: config.publicUrl, security: { tokenSecret: config.jwtSecret ?? undefined } });
 const app = createHttpApp({ services, demoResetToken: config.demoResetToken, secureCookies: config.secureCookies });
 const server = app.listen(config.port, config.host, () => {
   const host = config.host === '0.0.0.0' ? 'localhost' : config.host;

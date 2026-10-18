@@ -28,7 +28,7 @@ export class StationService {
   setActive(id, active, actor) {
     return this.#unitOfWork.run(() => {
       const station = this.#stations.findById(id);
-      if (!station) throw new NotFoundError('Posto não encontrado.');
+      if (!station) throw new NotFoundError('Baia não encontrada.');
       if (station.active !== active) {
         const now = this.#clock.nowIso();
         this.#stations.setActive(id, active);

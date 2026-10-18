@@ -70,11 +70,11 @@ describe('Consentimentos, registo de alterações e fecho do dia (I-9)', () => {
     });
 
     it('desactivar um posto fica registado e tira-o da capacidade', async () => {
-      const p4 = ids.station('P4');
+      const p4 = ids.station('B4');
       const res = await t.api('PATCH', `/api/stations/${p4}`, { active: false });
       assert.equal(res.body.station.state, 'inactive');
       const [change] = (await t.api('GET', '/api/change-log?entity=station')).body.changes;
-      assert.deepEqual([change.entityId, change.newValue], ['P4', 'false']);
+      assert.deepEqual([change.entityId, change.newValue], ['B4', 'false']);
       const slots = (await t.api('GET', `/api/availability?date=2026-10-23&planId=${ids.plan('SIMPLES')}&classId=A`)).body.slots;
       assert.ok(slots.every((slot) => slot.stationId !== p4));
       await t.api('PATCH', `/api/stations/${p4}`, { active: true });

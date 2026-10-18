@@ -32,7 +32,7 @@ export function washStatusLine(wash) {
     return `${washSummary(wash)}\n${label}: posição ${estimate.position} · início estimado ${time(estimate.estimatedStartAt)}`;
   }
   if (wash.status === 'in_progress' && estimate?.estimatedEndAt) {
-    return `${washSummary(wash)}\n${label} no posto ${wash.stationCode} · conclusão estimada ${time(estimate.estimatedEndAt)}`;
+    return `${washSummary(wash)}\n${label} na baia ${wash.stationCode} · conclusão estimada ${time(estimate.estimatedEndAt)}`;
   }
   return `${washSummary(wash)}\n${label}`;
 }

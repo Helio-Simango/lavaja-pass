@@ -26,7 +26,7 @@ export const WASH_PLANS = [
   { code: 'POLIMENTO', name: 'Polimento', description: 'Polimento da pintura', durationMin: 120, active: false, prices: { A: 1500, B: 2000, C: null } },
 ];
 
-export const STATIONS = ['P1', 'P2', 'P3', 'P4'];
+export const STATIONS = ['B1', 'B2', 'B3', 'B4']; // "baias" na proposta v1
 
 export const SETTINGS = [
   { key: 'business.name', value: 'Lava Já – Matola', description: 'Lavadora do caso do hackathon (dados de demonstração)' },
@@ -72,6 +72,12 @@ export const SETTINGS = [
     },
     description:
       'Score de pré-qualificação (proposta v1, secção 8), por validar com o banco: volume de referência 100.000 MZN, antiguidade de referência 180 dias, classes A ≥ 75 e B ≥ 60, retenção de 10% dos recebimentos digitais, 12 meses, factor de custo ilustrativo 1,25',
+  },
+  {
+    key: 'capacity.practical',
+    value: { practicalWashesPerDay: 28, lowOccupancyThreshold: 0.3 },
+    description:
+      'Capacidade prática ≈ 28 lavagens/dia com 4 baias, 07:00–18:00 (proposta v1, secção 2.1), declarada e por validar; abaixo de 30% o dia aparece como capacidade parada no painel',
   },
   {
     key: 'campaigns.policy',
@@ -137,12 +143,12 @@ export const WASH_HISTORY_PLAN = [
 export const CASH_OPERATORS = ['Amílcar', 'Bento'];
 
 // Pátio coerente com o mock M7, construído ao longo de 90 min antes de "agora":
-// P1 em execução, P2 pronto (por pagar), dois serviços em fila, um deles já pago em digital (simulado).
+// B1 em execução, B2 pronto (por pagar), dois serviços em fila, um deles já pago em digital (simulado).
 export const YARD_TIMELINE = [
   { atMin: 0, register: { key: 'ready', plate: 'AGB550MP', plan: 'COMPLETA' } },
-  { atMin: 0, transition: { key: 'ready', to: 'in_progress', station: 'P2', actor: 'Amílcar' } },
+  { atMin: 0, transition: { key: 'ready', to: 'in_progress', station: 'B2', actor: 'Amílcar' } },
   { atMin: 20, register: { key: 'running', plate: 'MMC552MP', plan: 'COMPLETA_MOTOR' } },
-  { atMin: 65, transition: { key: 'running', to: 'in_progress', station: 'P1', actor: 'Bento' } },
+  { atMin: 65, transition: { key: 'running', to: 'in_progress', station: 'B1', actor: 'Bento' } },
   { atMin: 80, register: { key: 'queued1', plate: 'ABC123MC', plan: 'COMPLETA' } },
   { atMin: 87, transition: { key: 'ready', to: 'ready', actor: 'Amílcar' } },
   { atMin: 88, register: { key: 'queued2', plate: 'AAZ219MP', plan: 'SIMPLES' } },

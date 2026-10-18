@@ -42,6 +42,8 @@ export function createApiRouter({ services, clock, demoResetToken = null, secure
   router.use(createAuthenticator(services.authService));
 
   router.get('/health', (req, res) => res.json({ status: 'ok', name: 'LavaJá Pass', prototype: true }));
+  // Dados públicos da lavadora (cartaz M1, simulador): só o nome.
+  router.get('/public/business', (req, res) => res.json({ name: services.settingsService.get('business.name', 'Lava Já') }));
 
   // Entrada e sessão (I-11)
   router.get('/auth/operators', auth.operators);
@@ -78,6 +80,8 @@ export function createApiRouter({ services, clock, demoResetToken = null, secure
   router.post('/washes', allow(P.YARD_OPERATE), washes.register);
   router.get('/washes/:id', allow(P.YARD_READ), washes.get);
   router.post('/washes/:id/transitions', allow(P.YARD_OPERATE), washes.transition);
+  router.get('/yard/entries/preview', allow(P.YARD_OPERATE), washes.previewEntry);
+  router.post('/yard/entries', allow(P.YARD_OPERATE), washes.registerEntry);
 
   // Pagamentos simulados (com Idempotency-Key)
   router.get('/washes/:id/payments', allow(P.YARD_READ), payments.listForWash);
@@ -113,6 +117,7 @@ export function createApiRouter({ services, clock, demoResetToken = null, secure
   // Painel do gestor
   router.get('/dashboard/summary', allow(P.BUSINESS_READ), dashboard.summary);
   router.get('/dashboard/weekly', allow(P.BUSINESS_READ), dashboard.weekly);
+  router.get('/dashboard/today', allow(P.BUSINESS_READ), dashboard.today);
 
   // Campanhas fora de pico: o gestor revê e confirma cada envio (nunca automático)
   router.get('/campaigns', allow(P.CAMPAIGNS_MANAGE), campaigns.list);

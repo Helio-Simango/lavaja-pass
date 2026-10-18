@@ -103,7 +103,7 @@ function insertReferenceData(db, stationRepository, now) {
     }
   });
 
-  STATIONS.forEach((code, index) => stationRepository.insert({ code, name: `Posto ${index + 1}`, sortOrder: index + 1 }));
+  STATIONS.forEach((code, index) => stationRepository.insert({ code, name: `Baia ${index + 1}`, sortOrder: index + 1 }));
 }
 
 function seedAppointments(db, { appointmentService }, demoClock) {
@@ -152,10 +152,10 @@ function seedSharing(sharingRepository, { sharingService, bankReportService }, d
   }
 }
 
-/** Lavagens passadas, uma de cada vez no P1, espalhadas pelos últimos dias de forma determinística. */
+/** Lavagens passadas, uma de cada vez na B1, espalhadas pelos últimos dias de forma determinística. */
 function playHistory(db, { washService, paymentService }, demoClock, nowMs) {
   const idOf = (sql, value) => db.prepare(sql).get(value).id;
-  const stationId = idOf('SELECT id FROM stations WHERE code = ?', 'P1');
+  const stationId = idOf('SELECT id FROM stations WHERE code = ?', 'B1');
   const todayStartMs = nowMs - (nowMs % DAY_MS);
 
   historyEntries().forEach((entry, index) => {

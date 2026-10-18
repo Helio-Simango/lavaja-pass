@@ -1,9 +1,36 @@
 import { ACTIVE_WASH_STATUSES, parseWashStatus } from '../../../domain/wash.js';
-import { presentStation, presentWash, presentWashEvent } from '../presenters.js';
+import { presentMoney, presentStation, presentWash, presentWashEvent } from '../presenters.js';
+import { formatPlate } from '../../../domain/plate.js';
 import { actorOf, bodyOf, optionalBoolean, optionalId, optionalQuery, parseId, parseIsoDate } from '../request.js';
 
-export function createWashController({ washService, stationService, clock }) {
+export function createWashController({ washService, stationService, yardEntryService, clock }) {
   return {
+    /** Entrada manual (M8): o que se vê antes de confirmar. ?plate=&planId=&classId= */
+    previewEntry(req, res) {
+      const planId = optionalId(optionalQuery(req, 'planId'), 'planId');
+      const preview = yardEntryService.preview({ plate: optionalQuery(req, 'plate') || undefined, planId, classRef: optionalQuery(req, 'classId') });
+      res.json({
+        vehicle: preview.vehicle && { ...preview.vehicle, plateDisplay: formatPlate(preview.vehicle.plate) },
+        classCode: preview.classCode,
+        price: preview.quote ? presentMoney(preview.quote.price.priceCents, preview.quote.price.currency ?? 'MZN') : null,
+        estimate: preview.estimate ?? null,
+      });
+    },
+
+    registerEntry(req, res) {
+      const body = bodyOf(req);
+      const wash = yardEntryService.register({
+        plate: body.plate,
+        classId: body.classId,
+        planId: parseId(body.planId, 'planId'),
+        phone: body.phone || undefined,
+        name: body.name,
+        consents: body.consents,
+        actor: actorOf(req),
+      });
+      res.status(201).json({ wash: presentWash(wash) });
+    },
+
     /** Filtros: ?active=true · ?status=queued,ready · ?date=AAAA-MM-DD */
     list(req, res) {
       const washes = washService.list({

@@ -159,12 +159,12 @@ function assertTransitionAllowed(from, to) {
 
 function assertStationAvailable(stationId, { station, stationOccupiedBy }) {
   if (stationId === undefined || stationId === null) {
-    throw new ValidationError('Indique o posto ("stationId").', { field: 'stationId' });
+    throw new ValidationError('Indique a baia ("stationId").', { field: 'stationId' });
   }
-  if (!station) throw new NotFoundError('Posto não encontrado.');
-  if (!station.active) throw new ConflictError('STATION_INACTIVE', `O posto ${station.code} está inactivo.`);
+  if (!station) throw new NotFoundError('Baia não encontrada.');
+  if (!station.active) throw new ConflictError('STATION_INACTIVE', `A baia ${station.code} está inactiva.`);
   if (stationOccupiedBy) {
-    throw new ConflictError('STATION_BUSY', `O posto ${station.code} está ocupado.`, { washId: stationOccupiedBy });
+    throw new ConflictError('STATION_BUSY', `A baia ${station.code} está ocupada.`, { washId: stationOccupiedBy });
   }
 }
 

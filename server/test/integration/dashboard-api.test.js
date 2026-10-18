@@ -35,6 +35,29 @@ describe('API do Painel, viaturas por classe e histórico (I-6)', () => {
     assert.deepEqual(body.byWeekday.map((d) => d.label), ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom']);
   });
 
+  it('a ocupação por dia da semana usa a capacidade prática (por validar) e assinala os dias fracos', async () => {
+    const { body } = await t.api('GET', '/api/dashboard/summary');
+    assert.equal(body.capacity.practicalWashesPerDay, 28);
+    assert.equal(body.occupancy.length, 7);
+    for (const day of body.occupancy) {
+      assert.equal(day.occupancyPercent, Math.round((day.completed / day.days / 28) * 100));
+    }
+    assert.ok(body.lowOccupancy.every((day) => day.occupancyPercent < 30));
+  });
+
+  it('o dia de hoje (M10) separa o digital confirmado do numerário declarado, por operador', async () => {
+    const res = await t.api('GET', '/api/dashboard/today');
+    assert.equal(res.status, 200);
+    const { today } = res.body;
+    assert.equal(today.date, '2026-10-22');
+    assert.equal(today.washes, 4); // o pátio de demonstração
+    assert.equal(today.digital.origin, 'Confirmado em simulação');
+    assert.equal(today.cash.origin, 'Declarado por operador');
+    assert.equal(today.received.cents, today.digital.cents + today.cash.cents);
+    assert.equal(today.receivable.count, 3); // na fila (1), a lavar (1) e pronto (1) sem pagamento
+    assert.equal((await t.api('GET', '/api/dashboard/today', undefined, t.as('operator', 'Amílcar'))).status, 403);
+  });
+
   it('valida o período', async () => {
     assert.equal((await t.api('GET', '/api/dashboard/summary?days=0')).status, 400);
     assert.equal((await t.api('GET', '/api/dashboard/summary?days=abc')).status, 400);

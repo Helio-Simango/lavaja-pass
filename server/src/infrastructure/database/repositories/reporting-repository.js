@@ -33,7 +33,7 @@ export class SqliteReportingRepository {
   /** Pagamentos de serviços registados até ao fim do período (o estado actual de cada um). */
   paymentsUpTo(to) {
     return this.#db
-      .prepare(`SELECT wash_id, method, status, amount_cents, confirmed_at, declared_at, refunded_at
+      .prepare(`SELECT wash_id, method, status, amount_cents, confirmed_at, declared_at, declared_by, refunded_at
         FROM payments WHERE created_at <= ? ORDER BY id`)
       .all(to)
       .map((row) => ({
@@ -43,6 +43,7 @@ export class SqliteReportingRepository {
         amountCents: row.amount_cents,
         confirmedAt: row.confirmed_at,
         declaredAt: row.declared_at,
+        declaredBy: row.declared_by,
         refundedAt: row.refunded_at,
       }));
   }
