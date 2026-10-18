@@ -1,5 +1,6 @@
 // Avisos automáticos ao cliente na conversa (cap. 8.1): aparecem como mensagens do sistema,
 // distintas das respostas do assistente. Implementa a porta CustomerNotifier da aplicação.
+import { isWalkIn } from '../../domain/customer.js';
 import { WashPaymentState, washCode } from '../../domain/wash.js';
 import { date, money, plate, time } from './format.js';
 
@@ -9,23 +10,39 @@ export class ConversationNotifier {
   #conversationService;
   #loyaltyService;
   #catalogService;
+  #paymentLinks;
+  #publicUrl;
 
-  constructor({ conversationService, loyaltyService, catalogService }) {
+  /**
+   * @param paymentLinks emite o token do link de pagamento (M3 → M4); sem ele, só a opção 5 da conversa
+   * @param publicUrl endereço público do servidor
+   */
+  constructor({ conversationService, loyaltyService, catalogService, paymentLinks = null, publicUrl = '' }) {
     this.#conversationService = conversationService;
     this.#loyaltyService = loyaltyService;
     this.#catalogService = catalogService;
+    this.#paymentLinks = paymentLinks;
+    this.#publicUrl = publicUrl.replace(/\/$/, '');
   }
 
   washStarted(wash) {
     const end = wash.estimate?.estimatedEndAt ? ` Conclusão estimada: ${time(wash.estimate.estimatedEndAt)}.` : '';
-    this.#notify(wash, `🚿 ${plate(wash.plate)} começou a ser lavado no posto ${wash.stationCode} (${washCode(wash.id)}).${end}`);
+    this.#notify(wash, `🧽 Começámos a lavar ${plate(wash.plate)} na baia ${wash.stationCode} (${washCode(wash.id)}).${end}`);
   }
 
+  /** Aviso de pronto (M3): com o valor e o link de pagamento (checkout M4, simulado). */
   washReady(wash) {
-    const payment = PAID_STATES.includes(wash.paymentState)
-      ? 'Já está pago: pode levantar a viatura.'
-      : `Valor: ${money(wash.finalPriceCents, wash.currency)}. Pode pagar aqui (opção *5*, simulado) ou em numerário ao operador.`;
-    this.#notify(wash, `✅ ${plate(wash.plate)} está pronto! ${payment}`);
+    if (PAID_STATES.includes(wash.paymentState)) {
+      this.#notify(wash, `✨ ${plate(wash.plate)} está pronto na baia ${wash.stationCode}! Já está pago: pode levantar a viatura.`);
+      return;
+    }
+    const lines = [`✨ ${plate(wash.plate)} está pronto na baia ${wash.stationCode}!`, `Total: ${money(wash.finalPriceCents, wash.currency)}`];
+    if (this.#paymentLinks) {
+      const token = this.#paymentLinks.issuePaymentLink({ customerId: wash.customerId, customerName: wash.customerName, washId: wash.id });
+      lines.push(`Pague aqui com a sua carteira (simulado): ${this.#publicUrl}/pagar/${wash.id}#t=${token}`);
+    }
+    lines.push('Ou responda *5* para pagar aqui, ou pague em numerário ao operador na entrega.');
+    this.#notify(wash, lines.join('\n'));
   }
 
   paymentReceived(wash, payment) {
@@ -88,7 +105,9 @@ Responda *ACEITAR* para mudar ou *MANTER* para ficar com o horário actual. Sem 
     return `lavagem ${plan?.name ?? params.benefit.planCode} gratuita`;
   }
 
+  /** O cliente de balcão (sem telefone) não recebe avisos. */
   #notify(wash, text) {
+    if (isWalkIn(wash.customerPhone)) return;
     this.#conversationService.notifyPhone(wash.customerPhone, text);
   }
 }

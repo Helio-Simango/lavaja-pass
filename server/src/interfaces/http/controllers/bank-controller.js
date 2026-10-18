@@ -1,8 +1,9 @@
-// Vertente Lavadora–Banco (I-7). Sem autenticação no protótipo (D-16): demonstração com aviso.
+// Vertente Lavadora–Banco (I-7). A lavadora (gestor) autoriza; o analista só vê a sua instituição (I-11).
 import { AccessAction } from '../../../application/bank-report-service.js';
 import {
   activityReportToCsv,
   presentAccessLog,
+  presentCreditRequest,
   presentActivityReport,
   presentAuthorization,
 } from '../presenters.js';
@@ -48,14 +49,20 @@ export function createBankController({ sharingService, bankReportService }) {
       res.json({ accessLogs: sharingService.accessLogs({ authorizationId }).map(presentAccessLog) });
     },
 
-    /** O analista consulta (M16); ?format=csv exporta. Ambos ficam registados. */
+    /** Autorizações dadas à instituição do analista (nunca as de outras instituições). */
+    analystAuthorizations(req, res) {
+      const own = sharingService.listAuthorizations().filter((a) => a.institutionId === req.session.institutionId);
+      res.json({ institution: { id: req.session.institutionId, name: req.session.institutionName }, authorizations: own.map(presentAuthorization) });
+    },
+
+    /** O analista consulta (M12/M16); ?format=csv exporta. Ambos ficam registados. A instituição vem da sessão. */
     activityReport(req, res) {
       const exporting = optionalQuery(req, 'format') === 'csv';
       const report = presentActivityReport(
         bankReportService.activityReport({
-          institutionId: parseId(req.params.id),
+          institutionId: req.session.institutionId,
           authorizationId: parseId(optionalQuery(req, 'authorizationId'), 'authorizationId'),
-          actor: actorOf(req, 'analista.demo'),
+          actor: actorOf(req),
           action: exporting ? AccessAction.EXPORT : AccessAction.VIEW,
         }),
       );
@@ -64,6 +71,27 @@ export function createBankController({ sharingService, bankReportService }) {
         .type('text/csv; charset=utf-8')
         .attachment(`relatorio-${report.authorization.reference}.csv`)
         .send(`﻿${activityReportToCsv(report)}`);
+    },
+
+    /** O analista pede uma análise de crédito formal (M12). */
+    requestCreditAnalysis(req, res) {
+      const body = bodyOf(req);
+      const request = bankReportService.requestCreditAnalysis({
+        institutionId: req.session.institutionId,
+        authorizationId: parseId(body.authorizationId, 'authorizationId'),
+        note: body.note,
+        actor: actorOf(req),
+      });
+      res.status(201).json({ request: presentCreditRequest(request) });
+    },
+
+    analystCreditRequests(req, res) {
+      res.json({ requests: bankReportService.creditRequests({ institutionId: req.session.institutionId }).map(presentCreditRequest) });
+    },
+
+    /** A lavadora vê os pedidos de análise feitos a partir das suas autorizações. */
+    creditRequests(req, res) {
+      res.json({ requests: bankReportService.creditRequests().map(presentCreditRequest) });
     },
   };
 }

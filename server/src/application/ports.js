@@ -28,6 +28,7 @@
  * @property {(id: number) => object|null} findById
  * @property {(phone: string) => object|null} findByPhone
  * @property {(options: {limit:number}) => object[]} list
+ * @property {() => number} count
  * @property {(customer: {phone:string, name:string}, now: string) => number} insert
  */
 
@@ -177,6 +178,40 @@
  * @property {(appointmentId: number) => object[]} listOffers
  * @property {(filter?: object) => object[]} listPendingOffers
  * @property {(id: number, changes: object) => void} updateOffer
+ */
+
+/**
+ * Sessões (I-11): tokens assinados com validade. verify devolve null se o token for inválido.
+ * @typedef {object} TokenService
+ * @property {(claims: object, ttlMinutes: number) => {token: string, expiresAt: string}} issue
+ * @property {(token: string) => object|null} verify
+ */
+
+/**
+ * Hash de senhas, PINs e códigos (nunca guardados em claro).
+ * @typedef {object} PasswordHasher
+ * @property {(secret: string) => string} hash
+ * @property {(secret: string, stored: string) => boolean} verify
+ */
+
+/**
+ * @typedef {object} RandomSource
+ * @property {(length: number) => string} digits  algarismos aleatórios (criptograficamente seguros)
+ */
+
+/**
+ * @typedef {object} UserRepository
+ * @property {(id: number) => object|null} findById
+ * @property {(email: string) => object|null} findByEmail
+ * @property {() => object[]} listOperators
+ * @property {(user: object, now: string) => number} insert
+ * @property {(id: number, attempt: {failedAttempts:number, lockedUntil:string|null}, now: string) => void} recordAttempt
+ * @property {(code: object, now: string) => void} insertCustomerCode
+ * @property {(customerId: number) => object|null} latestCustomerCode
+ * @property {(id: number) => void} countCodeAttempt
+ * @property {(id: number, now: string) => void} markCodeUsed
+ * @property {(event: object, now: string) => void} appendAuthEvent
+ * @property {(options?: {limit:number}) => object[]} listAuthEvents
  */
 
 /** @type {CustomerNotifier} Usado quando não há canal de avisos. */

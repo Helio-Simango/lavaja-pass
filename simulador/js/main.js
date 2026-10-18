@@ -8,8 +8,9 @@ const REFRESH_INTERVAL_MS = 3000;
 const SIMULATOR_PATH = '/simulador';
 
 const app = $('.wa-app');
-const chatView = createChatView($('#messages'));
+const chatView = createChatView($('#messages'), { onReply: (text) => send(text) });
 const state = { phone: null, lastId: 0, sending: false };
+const initialText = new URLSearchParams(location.search).get('texto') ?? '';
 
 // ---------- Conversas ----------
 
@@ -51,6 +52,7 @@ function openConversation(phone, { push = true } = {}) {
   Object.assign(state, { phone, lastId: 0 });
   chatView.clear();
   $('#chat-subtitle').textContent = `a conversar como ${formatPhone(phone)}`;
+  $('#text').value = initialText; // ex.: o QR do cartaz abre a conversa com "LAVAR" já escrito
   $('#chat').hidden = false;
   $('#empty').hidden = true;
   app.classList.add('chat-open');
@@ -114,9 +116,8 @@ window.addEventListener('popstate', () => {
 
 // ---------- Arranque ----------
 
-api('GET', '/settings').then(({ settings }) => {
-  const name = settings.find((setting) => setting.key === 'business.name')?.value;
-  if (name) $('#business-name').textContent = name;
+api('GET', '/public/business').then(({ name }) => {
+  $('#business-name').textContent = name;
 });
 
 const initialPhone = phoneFromPath(location.pathname);

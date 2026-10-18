@@ -1,0 +1,5 @@
+/* Entrada: escolha do perfil e formulários (M6 para o operador). */
+.profile-switch { width: min(520px, 100%); margin: 16px 0; }
+.login-phone { width: min(360px, 100%); background: #fff; border: 9px solid #111; border-radius: 34px; overflow: hidden; box-shadow: var(--shadow); }
+.login-phone .op-head { padding: 14px 16px; }
+.login-card h2 { font-size: 18px; margin-bottom: 4px; }

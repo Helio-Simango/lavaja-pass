@@ -1,7 +1,9 @@
 // Raiz de composição: o único ponto que liga as implementações concretas (SQLite, relógio,
 // avisos na conversa) aos casos de uso. Nenhuma outra camada instancia repositórios.
 import { AppointmentService } from './application/appointment-service.js';
+import { AuthService } from './application/auth-service.js';
 import { BankReportService } from './application/bank-report-service.js';
+import { CampaignService } from './application/campaign-service.js';
 import { CatalogService } from './application/catalog-service.js';
 import { ChangeLogService } from './application/change-log-service.js';
 import { ConsentService } from './application/consent-service.js';
@@ -11,13 +13,17 @@ import { DashboardService } from './application/dashboard-service.js';
 import { LoyaltyService } from './application/loyalty-service.js';
 import { PaymentService } from './application/payment-service.js';
 import { ReconciliationService } from './application/reconciliation-service.js';
+import { SelfService } from './application/self-service.js';
 import { SettingsService } from './application/settings-service.js';
 import { SharingService } from './application/sharing-service.js';
 import { StationService } from './application/station-service.js';
 import { VehicleHistoryService } from './application/vehicle-history-service.js';
+import { silentNotifier } from './application/ports.js';
 import { WashService } from './application/wash-service.js';
+import { YardEntryService } from './application/yard-entry-service.js';
 import { systemClock } from './infrastructure/clock.js';
 import { SqliteAppointmentRepository } from './infrastructure/database/repositories/appointment-repository.js';
+import { SqliteCampaignRepository } from './infrastructure/database/repositories/campaign-repository.js';
 import { SqliteCatalogRepository } from './infrastructure/database/repositories/catalog-repository.js';
 import { SqliteChangeLogRepository } from './infrastructure/database/repositories/change-log-repository.js';
 import { SqliteConsentRepository } from './infrastructure/database/repositories/consent-repository.js';
@@ -29,17 +35,29 @@ import { SqliteReconciliationRepository } from './infrastructure/database/reposi
 import { SqliteReportingRepository } from './infrastructure/database/repositories/reporting-repository.js';
 import { SqliteSettingsRepository } from './infrastructure/database/repositories/settings-repository.js';
 import { SqliteSharingRepository } from './infrastructure/database/repositories/sharing-repository.js';
+import { SqliteUserRepository } from './infrastructure/database/repositories/user-repository.js';
 import { SqliteStationRepository } from './infrastructure/database/repositories/station-repository.js';
 import { SqliteVehicleRepository } from './infrastructure/database/repositories/vehicle-repository.js';
 import { SqliteWashRepository } from './infrastructure/database/repositories/wash-repository.js';
 import { SqliteUnitOfWork } from './infrastructure/database/unit-of-work.js';
 import { resetDemoDatabase } from './infrastructure/database/demo-reset.js';
+import { HmacJwtTokenService, randomSecret } from './infrastructure/security/jwt.js';
+import { ScryptPasswordHasher, secureRandom } from './infrastructure/security/password-hasher.js';
 import { ConversationNotifier } from './interfaces/chat/notifier.js';
 
-export function createContainer({ db, clock = systemClock }) {
+/**
+ * @param security { tokenSecret?, passwordHasher? } — sem segredo, as sessões valem só até reiniciar
+ * @param demoVolume volume da reposição da demonstração ("pitch" por omissão; os testes usam "compact")
+ * @param publicUrl endereço público, para os links enviados na conversa (ex.: pagamento)
+ * @param notifications false = sem avisos na conversa (ex.: histórico de fundo da demonstração)
+ */
+export function createContainer({ db, clock = systemClock, security = {}, demoVolume, publicUrl = 'http://localhost:3000', notifications = true }) {
   const unitOfWork = new SqliteUnitOfWork(db);
+  const passwordHasher = security.passwordHasher ?? new ScryptPasswordHasher();
+  const tokenService = new HmacJwtTokenService({ secret: security.tokenSecret ?? randomSecret(), clock });
   const repositories = {
     appointmentRepository: new SqliteAppointmentRepository(db),
+    campaignRepository: new SqliteCampaignRepository(db),
     catalogRepository: new SqliteCatalogRepository(db),
     changeLogRepository: new SqliteChangeLogRepository(db),
     consentRepository: new SqliteConsentRepository(db),
@@ -52,6 +70,7 @@ export function createContainer({ db, clock = systemClock }) {
     settingsRepository: new SqliteSettingsRepository(db),
     sharingRepository: new SqliteSharingRepository(db),
     stationRepository: new SqliteStationRepository(db),
+    userRepository: new SqliteUserRepository(db),
     vehicleRepository: new SqliteVehicleRepository(db),
     washRepository: new SqliteWashRepository(db),
   };
@@ -63,7 +82,10 @@ export function createContainer({ db, clock = systemClock }) {
   const consentService = new ConsentService(shared);
   const customerService = new CustomerService({ ...shared, catalogService, consentService });
   const loyaltyService = new LoyaltyService(shared);
-  const notifier = new ConversationNotifier({ conversationService, loyaltyService, catalogService });
+  const authService = new AuthService({ ...shared, tokenService, passwordHasher, random: secureRandom, conversationService });
+  const notifier = notifications
+    ? new ConversationNotifier({ conversationService, loyaltyService, catalogService, paymentLinks: authService, publicUrl })
+    : silentNotifier;
   const paymentService = new PaymentService({ ...shared, loyaltyService, notifier });
   const washService = new WashService({ ...shared, catalogService, paymentService, loyaltyService, notifier });
   const appointmentService = new AppointmentService({ ...shared, catalogService, washService, settingsService, notifier });
@@ -71,18 +93,24 @@ export function createContainer({ db, clock = systemClock }) {
   const vehicleHistoryService = new VehicleHistoryService({ ...shared, catalogService });
   const sharingService = new SharingService(shared);
   const bankReportService = new BankReportService({ ...shared, sharingService, settingsService });
-  const dashboardService = new DashboardService({ ...shared, sharingService });
+  const dashboardService = new DashboardService({ ...shared, sharingService, settingsService });
   const reconciliationService = new ReconciliationService(shared);
   const changeLogService = new ChangeLogService(shared);
+  const campaignService = new CampaignService({ ...shared, conversationService, settingsService });
+  const yardEntryService = new YardEntryService({ ...shared, customerService, catalogService, washService });
+  const selfService = new SelfService({ customerService, consentService, washService, paymentService, loyaltyService, appointmentService });
 
   return {
     unitOfWork,
     repositories,
+    security: { tokenService, passwordHasher },
     services: {
       // Reposição da demonstração (só exposta com token, confirmação e acesso local)
-      demoResetService: { reset: () => resetDemoDatabase(db, { clock }) },
+      demoResetService: { reset: () => resetDemoDatabase(db, { clock, passwordHasher, volume: demoVolume }) },
       appointmentService,
+      authService,
       bankReportService,
+      campaignService,
       catalogService,
       changeLogService,
       consentService,
@@ -92,7 +120,9 @@ export function createContainer({ db, clock = systemClock }) {
       loyaltyService,
       paymentService,
       reconciliationService,
+      selfService,
       washService,
+      yardEntryService,
       stationService,
       settingsService,
       sharingService,

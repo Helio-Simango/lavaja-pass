@@ -125,7 +125,9 @@ function presentWashPayment(wash) {
   return {
     status: paymentState,
     label,
-    effective: effective ? { id: effective.id, method: effective.method, declaredBy: effective.declaredBy } : null,
+    effective: effective
+      ? { id: effective.id, method: effective.method, declaredBy: effective.declaredBy, at: effective.confirmedAt ?? effective.declaredAt ?? null }
+      : null,
   };
 }
 
@@ -151,6 +153,7 @@ export function presentWash(wash) {
     source: wash.source,
     queuedAt: wash.queuedAt,
     startedAt: wash.startedAt,
+    startedBy: wash.startedBy ?? null,
     readyAt: wash.readyAt,
     completedAt: wash.completedAt,
     cancelledAt: wash.cancelledAt,
@@ -309,6 +312,26 @@ export function presentDashboard(summary) {
     })),
     yardNow: summary.yardNow,
     activeSharingAuthorizations: summary.activeSharingAuthorizations,
+    capacity: summary.capacity,
+    occupancy: summary.occupancy.map((day) => ({ ...day, occupancyPercent: day.occupancy === null ? null : Math.round(day.occupancy * 100) })),
+    lowOccupancy: summary.lowOccupancy.map((day) => ({ label: day.label, occupancyPercent: Math.round(day.occupancy * 100) })),
+  };
+}
+
+export function presentToday(today) {
+  const mzn = (cents) => presentMoney(cents, 'MZN');
+  const received = today.digitalCents + today.cashCents;
+  return {
+    date: today.date,
+    washes: today.washes,
+    completed: today.completed,
+    received: mzn(received),
+    digital: { ...mzn(today.digitalCents), origin: 'Confirmado em simulação' },
+    cash: { ...mzn(today.cashCents), origin: 'Declarado por operador' },
+    digitalSharePercent: received ? Math.round((today.digitalCents / received) * 100) : null,
+    cashByOperator: today.cashByOperator.map(({ operator, cents }) => ({ operator, amount: mzn(cents) })),
+    receivable: { ...mzn(today.receivableCents), count: today.receivableCount },
+    yardNow: today.yardNow,
   };
 }
 
@@ -398,8 +421,9 @@ const withMeta = (meta, value) => ({ ...meta, value });
 /** Relatório com a origem e a definição de cada valor; só as secções autorizadas. */
 export function presentActivityReport(report) {
   const mzn = (cents) => presentMoney(cents, 'MZN');
-  const { activity, receipts, customers, data_quality: quality } = report.sections;
+  const { activity, receipts, customers, data_quality: quality, prequalification } = report.sections;
   const sections = {};
+  if (prequalification) sections.prequalification = presentPrequalification(prequalification);
   if (activity) {
     sections.activity = {
       completed: withMeta(INDICATORS.completed, activity.completed),
@@ -443,6 +467,9 @@ export function presentActivityReport(report) {
   }
   return {
     business: report.business,
+    holder: report.holder,
+    bankAccount: report.bankAccount,
+    historyDays: report.firstRecordAt ? Math.floor((Date.parse(report.issuedAt) - Date.parse(report.firstRecordAt)) / 86_400_000) : 0,
     institution: report.institution,
     authorization: {
       ...report.authorization,
@@ -452,6 +479,50 @@ export function presentActivityReport(report) {
     issuedAt: report.issuedAt,
     sections,
     notes: report.notes,
+  };
+}
+
+/** Score indicativo (M12): cada componente com o peso, os pontos e a definição. */
+function presentPrequalification(score) {
+  const mzn = (cents) => presentMoney(cents, 'MZN');
+  const { metrics, indicative } = score;
+  return {
+    total: score.total,
+    scoreClass: score.scoreClass,
+    classLabel: score.classLabel,
+    components: score.components.map(({ key, label, weight, points, ratio, definition }) => ({ key, label, weight, points, ratio, definition })),
+    weakest: score.weakest,
+    projection: score.projection,
+    summary: {
+      revenue30d: withMeta({ label: 'Receita 30 dias', origin: 'Digital confirmado + numerário declarado' }, mzn(metrics.totalCents30d)),
+      digital30d: withMeta({ label: 'Verificado (digital)', origin: 'Confirmado em simulação' }, mzn(metrics.digitalCents30d)),
+      cash30d: withMeta({ label: 'Numerário declarado', origin: 'Declarado por operador' }, mzn(metrics.cashCents30d)),
+      digitalShare: share(metrics.totalCents30d ? metrics.digitalCents30d / metrics.totalCents30d : null),
+      retention: withMeta({ label: 'Retenção 30 dias', origin: 'Calculado' }, share(metrics.retentionRate)),
+      customers: metrics.customers,
+    },
+    indicative: {
+      amount: mzn(indicative.amountCents),
+      termMonths: indicative.termMonths,
+      retentionShare: indicative.retentionShare,
+      monthlyRetention: mzn(indicative.monthlyRetentionCents),
+      costFactor: indicative.costFactor,
+      rate: 'a definir pelo banco',
+    },
+    disclaimer: 'Indicativo. A decisão de crédito é do banco, segundo os seus processos de análise.',
+  };
+}
+
+export function presentCreditRequest(request) {
+  return {
+    id: request.id,
+    authorizationReference: request.authorizationReference,
+    institutionName: request.institutionName,
+    requestedBy: request.requestedBy,
+    score: { total: request.scoreTotal, scoreClass: request.scoreClass },
+    indicativeAmount: presentMoney(request.indicativeAmountCents, 'MZN'),
+    note: request.note,
+    createdAt: request.createdAt,
   };
 }
 
@@ -484,6 +555,13 @@ export function activityReportToCsv(presented) {
     add('clientes', customers.returningCustomers.label, `${customers.returningCustomers.value ?? '—'}%`, customers.returningCustomers.origin);
   }
   if (quality) for (const item of quality) add('qualidade dos dados', item.label, item.value, item.origin);
+  const score = presented.sections.prequalification;
+  if (score) {
+    add('pré-qualificação', 'score', `${score.total}/100 · classe ${score.scoreClass} · ${score.classLabel}`, 'Calculado (indicativo)');
+    for (const c of score.components) add('pré-qualificação', c.label, `${c.points}/${c.weight}`, c.definition);
+    add('pré-qualificação', 'montante indicativo', score.indicative.amount.display, `${score.indicative.termMonths} meses · ${Math.round(score.indicative.retentionShare * 100)}% dos recebimentos digitais`);
+    add('pré-qualificação', 'nota', score.disclaimer);
+  }
   for (const note of presented.notes) add('notas', '', note);
   return rows.map((row) => row.map(csvCell).join(';')).join('\r\n');
 }
@@ -561,7 +639,7 @@ const CHANGE_ENTITY_LABELS = Object.freeze({
   class_plan_price: 'Preço',
   vehicle: 'Viatura',
   loyalty_rules: 'Regras de fidelização',
-  station: 'Posto',
+  station: 'Baia',
 });
 
 export function presentChange(entry) {
@@ -605,5 +683,31 @@ export function presentReconciliation(day) {
       reason: issue.reason ?? null,
       corrections: issue.corrections.map((n) => ({ id: n.id, note: n.note, actor: n.actor, createdAt: n.createdAt })),
     })),
+  };
+}
+
+// ---------- Campanhas (M11) ----------
+
+export function presentCampaignPreview(preview) {
+  return {
+    policy: preview.policy,
+    offers: preview.offers,
+    template: preview.template,
+    footer: preview.footer,
+    count: preview.count,
+    excluded: preview.excluded,
+    sample: preview.sample,
+  };
+}
+
+export function presentCampaign(campaign) {
+  return {
+    id: campaign.id,
+    offer: { type: campaign.offerType, label: campaign.offer?.label ?? campaign.offerType },
+    template: campaign.template,
+    recipientsCount: campaign.recipientsCount,
+    sentBy: campaign.sentBy,
+    sentAt: campaign.sentAt,
+    result: campaign.result,
   };
 }

@@ -50,6 +50,8 @@ export class WhatsAppAssistant {
     if (command === 'STOP_MARKETING' && session.customer) return this.#stopMarketing(session);
     if (command === 'JOIN_LOYALTY' && session.customer) return this.#joinLoyalty(session);
     if (command === 'MENU' && session.customer) return this.#menu();
+    if (command === 'START_WASH' && session.customer) return this.#startQueue(session, Intent.QUEUE);
+    if (command === 'STATUS' && session.customer) return this.#status(session);
     if ((command === 'ACCEPT_OFFER' || command === 'KEEP_OFFER') && session.customer) {
       return this.#answerOffer(session, command === 'ACCEPT_OFFER');
     }

@@ -26,6 +26,10 @@ export class SqliteCustomerRepository {
     return this.#db.prepare('SELECT * FROM customers ORDER BY name, id LIMIT ?').all(limit).map(toCustomer);
   }
 
+  count() {
+    return this.#db.prepare('SELECT COUNT(*) AS total FROM customers').get().total;
+  }
+
   insert({ phone, name }, now) {
     const { lastInsertRowid } = this.#db
       .prepare('INSERT INTO customers (phone, name, created_at, updated_at) VALUES (?, ?, ?, ?)')

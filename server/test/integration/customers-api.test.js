@@ -112,11 +112,11 @@ describe('API de clientes e viaturas (I-1)', () => {
   it('reclassifica uma viatura e regista a alteração', async () => {
     const list = await t.api('GET', '/api/vehicles?classId=A');
     const vehicle = list.body.vehicles.find((v) => v.plate === 'ABC999MP' && v.jurisdiction === 'MZ');
-    const res = await t.api('PATCH', `/api/vehicles/${vehicle.id}`, { classId: 'B' }, { 'X-Actor': 'Gestora' });
+    const res = await t.api('PATCH', `/api/vehicles/${vehicle.id}`, { classId: 'B' });
     assert.equal(res.status, 200);
     assert.equal(res.body.vehicle.class.code, 'B');
     const [entry] = t.repositories.changeLogRepository.listFor('vehicle', vehicle.id);
-    assert.deepEqual([entry.oldValue, entry.newValue, entry.actor], ['A', 'B', 'Gestora']);
+    assert.deepEqual([entry.oldValue, entry.newValue, entry.actor], ['A', 'B', 'Z. Cossa']);
   });
 
   it('devolve 404 para cliente ou viatura inexistentes', async () => {

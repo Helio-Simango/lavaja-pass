@@ -123,6 +123,22 @@ export class WashService {
     return this.#withDetails(this.#washes.list({ statuses, date, customerId, vehicleId, limit }));
   }
 
+  /**
+   * Pré-visualização (M8): posição e conclusão estimadas se uma viatura entrar agora na fila.
+   * Só uma estimativa; nada é registado.
+   */
+  previewQueue(durationMin) {
+    const now = this.#clock.now();
+    const candidate = { id: 0, status: WashStatus.QUEUED, queuedAt: now.toISOString(), durationMin, appointmentId: null };
+    const estimates = estimateQueue({
+      now,
+      stations: this.#stations.list(),
+      washes: [...this.#washes.listActive(), candidate],
+      reservations: this.#reservations(now),
+    });
+    return estimates.get(0);
+  }
+
   history(id) {
     this.#getWash(id);
     return this.#washes.listEvents(id);

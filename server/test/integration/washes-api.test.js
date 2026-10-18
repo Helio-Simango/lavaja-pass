@@ -25,8 +25,8 @@ describe('API de serviços, fila e postos (I-2)', () => {
     assert.deepEqual(
       res.body.washes.map((w) => [w.vehicle.plate, w.status, w.station?.code ?? null]),
       [
-        ['AGB550MP', 'ready', 'P2'],
-        ['MMC552MP', 'in_progress', 'P1'],
+        ['AGB550MP', 'ready', 'B2'],
+        ['MMC552MP', 'in_progress', 'B1'],
         ['ABC123MC', 'queued', null],
         ['AAZ219MP', 'queued', null],
       ],
@@ -43,7 +43,7 @@ describe('API de serviços, fila e postos (I-2)', () => {
     const res = await t.api('GET', '/api/stations');
     assert.deepEqual(
       res.body.stations.map((s) => [s.code, s.state]),
-      [['P1', 'busy'], ['P2', 'ready'], ['P3', 'free'], ['P4', 'free']],
+      [['B1', 'busy'], ['B2', 'ready'], ['B3', 'free'], ['B4', 'free']],
     );
   });
 
@@ -52,7 +52,7 @@ describe('API de serviços, fila e postos (I-2)', () => {
       'POST',
       '/api/washes',
       { vehicleId: ids.vehicle('ACX731MC'), planId: ids.plan('COMPLETA'), finalPriceCents: 1 },
-      { 'X-Actor': 'Amílcar' },
+      t.as('operator', 'Amílcar'),
     );
     assert.equal(res.status, 201);
     const { wash } = res.body;
@@ -109,28 +109,28 @@ describe('API de serviços, fila e postos (I-2)', () => {
   it('iniciar exige um posto livre e activo', async () => {
     const start = (stationId) => transition(washIds.acx, { to: 'in_progress', stationId });
     assert.equal((await start(undefined)).status, 400);
-    assert.equal((await start(ids.station('P1'))).body.error.code, 'STATION_BUSY');
-    assert.equal((await start(ids.station('P2'))).body.error.code, 'STATION_BUSY'); // pronto também ocupa o posto
+    assert.equal((await start(ids.station('B1'))).body.error.code, 'STATION_BUSY');
+    assert.equal((await start(ids.station('B2'))).body.error.code, 'STATION_BUSY'); // pronto também ocupa o posto
     assert.equal((await start(9999)).status, 404);
 
-    t.db.prepare("UPDATE stations SET active = 0 WHERE code = 'P4'").run();
-    assert.equal((await start(ids.station('P4'))).body.error.code, 'STATION_INACTIVE');
-    t.db.prepare("UPDATE stations SET active = 1 WHERE code = 'P4'").run();
+    t.db.prepare("UPDATE stations SET active = 0 WHERE code = 'B4'").run();
+    assert.equal((await start(ids.station('B4'))).body.error.code, 'STATION_INACTIVE');
+    t.db.prepare("UPDATE stations SET active = 1 WHERE code = 'B4'").run();
   });
 
   it('inicia num posto livre; repetir o pedido não tem efeitos', async () => {
     t.clock.advanceMinutes(5);
-    let res = await transition(washIds.acx, { to: 'in_progress', stationId: ids.station('P3') }, { 'X-Actor': 'Amílcar' });
+    let res = await transition(washIds.acx, { to: 'in_progress', stationId: ids.station('B3') }, t.as('operator', 'Amílcar'));
     assert.equal(res.status, 200);
     assert.equal(res.body.changed, true);
-    assert.equal(res.body.wash.station.code, 'P3');
+    assert.equal(res.body.wash.station.code, 'B3');
     assert.equal(res.body.wash.startedAt, '2026-10-22T08:05:00.000Z');
     assert.equal(res.body.wash.estimate.estimatedEndAt, '2026-10-22T08:55:00.000Z');
 
-    res = await transition(washIds.acx, { to: 'in_progress', stationId: ids.station('P4') });
+    res = await transition(washIds.acx, { to: 'in_progress', stationId: ids.station('B4') });
     assert.equal(res.status, 200);
     assert.equal(res.body.changed, false);
-    assert.equal(res.body.wash.station.code, 'P3');
+    assert.equal(res.body.wash.station.code, 'B3');
   });
 
   it('recusa transições fora do ciclo de vida', async () => {
@@ -152,7 +152,7 @@ describe('API de serviços, fila e postos (I-2)', () => {
     assert.equal(res.body.error.code, 'PAYMENT_REQUIRED');
     assert.equal((await transition(washIds.acx, { to: 'completed', allowUnpaid: 'sim' })).status, 400);
 
-    res = await transition(washIds.acx, { to: 'completed', allowUnpaid: true }, { 'X-Actor': 'Amílcar' });
+    res = await transition(washIds.acx, { to: 'completed', allowUnpaid: true }, t.as('operator', 'Amílcar'));
     assert.equal(res.status, 200);
     assert.equal(res.body.wash.status, 'completed');
     assert.equal(res.body.wash.completedUnpaid, true);
@@ -167,18 +167,18 @@ describe('API de serviços, fila e postos (I-2)', () => {
       [
         [null, 'queued', 'Amílcar'],
         ['queued', 'in_progress', 'Amílcar'],
-        ['in_progress', 'ready', 'operador'],
+        ['in_progress', 'ready', 'Z. Cossa'],
         ['ready', 'completed', 'Amílcar'],
       ],
     );
     assert.deepEqual(res.body.events[3].details, { allowUnpaid: true, amountDueCents: 60000 });
-    assert.equal(res.body.events[1].station, 'P3');
+    assert.equal(res.body.events[1].station, 'B3');
   });
 
   it('um serviço concluído é final e liberta o posto', async () => {
     assert.equal((await transition(washIds.acx, { to: 'cancelled', reason: 'engano' })).status, 409);
     const stations = await t.api('GET', '/api/stations');
-    assert.equal(stations.body.stations.find((s) => s.code === 'P3').state, 'free');
+    assert.equal(stations.body.stations.find((s) => s.code === 'B3').state, 'free');
   });
 
   it('a viatura pode voltar à fila depois de concluída', async () => {
@@ -190,10 +190,10 @@ describe('API de serviços, fila e postos (I-2)', () => {
   it('cancelar exige motivo e é final', async () => {
     assert.equal((await transition(washIds.acxAgain, { to: 'cancelled' })).status, 400);
     assert.equal((await transition(washIds.acxAgain, { to: 'cancelled', reason: '  ' })).status, 400);
-    let res = await transition(washIds.acxAgain, { to: 'cancelled', reason: 'Cliente desistiu' }, { 'X-Actor': 'Bento' });
+    let res = await transition(washIds.acxAgain, { to: 'cancelled', reason: 'Cliente desistiu' }, t.as('operator', 'Bento'));
     assert.equal(res.status, 200);
     assert.equal(res.body.wash.cancelReason, 'Cliente desistiu');
-    res = await transition(washIds.acxAgain, { to: 'in_progress', stationId: ids.station('P3') });
+    res = await transition(washIds.acxAgain, { to: 'in_progress', stationId: ids.station('B3') });
     assert.equal(res.status, 409);
     assert.deepEqual(res.body.error.details.allowed, []);
   });
@@ -203,7 +203,7 @@ describe('API de serviços, fila e postos (I-2)', () => {
     const created = await register('ANT145MC', 'SIMPLES');
     const id = created.body.wash.id;
     assert.equal(created.body.wash.payment.status, 'not_required');
-    await transition(id, { to: 'in_progress', stationId: ids.station('P4') });
+    await transition(id, { to: 'in_progress', stationId: ids.station('B4') });
     await transition(id, { to: 'ready' });
     const res = await transition(id, { to: 'completed' });
     assert.equal(res.status, 200);

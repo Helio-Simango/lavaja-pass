@@ -26,7 +26,7 @@ export const WASH_PLANS = [
   { code: 'POLIMENTO', name: 'Polimento', description: 'Polimento da pintura', durationMin: 120, active: false, prices: { A: 1500, B: 2000, C: null } },
 ];
 
-export const STATIONS = ['P1', 'P2', 'P3', 'P4'];
+export const STATIONS = ['B1', 'B2', 'B3', 'B4']; // "baias" na proposta v1
 
 export const SETTINGS = [
   { key: 'business.name', value: 'Lava Já – Matola', description: 'Lavadora do caso do hackathon (dados de demonstração)' },
@@ -51,6 +51,39 @@ export const SETTINGS = [
     },
     description:
       'Marcações (por validar): horário e trabalhadores declarados; margem de segurança (proposta); D-09 confirmação manual; D-10 tolerância de 15 min; D-12 sem reserva para a fila; D-14 propor o horário libertado; D-11 e D-13 sem penalizações nem depósitos',
+  },
+  { key: 'business.owner', value: 'Z. Cossa', description: 'Titular da lavadora (fictício, dados de demonstração)' },
+  {
+    key: 'business.bankAccount',
+    value: 'Conta Moza 0023-****-01',
+    description: 'Conta do comerciante mostrada ao analista (fictícia e mascarada, dados de demonstração)',
+  },
+  {
+    key: 'prequalification.params',
+    value: {
+      volumeReferenceCents: 10_000_000,
+      historyReferenceDays: 180,
+      classAMin: 75,
+      classBMin: 60,
+      retentionShare: 0.1,
+      termMonths: 12,
+      costFactor: 1.25,
+      roundingCents: 500_000,
+    },
+    description:
+      'Score de pré-qualificação (proposta v1, secção 8), por validar com o banco: volume de referência 100.000 MZN, antiguidade de referência 180 dias, classes A ≥ 75 e B ≥ 60, retenção de 10% dos recebimentos digitais, 12 meses, factor de custo ilustrativo 1,25',
+  },
+  {
+    key: 'capacity.practical',
+    value: { practicalWashesPerDay: 28, lowOccupancyThreshold: 0.27 },
+    description:
+      'Capacidade prática ≈ 28 lavagens/dia com 4 baias, 07:00–18:00 (proposta v1, secção 2.1), declarada e por validar; abaixo de 27% o dia aparece como capacidade parada no painel (na proposta v1: terça e quarta)',
+  },
+  {
+    key: 'campaigns.policy',
+    value: { minInactiveDays: 14, cooldownDays: 7, attributionDays: 7 },
+    description:
+      'Campanhas fora de pico (proposta v1, secção 7.5), por validar: clientes sem lavar há 14+ dias, no máximo uma campanha em 7 dias, resultado medido até 7 dias após o envio. Envio sempre confirmado pelo gestor.',
   },
   {
     key: 'demo.institution',
@@ -110,12 +143,12 @@ export const WASH_HISTORY_PLAN = [
 export const CASH_OPERATORS = ['Amílcar', 'Bento'];
 
 // Pátio coerente com o mock M7, construído ao longo de 90 min antes de "agora":
-// P1 em execução, P2 pronto (por pagar), dois serviços em fila, um deles já pago em digital (simulado).
+// B1 em execução, B2 pronto (por pagar), dois serviços em fila, um deles já pago em digital (simulado).
 export const YARD_TIMELINE = [
   { atMin: 0, register: { key: 'ready', plate: 'AGB550MP', plan: 'COMPLETA' } },
-  { atMin: 0, transition: { key: 'ready', to: 'in_progress', station: 'P2', actor: 'Amílcar' } },
+  { atMin: 0, transition: { key: 'ready', to: 'in_progress', station: 'B2', actor: 'Amílcar' } },
   { atMin: 20, register: { key: 'running', plate: 'MMC552MP', plan: 'COMPLETA_MOTOR' } },
-  { atMin: 65, transition: { key: 'running', to: 'in_progress', station: 'P1', actor: 'Bento' } },
+  { atMin: 65, transition: { key: 'running', to: 'in_progress', station: 'B1', actor: 'Bento' } },
   { atMin: 80, register: { key: 'queued1', plate: 'ABC123MC', plan: 'COMPLETA' } },
   { atMin: 87, transition: { key: 'ready', to: 'ready', actor: 'Amílcar' } },
   { atMin: 88, register: { key: 'queued2', plate: 'AAZ219MP', plan: 'SIMPLES' } },
@@ -139,15 +172,25 @@ export const DEMO_AUTHORIZATIONS = [
   },
   {
     daysAgo: 2,
-    purpose: 'Análise de oportunidade de financiamento de equipamento',
-    sections: ['activity', 'receipts', 'customers', 'data_quality'],
+    purpose: 'Financiamento de equipamento: compressor de alta pressão e aspirador industrial',
+    sections: ['activity', 'receipts', 'customers', 'data_quality', 'prequalification'],
     dataMonths: 6,
     validDays: 30,
     viewedDaysAgo: 1,
   },
 ];
-export const DEMO_ANALYST = 'analista.demo';
-export const DEMO_BUSINESS_OWNER = 'Gestor da lavadora';
+// Contas de demonstração (I-11, D-16): credenciais públicas, só para a demonstração.
+// Operadores entram com nome + PIN (M6); o gestor e o analista com email + senha.
+export const DEMO_BUSINESS_OWNER = 'Z. Cossa';
+export const DEMO_ANALYST = 'Analista PME · Agência Matola';
+export const DEMO_USERS = [
+  { role: 'operator', name: 'Amílcar', pin: '1234' },
+  { role: 'operator', name: 'Bento', pin: '2345' },
+  { role: 'operator', name: 'Délcio', pin: '3456' },
+  { role: 'operator', name: 'Fátima', pin: '4567' },
+  { role: 'manager', name: DEMO_BUSINESS_OWNER, email: 'gestor@lavaja.demo', password: 'LavaJa-2026' },
+  { role: 'bank_analyst', name: DEMO_ANALYST, email: 'analista@moza.demo', password: 'MozaDemo-2026', institution: 'MOZA' },
+];
 
 // Marcações de demonstração (mock M7/M10), no dia de hoje se ainda for de manhã, senão amanhã.
 // A do Carlos teve uma proposta de antecipação recusada: mantém-se às 15:00 (DEC-10).

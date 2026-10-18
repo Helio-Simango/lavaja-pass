@@ -4,7 +4,9 @@ Protótipo para o **Hackathon Moza xLab – UEM** (1.ª edição, 22 e 23 de Out
 
 O LavaJá Pass organiza a actividade das pequenas lavadoras: clientes, viaturas, serviços, filas, marcações, recebimentos e fidelização. **Com autorização explícita da lavadora**, essa actividade torna-se informação estruturada que uma instituição bancária pode considerar na sua própria análise. Na demonstração, a instituição é o **Moza Banco**, que trouxe o desafio e patrocina o hackathon. Não existe parceria formal (ver [docs/decisoes.md](docs/decisoes.md)).
 
-> **Protótipo.** Não tem autenticação (D-16), as conversas e os pagamentos são simulados e todos os dados são fictícios. Não usar com dados reais.
+> **Protótipo.** Tem autenticação e autorização por perfil (JWT, D-16), mas as conversas e os pagamentos são simulados e todos os dados são fictícios. Não usar com dados reais.
+
+Desde a versão 2.0.0, os ecrãs seguem os mocks M1–M12 da [proposta v1](docs/referencia/LavaJa-Pass-Proposta-Final-v1.html), com quatro perfis separados: **cliente**, **operador**, **gestor** e **analista Moza**.
 
 ## Requisitos
 
@@ -28,33 +30,45 @@ npm run db:seed           # carrega a demonstração numa base vazia
 
 Configuração opcional num `.env` (ver [.env.example](.env.example)):
 - `PORT`, `HOST` e `DB_PATH`. A base de dados nunca pode ficar dentro de `client/` nem de `simulador/`.
+- `JWT_SECRET`: segredo das sessões (pelo menos 32 caracteres). Sem ele, o servidor gera um aleatório e as sessões terminam ao reiniciar.
+- `COOKIE_SECURE=true` quando o servidor estiver atrás de HTTPS.
+- `PUBLIC_URL`: endereço usado nos links da conversa (pagamento). Para um telemóvel na mesma rede, use o IP da máquina e `HOST=0.0.0.0`.
 - `DEMO_RESET_TOKEN`: activa a reposição da demonstração pela API (`POST /api/admin/demo/reset`, com o cabeçalho `X-Demo-Token`, `{ "confirm": "REPOR" }` e acesso local).
 
 ## Demonstração
 
-`npm run db:reset && npm start`, e depois seguir o [roteiro da demonstração](docs/demo.md), alinhado com o guião de 5 minutos do pitch, com as perguntas prováveis do júri e os números de teste.
+`npm run db:reset && npm start`, e depois seguir o [roteiro da demonstração](docs/demo.md), alinhado com o guião de 5 minutos do pitch, com as perguntas prováveis do júri e os números de teste. O `db:reset` carrega a base da proposta v1 (212 clientes, ~350 lavagens em 30 dias).
+
+Contas de demonstração (públicas, só para a demonstração):
+
+| Perfil | Entrada | Credenciais |
+|---|---|---|
+| Operador | `/entrar?perfil=operador` | Amílcar `1234` · Bento `2345` · Délcio `3456` · Fátima `4567` |
+| Gestor | `/entrar?perfil=gestor` | `gestor@lavaja.demo` · `LavaJa-2026` |
+| Analista Moza | `/entrar?perfil=analista` | `analista@moza.demo` · `MozaDemo-2026` |
+| Cliente | `/entrar?perfil=cliente` ou o link de pagamento da conversa | telefone (ex.: `82 555 0102`) + código de 6 dígitos que chega ao simulador |
 
 ## Estrutura
 
 ```
 ├─ client/        páginas web (HTML, CSS, JS puro em módulos ES), servidas em /
-│  ├─ css/
-│  ├─ js/         core/ (API, DOM, operador) · patio/ (quadro, diálogos)
+│  ├─ css/        app.css (sistema visual da v1) · gestor.css · entrar.css
+│  ├─ js/         core/ (API, sessão, DOM, formatação, gráficos) · entrar/ · operador/ · gestor/ · moza/ · cliente/
 │  └─ test/       testes da lógica pura do cliente
 ├─ simulador/     simulador de WhatsApp (I-5), servido em /simulador · js/ · css/ · test/
 ├─ server/
 │  ├─ src/
 │  │  ├─ domain/          regras puras: valores, ciclo de vida do serviço, estimativas, erros
 │  │  ├─ application/     casos de uso e portas (contratos dos repositórios)
-│  │  ├─ infrastructure/  SQLite: ligação, migrações, unidade de trabalho, repositórios, seed · relógio
-│  │  ├─ interfaces/http/ Express: rotas, controladores, presenters, erros
+│  │  ├─ infrastructure/  SQLite: ligação, migrações, unidade de trabalho, repositórios, seed · relógio · security/ (JWT, scrypt)
+│  │  ├─ interfaces/http/ Express: rotas com permissões, sessões, controladores, presenters, erros
 │  │  ├─ interfaces/chat/ assistente da conversa e avisos ao cliente
 │  │  ├─ container.js     raiz de composição
 │  │  └─ main.js          arranque
 │  ├─ scripts/    db-migrate · db-seed · db-reset
 │  ├─ test/       unit/ · integration/
 │  └─ data/       lavaja.db (gerado; não versionado)
-├─ docs/          demo.md · arquitectura.md · decisoes.md · referencia/ (documento de referência v3)
+├─ docs/          demo.md · arquitectura.md · decisoes.md · referencia/ (documento de referência v3 e proposta v1)
 ├─ CLAUDE.md      regras do projecto para o Claude Code
 ├─ changelog.md
 └─ README.md
@@ -77,21 +91,25 @@ A arquitectura e a regra de dependências entre camadas estão em [docs/arquitec
 | I-8 | Marcações e capacidade (políticas D-09 a D-14 por validar) | ✅ |
 | I-9 | Consentimentos, registo de alterações, reconciliação | ✅ |
 | I-10 | Documentação, changelog, roteiro da demonstração, reposição protegida | ✅ |
+| I-11 | Autenticação JWT e quatro perfis (D-16), telas da proposta v1 (M1–M12), score de pré-qualificação, campanhas fora de pico | ✅ |
 
 O histórico de alterações está em [changelog.md](changelog.md).
 
 ## Ecrãs
 
-| Endereço | Ecrã | Estado |
+| Endereço | Perfil | Ecrã (mock da proposta v1) |
 |---|---|---|
-| `/` | Início, com os módulos | ✅ |
-| `/patio` | Pátio: marcações de hoje, fila, em execução, pronto, postos, registo de serviço, numerário declarado (M7, M8, M9) | ✅ |
-| `/simulador` · `/simulador/whatsapp/:telefone` | Simulador de WhatsApp: o utilizador faz de cliente (M1–M6) | ✅ |
-| `/painel` | Painel: indicadores com definição e origem, gráficos, capacidade e agenda, fecho do dia, viaturas por classe, histórico por matrícula (M10–M13) | ✅ |
-| `/catalogo` | Catálogo: planos e preços por classe, classes, parâmetros de fidelização, postos, registo de alterações (M14) | ✅ |
-| `/banco` | Vertente Banco: autorizações e registo de acessos (lavadora, M15); relatório autorizado e exportação (banco, M16) | ✅ |
+| `/` | público | Início, com os quatro perfis |
+| `/entrar` | público | Entrada: operador com nome + PIN (M6), gestor e analista com email + senha, cliente com código pela conversa |
+| `/cartaz` | público | Cartaz do pátio com o QR que abre a conversa com "LAVAR" (M1) |
+| `/simulador` · `/simulador/whatsapp/:telefone` | público (faz de telemóvel) | Conversa do cliente: check-in e fila (M2), pronto, pagamento e fidelização (M3), campanha recebida (M5) |
+| `/pagar/:serviço` | cliente | Checkout com a carteira, simulado (M4); aberto pelo link do aviso de pronto |
+| `/cliente` | cliente | Os meus serviços: no pátio, marcações, fidelização e histórico |
+| `/operador` | operador | Quadro de baias (M7), entrada manual (M8), entrega e cobrança (M9), marcações do dia |
+| `/gestor` | gestor | Visão geral (M10), pátio ao vivo e agenda, clientes, campanhas (M11), conciliação, catálogo e regras, crédito · Moza Banco |
+| `/moza` | analista | Comerciantes, pré-qualificação (M12) e extratos |
 
-O Pátio actualiza-se a cada 3 s. O nome do operador escrito no topo fica registado como autor de cada acção. Como não há autenticação, esse nome é declarado e não verificado.
+As páginas de perfil só abrem com a sessão desse perfil; sem ela, vão para `/entrar`. Os endereços antigos (`/patio`, `/painel`, `/catalogo`, `/banco`) redireccionam para os novos.
 
 ## API (JSON)
 
@@ -100,11 +118,36 @@ Os erros chegam sempre no formato `{ "error": { "code", "message", "details?" } 
 | Código | Quando |
 |---|---|
 | 400 | Dados inválidos |
+| 401 | Sem sessão, ou sessão inválida ou expirada |
+| 403 | O perfil não tem acesso, ou a autorização do banco foi revogada ou expirou |
 | 404 | Não encontrado |
 | 409 | Conflito com uma regra de negócio |
 | 500 | Erro interno, sem detalhes |
 
-O autor de cada alteração é indicado no cabeçalho `X-Actor` (ou no campo `actor`).
+### Sessões e perfis
+
+A sessão é um JWT (HS256) num cookie HttpOnly + SameSite=Strict, um por perfil. A página indica o perfil no cabeçalho `X-Session-Profile` (`operador`, `gestor`, `analista`, `cliente`); clientes da API podem usar `Authorization: Bearer <token>`. O autor de cada acção é sempre o utilizador da sessão.
+
+| Método e rota | Descrição |
+|---|---|
+| `GET /api/auth/operators` | Nomes dos operadores para o ecrã de entrada (M6) |
+| `POST /api/auth/operator` | `{ operatorId, pin }` |
+| `POST /api/auth/staff` | `{ email, password }`: gestor ou analista |
+| `POST /api/auth/customer/code` | `{ phone }`: envia um código para a conversa (a resposta é igual exista ou não o número) |
+| `POST /api/auth/customer/verify` | `{ phone, code }` |
+| `POST /api/auth/link` | `{ token }`: troca o token do link de pagamento por uma sessão do cliente |
+| `GET /api/auth/session` · `POST /api/auth/logout` | Sessão actual (com as permissões) e saída |
+
+Permissões por perfil (`server/src/domain/access.js`):
+
+| Perfil | Pode |
+|---|---|
+| Cliente | Os seus serviços, fidelização, checkout e resposta às propostas de horário (`/api/me/...`) |
+| Operador | Pátio: fila, baias, serviços, entrada manual, marcações do dia, numerário em seu nome, pedido de pagamento digital, clientes |
+| Gestor | Tudo o que o operador pode, mais painel, catálogo e regras, reembolsos, fecho do dia, campanhas e partilha com bancos |
+| Analista bancário | Só as autorizações e os relatórios da sua instituição (`/api/bank/...`), e pedidos de análise |
+
+São públicas: saúde, entrada, `GET /api/vehicle-classes`, `GET /api/plans`, `GET /api/public/business` e o simulador (que faz de telemóvel do cliente).
 
 | Método e rota | Descrição |
 |---|---|
@@ -125,6 +168,8 @@ O autor de cada alteração é indicado no cabeçalho `X-Actor` (ou no campo `ac
 | `POST /api/washes` | `{ vehicleId, planId }`. O preço é calculado no servidor |
 | `GET /api/washes/:id` | Serviço e auditoria de transições |
 | `POST /api/washes/:id/transitions` | Ver a tabela de transições abaixo |
+| `GET /api/yard/entries/preview?plate=&planId=&classId=` | Entrada manual (M8): viatura conhecida, preço e hora prevista, sem registar |
+| `POST /api/yard/entries` | `{ plate, planId, classId?, phone?, name?, consents? }`: sem telefone, fica no cliente de balcão |
 
 Corpo de cada transição:
 
@@ -142,7 +187,7 @@ Pagamentos simulados. Todos os pedidos de criação e de reembolso exigem o cabe
 | `GET /api/washes/:id/payments` | Pagamentos do serviço, com a origem de cada um |
 | `POST /api/washes/:id/payments/digital` | `{ amountCents }`: inicia um pagamento digital simulado (fica `pending`) |
 | `POST /api/payments/:id/simulate` | `{ outcome: "confirmed" \| "failed" }`: resultado da simulação |
-| `POST /api/washes/:id/payments/cash` | `{ amountCents, declaredBy, confirm: true }`: numerário declarado por um operador |
+| `POST /api/washes/:id/payments/cash` | `{ amountCents, confirm: true }`: numerário declarado em nome do operador da sessão |
 | `POST /api/payments/:id/refund` | `{ reason }`: reembolso de um pagamento confirmado ou declarado |
 
 Fidelização:
@@ -178,29 +223,54 @@ Marcações e capacidade:
 | `POST /api/appointments` | `{ vehicleId, planId, startsAt }`: fica `requested` ou `confirmed` conforme a política D-09 |
 | `POST /api/appointments/:id/transitions` | `{ to: "confirmed" \| "checked_in" \| "cancelled" \| "no_show", reason? }`. A chegada cria o serviço |
 | `POST /api/appointments/:id/offers` | `{ proposedStartsAt }`: propõe um horário mais cedo (só muda se o cliente aceitar) |
-| `POST /api/appointment-offers/:id/respond` | `{ accept }`: resposta do cliente; uma proposta expirada mantém o horário original |
+| `POST /api/me/appointment-offers/:id/respond` | `{ accept }`: resposta do próprio cliente; uma proposta expirada mantém o horário original |
 | `GET /api/capacity?date=` | Agenda por posto (marcações e pátio) e regras de capacidade |
 
 Painel e histórico:
 
 | Método e rota | Descrição |
 |---|---|
-| `GET /api/dashboard/summary?days=30` | Indicadores (valor, definição e origem), concluídos por dia da semana, recebimentos por semana e por origem, pátio agora |
+| `GET /api/dashboard/summary?days=30` | Indicadores (valor, definição e origem), concluídos e ocupação por dia da semana, recebimentos por semana e por origem, pátio agora |
 | `GET /api/dashboard/weekly` | Recebimentos das últimas 4 semanas, por origem |
+| `GET /api/dashboard/today` | O dia de hoje (M10): lavagens, recebido por origem, numerário por operador, por cobrar |
 | `GET /api/vehicles?classId=` | Viaturas com o número de serviços concluídos e a data do último |
 | `GET /api/vehicles/:id/wash-history` | Histórico por matrícula: valores guardados, origem do pagamento, efeito na fidelização |
 | `GET /api/vehicles/:id/wash-history/summary` | Resumo: concluídas, canceladas, última, contaram para a fidelização |
 
-Vertente Lavadora–Banco (demonstrativa, sem autenticação — D-16):
+Vertente Lavadora–Banco. A lavadora (gestor):
 
 | Método e rota | Descrição |
 |---|---|
 | `GET /api/institutions` | Instituições (na demonstração, o Moza Banco) |
 | `GET /api/sharing/authorizations` | Autorizações da lavadora, com estado (`active`, `revoked`, `expired`) e número de acessos |
-| `POST /api/sharing/authorizations` | `{ institutionId, purpose, sections, dataMonths, validDays, confirm: true }` |
+| `POST /api/sharing/authorizations` | `{ institutionId, purpose, sections, dataMonths, validDays, confirm: true }`; `sections` inclui `prequalification` para o score |
 | `POST /api/sharing/authorizations/:id/revoke` | `{ reason? }`: termina as novas consultas |
-| `GET /api/institutions/:id/reports/activity?authorizationId=` | Relatório de actividade (só com autorização activa; `?format=csv` exporta). Cada consulta fica registada |
 | `GET /api/sharing/access-logs?authorizationId=` | Registo de consultas e exportações |
+| `GET /api/sharing/credit-requests` | Pedidos de análise feitos pelo banco |
+
+O analista (só a instituição da sessão):
+
+| Método e rota | Descrição |
+|---|---|
+| `GET /api/bank/authorizations` | Autorizações dadas à sua instituição |
+| `GET /api/bank/reports/activity?authorizationId=` | Relatório (M12): pré-qualificação, actividade, recebimentos, clientes, qualidade dos dados; `?format=csv` exporta. Cada consulta fica registada |
+| `GET /api/bank/credit-requests` · `POST` | Pedidos de análise de crédito: `{ authorizationId, note? }` |
+
+Campanhas fora de pico (gestor):
+
+| Método e rota | Descrição |
+|---|---|
+| `GET /api/campaigns/preview` | Segmento proposto, ofertas e pré-visualização da mensagem (sem telefones) |
+| `POST /api/campaigns` | `{ offerType?, message?, confirm: true }`: envia a cada cliente do segmento, na conversa |
+| `GET /api/campaigns` | Campanhas enviadas, com o resultado (lavagens até 7 dias depois) |
+
+Área do cliente:
+
+| Método e rota | Descrição |
+|---|---|
+| `GET /api/me` · `GET /api/me/washes` · `GET /api/me/washes/:id` · `GET /api/me/loyalty` | Os seus dados, serviços e fidelização |
+| `POST /api/me/washes/:id/payments` | Inicia o pagamento digital do seu serviço (o valor é o do servidor; `Idempotency-Key`) |
+| `POST /api/me/washes/:id/payments/:paymentId/confirm` | Confirmação simulada da carteira |
 
 Simulador de WhatsApp:
 
@@ -222,7 +292,7 @@ Simulador de WhatsApp:
   - `completed` e `cancelled` são estados finais (garantido também por um trigger);
   - repetir um pedido para o estado actual não tem efeitos;
   - todas as transições ficam auditadas.
-- **Postos:** um posto só tem um serviço activo (em execução ou pronto). Uma viatura só pode estar uma vez no pátio.
+- **Baias (postos):** uma baia só tem um serviço activo (em execução ou pronto). Uma viatura só pode estar uma vez no pátio.
 - **Pagamentos:**
   - o valor tem de ser igual ao valor final em dívida;
   - no máximo um pagamento pendente e um efectivo por serviço (garantido também por índices únicos);
@@ -252,7 +322,12 @@ Simulador de WhatsApp:
   - a autorização não pode ser alterada, só revogada (triggers);
   - o relatório tem só as secções autorizadas e dados agregados, sem nomes nem telefones;
   - cada consulta e exportação fica registada e é visível para a lavadora;
-  - o relatório não é uma avaliação nem uma pontuação de crédito.
+  - o score de pré-qualificação (M12) é indicativo, só com a secção autorizada, e o numerário declarado não conta para o volume nem para a % digital; a decisão de crédito é sempre do banco.
+- **Autenticação e perfis:**
+  - quatro perfis com permissões separadas; sem sessão 401, sem permissão 403;
+  - senhas, PINs e códigos só como hash scrypt; 5 falhas bloqueiam 15 min; entradas e falhas registadas;
+  - o autor de cada acção e o numerário declarado vêm da sessão.
+- **Campanhas:** só para quem aceitou ofertas, sem lavar há 14+ dias, no máximo uma em 7 dias; envio sempre confirmado pelo gestor; `LAVAR` entra na fila e `PARAR` retira o consentimento.
 - **Simulador e assistente:**
   - uma conversa por número, guardada e isolada, por ordem estável;
   - o assistente é uma máquina de estados (cap. 15.6) que usa os mesmos casos de uso do Pátio;
@@ -269,7 +344,7 @@ Simulador de WhatsApp:
 
 O que o protótipo **não** é, e o que ainda está por decidir:
 
-- **Sem autenticação nem perfis efectivos (D-16):** o autor das acções é declarado (`X-Actor`). Não usar com dados reais.
+- **Autenticação de demonstração:** as contas e as senhas de demonstração são públicas; não há gestão de utilizadores no ecrã nem recuperação de senha. Não usar com dados reais.
 - **Simulações:**
   - conversas simuladas, sem WhatsApp real;
   - pagamentos digitais simulados, sem gateway;
@@ -284,18 +359,20 @@ O que o protótipo **não** é, e o que ainda está por decidir:
   - indicadores de maturidade (D-17);
   - registo de avarias e ausências com remarcação (D-14 completo);
   - duração por classe (D-20);
-  - campanhas (reservadas, DEC-13).
+  - selo a dobrar e descontos nas campanhas (dependem de D-01 e D-06);
+  - QR verdadeiro no cartaz (o actual é ilustrativo).
 - **A validar fora do código:**
   - modelo comercial (D-15);
   - enquadramento legal da partilha de dados em Moçambique (D-18);
   - interesse e requisitos dos bancos;
-  - o Moza Banco aparece só como instituição de demonstração, sem parceria.
+  - o Moza Banco aparece só como instituição de demonstração, sem parceria; os parâmetros do score têm de ser validados com o banco.
 
 O registo completo das decisões tomadas durante a implementação está em [docs/decisoes.md](docs/decisoes.md).
 
 ## Documentação
 
 - [Documento de referência v3](docs/referencia/LavaJa-Pass-Documento-Referencia-v3.pdf): especificação completa. Os capítulos 10 a 15 servem o desenvolvimento.
+- [Proposta v1](docs/referencia/LavaJa-Pass-Proposta-Final-v1.html): modelo visual dos ecrãs (secção 10, M1–M12) e a fórmula do score (secção 8).
 - [docs/demo.md](docs/demo.md): roteiro da demonstração e perguntas do júri.
 - [docs/arquitectura.md](docs/arquitectura.md): camadas, regra de dependências e onde fica cada coisa.
 - [docs/decisoes.md](docs/decisoes.md): decisões tomadas desde a v3 e decisões pendentes que afectam o código.

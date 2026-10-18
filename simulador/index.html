@@ -3,30 +3,27 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <title>Simulador WhatsApp · LavaJá Pass</title>
-  <link rel="stylesheet" href="/css/base.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/app.css">
   <link rel="stylesheet" href="/simulador/css/simulador.css">
 </head>
 <body class="simulator">
-  <header class="topbar">
-    <a class="brand" href="/">LavaJá <span>Pass</span></a>
-    <nav>
-      <a href="/painel">Painel</a>
-      <a href="/patio">Pátio</a>
-      <a href="/catalogo">Catálogo</a>
-      <a href="/banco">Banco</a>
-      <a href="/simulador" aria-current="page">Simulador</a>
-    </nav>
+  <header class="sim-bar">
+    <a class="brand" href="/">LavaJá <em>Pass</em></a>
     <span class="demo-flag">SIMULAÇÃO · SEM MENSAGENS REAIS</span>
+    <nav><a href="/cartaz">Cartaz</a><a href="/cliente">Área do cliente</a><a href="/operador">Operador</a><a href="/gestor">Gestor</a></nav>
   </header>
 
   <div class="wa-app">
     <aside class="wa-sidebar" aria-label="Conversas">
       <form id="open-form" class="wa-open">
-        <label for="open-phone">Conversar como o número</label>
+        <label class="lbl" for="open-phone" style="margin-top:0">Conversar como o número</label>
         <div class="inline">
-          <input id="open-phone" inputmode="tel" placeholder="84 123 4567" autocomplete="off">
-          <button class="btn primary" type="submit">Abrir</button>
+          <input class="input" id="open-phone" inputmode="tel" placeholder="84 123 4567" autocomplete="off">
+          <button class="btn k" type="submit">Abrir</button>
         </div>
         <p id="open-error" class="error-box" hidden></p>
       </form>
@@ -39,21 +36,21 @@
         <div class="wa-avatar" aria-hidden="true">LJ</div>
         <div>
           <strong id="business-name">Lava Já – Matola</strong>
-          <span id="chat-subtitle" class="wa-subtitle"></span>
+          <span class="wa-subtitle">Conta comercial · <span id="chat-subtitle"></span></span>
         </div>
       </header>
       <div class="wa-messages" id="messages" aria-live="polite"></div>
       <div class="wa-quick" id="quick" aria-label="Respostas rápidas"></div>
       <form class="wa-composer" id="composer">
-        <input id="text" placeholder="Escreva uma mensagem" autocomplete="off" maxlength="1000">
+        <input class="input" id="text" placeholder="Escreva uma mensagem" autocomplete="off" maxlength="1000">
         <button class="wa-send" type="submit" aria-label="Enviar">➤</button>
       </form>
     </main>
 
     <section class="wa-empty" id="empty">
       <h1>Simulador de WhatsApp</h1>
-      <p>Abra a conversa de um número para fazer de cliente da lavadora: registo, fila, estado, pagamento simulado e fidelização.</p>
-      <p class="muted">Cada número tem o seu endereço, por exemplo <span class="mono">/simulador/whatsapp/258841234567</span>. As conversas ficam guardadas e isoladas por número.</p>
+      <p>Faz de telemóvel do cliente: abra a conversa de um número e escreva <b>LAVAR</b> (como no QR do cartaz) ou <b>Olá</b>.</p>
+      <p class="muted small">Cada número tem o seu endereço, por exemplo <span class="mono">/simulador/whatsapp/258841234567</span>. As conversas ficam guardadas e isoladas por número. Os avisos, os links de pagamento, os códigos de acesso e as campanhas chegam aqui.</p>
     </section>
   </div>
 

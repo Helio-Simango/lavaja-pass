@@ -2,16 +2,16 @@ import assert from 'node:assert/strict';
 import { after, before, describe, it } from 'node:test';
 import { demoIds, startTestServer } from '../helpers.js';
 
-// AGB 550 MP (Completa A, 450,00) está pronto no P2; ABC 123 MC (Completa B, 600,00) está em fila.
+// AGB 550 MP (Completa A, 450,00) está pronto na B2; ABC 123 MC (Completa B, 600,00) está em fila.
 describe('API de pagamentos simulados (I-3)', () => {
   let t;
   let READY_WASH;
   let QUEUED_WASH;
-  const withKey = (key, actor = 'Teste') => ({ 'Idempotency-Key': key, 'X-Actor': actor });
+  const withKey = (key, session = t.as('operator', 'Amílcar')) => ({ 'Idempotency-Key': key, ...session });
   const payDigital = (washId, amountCents, key) =>
     t.api('POST', `/api/washes/${washId}/payments/digital`, { amountCents }, withKey(key));
   const declareCash = (washId, body, key) =>
-    t.api('POST', `/api/washes/${washId}/payments/cash`, { amountCents: 45000, declaredBy: 'Amílcar', confirm: true, ...body }, withKey(key));
+    t.api('POST', `/api/washes/${washId}/payments/cash`, { amountCents: 45000, confirm: true, ...body }, withKey(key));
   const simulate = (paymentId, outcome) => t.api('POST', `/api/payments/${paymentId}/simulate`, { outcome });
   const wash = async (id) => (await t.api('GET', `/api/washes/${id}`)).body.wash;
 
@@ -81,14 +81,16 @@ describe('API de pagamentos simulados (I-3)', () => {
     assert.equal(res.body.wash.completedUnpaid, false);
   });
 
-  it('o numerário exige operador e confirmação explícita', async () => {
-    assert.equal((await declareCash(QUEUED_WASH, { amountCents: 60000, declaredBy: '' }, 'k-c1')).status, 400);
+  it('o numerário exige confirmação explícita e só o declara quem tem a sessão', async () => {
     assert.equal((await declareCash(QUEUED_WASH, { amountCents: 60000, confirm: false }, 'k-c2')).status, 400);
+    const analyst = await t.api('POST', `/api/washes/${QUEUED_WASH}/payments/cash`, { amountCents: 60000, confirm: true }, withKey('k-c3', t.as('bank_analyst')));
+    assert.equal(analyst.status, 403);
   });
 
   it('o numerário substitui um digital pendente e fica em nome do operador', async () => {
     const pending = await payDigital(QUEUED_WASH, 60000, 'k-q-digital');
-    const res = await declareCash(QUEUED_WASH, { amountCents: 60000 }, 'k-q-cash');
+    // O nome escrito no pedido é ignorado: fica o operador da sessão.
+    const res = await declareCash(QUEUED_WASH, { amountCents: 60000, declaredBy: 'Outra pessoa' }, 'k-q-cash');
     assert.equal(res.status, 201);
     assert.equal(res.body.payment.status, 'declared');
     assert.equal(res.body.payment.declaredBy, 'Amílcar');
@@ -107,13 +109,13 @@ describe('API de pagamentos simulados (I-3)', () => {
 
     const { payments } = (await t.api('GET', `/api/washes/${QUEUED_WASH}/payments`)).body;
     const cash = payments.find((p) => p.status === 'declared');
-    assert.equal((await t.api('POST', `/api/payments/${cash.id}/refund`, { reason: 'x' }, withKey('r-short'))).status, 400);
+    assert.equal((await t.api('POST', `/api/payments/${cash.id}/refund`, { reason: 'x' }, withKey('r-short', t.as('manager')))).status, 400);
 
-    res = await t.api('POST', `/api/payments/${cash.id}/refund`, { reason: 'Cliente desistiu' }, withKey('r-1', 'Gestora'));
+    res = await t.api('POST', `/api/payments/${cash.id}/refund`, { reason: 'Cliente desistiu' }, withKey('r-1', t.as('manager')));
     assert.equal(res.status, 200);
     assert.equal(res.body.payment.status, 'refunded');
-    assert.equal(res.body.payment.refundedBy, 'Gestora');
-    const replay = await t.api('POST', `/api/payments/${cash.id}/refund`, { reason: 'Cliente desistiu' }, withKey('r-1'));
+    assert.equal(res.body.payment.refundedBy, 'Z. Cossa');
+    const replay = await t.api('POST', `/api/payments/${cash.id}/refund`, { reason: 'Cliente desistiu' }, withKey('r-1', t.as('manager')));
     assert.equal(replay.body.changed, false);
 
     res = await t.api('POST', `/api/washes/${QUEUED_WASH}/transitions`, { to: 'cancelled', reason: 'Cliente desistiu' });

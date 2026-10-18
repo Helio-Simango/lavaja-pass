@@ -1,0 +1,1256 @@
+<!doctype html>
+<html lang="pt">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LavaJá Pass — Proposta Final</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --red:#C8102E; --red-soft:#FCE8EB; --green:#1E7B47; --green-soft:#E6F3EC;
+  --ink:#16191D; --text:#2A2F36; --muted:#5E6873; --line:#E2E5E9; --soft:#F5F6F8;
+  --amber:#B86E00; --amber-soft:#FFF3DF; --blue:#1F5FA8; --blue-soft:#E7F0FA;
+  --wa-bg:#EFE7DD; --wa-in:#FFFFFF; --wa-out:#D9FDD3; --wa-head:#075E54;
+  --mono:'JetBrains Mono',ui-monospace,Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:#FFFFFF;color:var(--text);font:15px/1.6 Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.page{max-width:900px;margin:0 auto;padding:0 20px 80px}
+h1,h2,h3,h4{color:var(--ink);line-height:1.25;margin:0}
+h2{font-size:26px;font-weight:800;letter-spacing:-.01em;margin:0 0 6px}
+h3{font-size:18px;font-weight:700;margin:28px 0 10px}
+h4{font-size:15px;font-weight:700;margin:18px 0 6px}
+p{margin:0 0 12px}
+ul,ol{margin:0 0 12px;padding-left:22px}
+li{margin:3px 0}
+strong{color:var(--ink)}
+code{font-family:var(--mono);font-size:.86em;background:var(--soft);border:1px solid var(--line);border-radius:4px;padding:0 4px}
+pre{font-family:var(--mono);font-size:11.5px;line-height:1.5;background:#14181D;color:#E6EDF3;border-radius:10px;padding:14px 16px;overflow-x:auto;margin:10px 0 16px;white-space:pre}
+pre .c{color:#7D8B99}
+section{padding-top:44px}
+.kicker{font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--red);margin-bottom:6px}
+.lead{font-size:16px;color:var(--muted);margin-bottom:18px}
+.small{font-size:12.5px;color:var(--muted)}
+hr{border:0;border-top:1px solid var(--line);margin:28px 0}
+
+/* cover */
+.cover{padding:48px 0 24px;border-bottom:4px solid var(--red)}
+.cover .event{display:flex;gap:10px;align-items:center;font-size:13px;font-weight:700;color:var(--green);letter-spacing:.04em;text-transform:uppercase}
+.cover .event span.dot{width:8px;height:8px;border-radius:50%;background:var(--red)}
+.cover h1{font-size:54px;font-weight:800;letter-spacing:-.03em;margin:18px 0 6px}
+.cover h1 em{font-style:normal;color:var(--red)}
+.cover .sub{font-size:19px;color:var(--muted);max-width:640px;margin-bottom:26px}
+.meta{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:8px}
+.meta div{border-top:2px solid var(--line);padding-top:8px;font-size:12.5px;color:var(--muted)}
+.meta b{display:block;color:var(--ink);font-size:14px}
+.toc{columns:2;column-gap:32px;font-size:14px;margin-top:26px;padding:18px 20px;background:var(--soft);border-radius:12px}
+.toc a{color:var(--ink);text-decoration:none}
+.toc div{break-inside:avoid;padding:3px 0}
+.toc span{color:var(--red);font-weight:700;margin-right:6px}
+
+/* blocks */
+.callout{border-left:4px solid var(--green);background:var(--green-soft);border-radius:0 10px 10px 0;padding:12px 16px;margin:14px 0 18px;font-size:14px}
+.callout.warn{border-color:var(--amber);background:var(--amber-soft)}
+.callout.red{border-color:var(--red);background:var(--red-soft)}
+.callout.blue{border-color:var(--blue);background:var(--blue-soft)}
+.callout b{color:var(--ink)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.card{border:1px solid var(--line);border-radius:12px;padding:14px 16px;background:#fff;break-inside:avoid}
+.card h4{margin-top:0}
+.card .tag{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:2px 8px;border-radius:99px;background:var(--soft);color:var(--muted);margin-bottom:8px}
+.stat{border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.stat b{display:block;font-size:24px;font-weight:800;color:var(--ink);letter-spacing:-.01em}
+.stat span{font-size:12px;color:var(--muted)}
+table{width:100%;border-collapse:collapse;margin:10px 0 18px;font-size:13.5px}
+th{text-align:left;font-weight:700;color:var(--ink);background:var(--soft);border-bottom:1px solid var(--line);padding:8px 10px;font-size:12.5px}
+td{border-bottom:1px solid var(--line);padding:8px 10px;vertical-align:top}
+tr{break-inside:avoid}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.pill{display:inline-block;font-size:11px;font-weight:700;padding:1px 8px;border-radius:99px;white-space:nowrap}
+.pill.g{background:var(--green-soft);color:var(--green)}
+.pill.r{background:var(--red-soft);color:var(--red)}
+.pill.a{background:var(--amber-soft);color:var(--amber)}
+.pill.b{background:var(--blue-soft);color:var(--blue)}
+.steps{counter-reset:s;list-style:none;padding:0;margin:8px 0 16px}
+.steps li{counter-increment:s;position:relative;padding:8px 0 8px 44px;border-bottom:1px dashed var(--line);break-inside:avoid}
+.steps li:last-child{border-bottom:0}
+.steps li::before{content:counter(s);position:absolute;left:0;top:8px;width:30px;height:30px;border-radius:50%;background:var(--ink);color:#fff;font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center}
+.steps li .scr{font-size:12px;color:var(--blue);font-weight:600}
+.flow{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:10px 0 16px;font-size:12.5px;font-weight:600}
+.flow span{background:var(--soft);border:1px solid var(--line);border-radius:8px;padding:6px 10px}
+.flow i{font-style:normal;color:var(--muted)}
+
+/* arch diagram */
+.arch{border:1px solid var(--line);border-radius:14px;padding:18px;background:var(--soft);margin:12px 0 18px}
+.arch .row{display:flex;gap:10px;justify-content:center}
+.arch .row.top{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+.arch .box{flex:0 1 auto;background:#fff;border:1.5px solid var(--ink);border-radius:10px;padding:8px 12px;text-align:center;font-size:12.5px;min-width:150px}
+.arch .box b{display:block;font-size:13px;color:var(--ink)}
+.arch .box.r{border-color:var(--red)}
+.arch .box.g{border-color:var(--green)}
+.arch .box.dash{border-style:dashed}
+.arch .arrow{text-align:center;color:var(--muted);font-size:12px;margin:6px 0}
+.arch .big{min-width:520px;max-width:640px}
+
+/* ===== MOCKS ===== */
+.mock{margin:18px 0 26px;break-inside:avoid}
+.mock .cap{font-size:12.5px;color:var(--muted);margin-top:8px}
+.mock .cap b{color:var(--ink)}
+.mock-title{display:flex;align-items:baseline;gap:10px;margin:26px 0 10px}
+.mock-title .n{font-size:12px;font-weight:800;color:#fff;background:var(--red);border-radius:6px;padding:2px 8px}
+.mock-title h4{margin:0;font-size:16px}
+.phones{display:flex;gap:22px;flex-wrap:wrap;justify-content:center;align-items:flex-start}
+.phone{width:290px;border:9px solid #111;border-radius:34px;background:#111;overflow:hidden;box-shadow:0 8px 24px rgba(0,0,0,.12);flex:none}
+.phone .notch{height:18px;background:#111;position:relative}
+.phone .notch::after{content:"";position:absolute;left:50%;top:4px;width:70px;height:8px;margin-left:-35px;background:#000;border-radius:6px}
+.screen{background:#fff;min-height:520px;font-size:12.5px;line-height:1.4;color:#1B1B1B}
+/* whatsapp */
+.wa-head{background:var(--wa-head);color:#fff;padding:8px 12px;display:flex;align-items:center;gap:9px}
+.wa-av{width:30px;height:30px;border-radius:50%;background:#fff;color:var(--red);font-weight:800;font-size:12px;display:flex;align-items:center;justify-content:center;flex:none}
+.wa-head b{display:block;font-size:13px}
+.wa-head small{opacity:.8;font-size:10.5px}
+.wa-body{background:var(--wa-bg);padding:10px 8px 14px;min-height:484px;display:flex;flex-direction:column;gap:6px}
+.msg{max-width:84%;padding:6px 9px 14px;border-radius:8px;position:relative;box-shadow:0 1px 0 rgba(0,0,0,.08);white-space:normal}
+.msg.in{background:var(--wa-in);align-self:flex-start;border-top-left-radius:0}
+.msg.out{background:var(--wa-out);align-self:flex-end;border-top-right-radius:0}
+.msg time{position:absolute;right:7px;bottom:2px;font-size:9.5px;color:#7a7a7a}
+.msg .btns{display:flex;flex-direction:column;gap:4px;margin-top:6px}
+.msg .btns span{display:block;text-align:center;color:#027EB5;font-weight:600;border-top:1px solid #E7E7E7;padding-top:5px}
+.wa-day{align-self:center;background:#E1F2FB;color:#555;font-size:10px;border-radius:6px;padding:2px 8px;margin:2px 0}
+.stamps{display:flex;gap:4px;margin:6px 0 2px}
+.stamps i{width:22px;height:22px;border-radius:50%;border:2px solid var(--green);display:flex;align-items:center;justify-content:center;font-style:normal;font-size:11px;font-weight:800;color:#fff;background:var(--green)}
+.stamps i.e{background:#fff;color:var(--green)}
+.stamps i.n{background:var(--amber);border-color:var(--amber)}
+/* app screens */
+.app-top{padding:10px 14px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--line)}
+.app-top b{font-size:13.5px}
+.btn{display:block;text-align:center;font-weight:700;border-radius:10px;padding:11px 10px;font-size:13px;margin-top:8px}
+.btn.p{background:var(--green);color:#fff}
+.btn.r{background:var(--red);color:#fff}
+.btn.o{border:1.5px solid var(--line);color:var(--ink);background:#fff}
+.btn.k{background:var(--ink);color:#fff}
+.btn.sm{padding:7px 8px;font-size:11.5px;border-radius:8px;margin-top:6px}
+.field{border:1.5px solid var(--line);border-radius:10px;padding:9px 11px;margin-top:6px;font-size:13px;display:flex;justify-content:space-between}
+.field.sel{border-color:var(--green);background:var(--green-soft)}
+.lbl{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-top:12px}
+/* kanban (operator mobile) */
+.op-head{background:var(--ink);color:#fff;padding:9px 12px;display:flex;justify-content:space-between;align-items:center}
+.op-head b{font-size:13px}
+.op-head small{font-size:10.5px;opacity:.75}
+.online{font-size:10px;font-weight:700;background:#25D366;color:#063;padding:2px 7px;border-radius:99px}
+.baias{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;padding:8px 10px;background:var(--soft);border-bottom:1px solid var(--line)}
+.baias div{border-radius:7px;text-align:center;font-size:10px;font-weight:700;padding:4px 0;background:#fff;border:1.5px solid var(--line)}
+.baias div.busy{border-color:var(--blue);color:var(--blue)}
+.baias div.ready{border-color:var(--green);color:var(--green)}
+.baias div.free{border-style:dashed;color:var(--muted)}
+.tabs{display:flex;border-bottom:1px solid var(--line)}
+.tabs span{flex:1;text-align:center;padding:8px 2px;font-size:11px;font-weight:700;color:var(--muted)}
+.tabs span.on{color:var(--ink);border-bottom:3px solid var(--red)}
+.colhead{font-size:10.5px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);padding:9px 12px 3px}
+.car{margin:6px 10px;border:1.5px solid var(--line);border-radius:12px;padding:9px 11px;background:#fff}
+.car .plate{font-family:var(--mono);font-weight:700;font-size:15px;color:var(--ink);letter-spacing:.02em}
+.car .row{display:flex;justify-content:space-between;align-items:center;font-size:11.5px;color:var(--muted);margin-top:2px}
+.car.wash{border-left:5px solid var(--blue)}
+.car.ready{border-left:5px solid var(--green)}
+.car.queue{border-left:5px solid var(--amber)}
+.fab{margin:10px;background:var(--red);color:#fff;text-align:center;font-weight:800;border-radius:12px;padding:12px;font-size:13px}
+.sheet{background:rgba(0,0,0,.45);min-height:520px;display:flex;flex-direction:column;justify-content:flex-end}
+.sheet .panel{background:#fff;border-radius:18px 18px 0 0;padding:14px 14px 18px}
+.sheet .grab{width:40px;height:4px;border-radius:4px;background:#ccc;margin:0 auto 10px}
+.plate-input{font-family:var(--mono);font-size:22px;font-weight:700;letter-spacing:.06em;text-align:center;border:2px solid var(--ink);border-radius:10px;padding:8px;margin-top:6px}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.chips span{border:1.5px solid var(--line);border-radius:99px;padding:6px 10px;font-size:12px;font-weight:600}
+.chips span.on{border-color:var(--ink);background:var(--ink);color:#fff}
+.keypad{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
+.keypad span{border:1.5px solid var(--line);border-radius:12px;text-align:center;padding:11px 0;font-size:17px;font-weight:700}
+.pin{display:flex;gap:10px;justify-content:center;margin:10px 0}
+.pin i{width:14px;height:14px;border-radius:50%;border:2px solid var(--ink)}
+.pin i.f{background:var(--ink)}
+/* desktop frame */
+.desk{border:1px solid #CDD2D8;border-radius:12px;overflow:hidden;box-shadow:0 8px 24px rgba(0,0,0,.08);background:#fff}
+.desk .bar{background:#ECEFF2;padding:7px 12px;display:flex;gap:6px;align-items:center;border-bottom:1px solid #D9DDE2}
+.desk .bar i{width:10px;height:10px;border-radius:50%;background:#D0D4D9;display:block}
+.desk .bar .url{margin-left:12px;font-size:11px;color:var(--muted);background:#fff;border-radius:6px;padding:2px 10px;flex:1;max-width:360px;font-family:var(--mono)}
+.dash{display:grid;grid-template-columns:150px 1fr;min-height:440px;font-size:12px}
+.side{background:var(--ink);color:#C9CFD6;padding:14px 10px}
+.side .brand{color:#fff;font-weight:800;font-size:14px;margin-bottom:2px}
+.side .brand em{font-style:normal;color:#FF6B7D}
+.side small{display:block;font-size:10px;opacity:.7;margin-bottom:14px}
+.side div.it{padding:7px 9px;border-radius:7px;margin:2px 0;font-weight:600}
+.side div.it.on{background:rgba(255,255,255,.12);color:#fff}
+.side .moz{margin-top:14px;font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;opacity:.6;padding-left:9px}
+.main{padding:14px 16px;background:#FAFBFC}
+.main h5{margin:0 0 2px;font-size:15px;color:var(--ink)}
+.main .sub{font-size:11px;color:var(--muted);margin-bottom:10px}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:10px}
+.kpi{background:#fff;border:1px solid var(--line);border-radius:10px;padding:8px 10px}
+.kpi span{display:block;font-size:10px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+.kpi b{font-size:18px;color:var(--ink);font-weight:800}
+.kpi em{font-style:normal;font-size:10px;color:var(--muted)}
+.panel2{display:grid;grid-template-columns:1.35fr 1fr;gap:10px}
+.panel2.even{grid-template-columns:1.2fr 1fr}
+.box2{background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.box2 .t{font-weight:700;color:var(--ink);font-size:12px;margin-bottom:6px;display:flex;justify-content:space-between}
+.bars{display:flex;align-items:flex-end;gap:7px;height:120px;padding-top:6px;border-bottom:1px solid var(--line)}
+.bars div{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%}
+.bars div i{display:block;width:100%;border-radius:4px 4px 0 0;background:#9FB3C8}
+.bars div i.low{background:var(--amber)}
+.bars div i.hi{background:var(--red)}
+.bars div small{font-size:9.5px;color:var(--muted);margin-bottom:2px;font-weight:700}
+.blabels{display:flex;gap:7px;font-size:10px;color:var(--muted);margin-top:3px}
+.blabels span{flex:1;text-align:center}
+.alert{background:var(--amber-soft);border:1px solid #F1D29C;border-radius:9px;padding:8px 10px;margin-top:8px;font-size:11px}
+.alert b{color:#7A4A00}
+.bayrow{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px dashed var(--line);font-size:11px}
+.bayrow:last-child{border-bottom:0}
+.mbar{height:7px;border-radius:4px;background:var(--line);overflow:hidden;margin-top:3px}
+.mbar i{display:block;height:100%;background:var(--green)}
+.modal-wrap{background:rgba(22,25,29,.5);padding:26px 40px}
+.modal{background:#fff;border-radius:14px;padding:16px 18px;max-width:560px;margin:0 auto;font-size:12px}
+.modal h5{font-size:15px;margin:0 0 8px;color:var(--ink)}
+.radio{display:flex;gap:8px;align-items:flex-start;border:1.5px solid var(--line);border-radius:10px;padding:8px 10px;margin-top:6px}
+.radio.on{border-color:var(--green);background:var(--green-soft)}
+.radio i{width:14px;height:14px;border-radius:50%;border:2px solid var(--muted);flex:none;margin-top:2px}
+.radio.on i{border:4px solid var(--green)}
+.preview{background:var(--wa-bg);border-radius:10px;padding:10px;margin-top:6px}
+.preview .msg{max-width:100%}
+.score-ring{width:96px;height:96px;border-radius:50%;background:conic-gradient(var(--blue) 0 66%, var(--line) 66% 100%);display:flex;align-items:center;justify-content:center;flex:none}
+.score-ring div{width:74px;height:74px;border-radius:50%;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.score-ring b{font-size:24px;color:var(--ink);line-height:1}
+.score-ring small{font-size:10px;color:var(--muted)}
+.comp{display:grid;grid-template-columns:84px 1fr 34px;gap:8px;align-items:center;font-size:11px;padding:3px 0}
+.comp .mbar{margin:0}
+.comp .mbar i{background:var(--blue)}
+.comp b{text-align:right;color:var(--ink)}
+/* poster */
+.poster{width:300px;border-radius:14px;overflow:hidden;border:1px solid var(--line);box-shadow:0 8px 24px rgba(0,0,0,.1);flex:none;background:#fff}
+.poster .top{background:var(--red);color:#fff;padding:18px 18px 14px}
+.poster .top b{display:block;font-size:30px;font-weight:800;letter-spacing:-.02em;line-height:1}
+.poster .top span{font-size:13px;opacity:.95}
+.poster .mid{padding:16px 18px;text-align:center}
+.poster .qr{width:150px;height:150px;margin:6px auto 10px}
+.poster .bot{background:var(--soft);padding:10px 18px;font-size:11.5px;color:var(--muted)}
+.poster .num{font-family:var(--mono);font-weight:700;color:var(--ink);font-size:15px}
+
+/* print */
+@page{size:A4;margin:13mm 12mm 14mm}
+@media print{
+  body{font-size:12.6px}
+  .page{max-width:none;padding:0}
+  section{padding-top:0}
+  .brk{break-before:page}
+  .cover{padding-top:10px}
+  .cover h1{font-size:46px}
+  .arch .box{min-width:118px;font-size:11px}
+  h3{break-after:avoid}
+  h4{break-after:avoid}
+  .mock-title{break-after:avoid}
+  pre{font-size:9.6px;white-space:pre-wrap;word-break:break-word;break-inside:auto}
+  table{font-size:11.5px}
+  .no-print{display:none}
+  .card,.callout,.stat{break-inside:avoid}
+  table{break-inside:avoid}
+  .dash{grid-template-columns:118px 1fr}
+}
+@media screen and (max-width:720px){
+  .grid2,.grid3,.grid4,.meta{grid-template-columns:1fr 1fr}
+  .cover h1{font-size:38px}
+  .toc{columns:1}
+  .dash{grid-template-columns:1fr}
+  .side{display:none}
+  .kpis{grid-template-columns:1fr 1fr}
+  .panel2{grid-template-columns:1fr}
+  .arch .big{min-width:0;width:100%}
+  .modal-wrap{padding:14px}
+  .desk,.table-wrap{overflow-x:auto}
+}
+@media screen and (max-width:480px){.grid2,.grid3,.grid4,.meta{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="page">
+
+<!-- ================= CAPA ================= -->
+<header class="cover">
+  <div class="event"><span class="dot"></span> Hackathon Moza xLab – UEM · 1.ª Edição · 22 e 23 de Outubro de 2026</div>
+  <h1>LavaJá <em>Pass</em></h1>
+  <div class="sub">Fila virtual, fidelização digital e histórico de recebimentos verificáveis para o <b>Lava Já – Matola</b>, com um caminho para crédito produtivo do Moza Banco.</div>
+  <div class="meta">
+    <div>Desafio<b>Aumentar tráfego e fidelização</b></div>
+    <div>Caso<b>Lava Já – Matola</b></div>
+    <div>Equipa<b>Helio Simango &amp; Equipa</b></div>
+    <div>Versão<b>Final · 09/10/2026</b></div>
+  </div>
+  <nav class="toc">
+    <div><a href="#s1"><span>1</span>Resumo executivo</a></div>
+    <div><a href="#s2"><span>2</span>Problema e pressupostos a validar</a></div>
+    <div><a href="#s3"><span>3</span>Solução e proposta de valor</a></div>
+    <div><a href="#s4"><span>4</span>Modelo de negócio e economia unitária</a></div>
+    <div><a href="#s5"><span>5</span>Perfis de utilizador</a></div>
+    <div><a href="#s6"><span>6</span>Jornadas por perfil</a></div>
+    <div><a href="#s7"><span>7</span>Regras de negócio</a></div>
+    <div><a href="#s8"><span>8</span>Pré-qualificação de crédito (score)</a></div>
+    <div><a href="#s9"><span>9</span>Proposta técnica da demo</a></div>
+    <div><a href="#s10"><span>10</span>Mocks de todas as telas</a></div>
+    <div><a href="#s11"><span>11</span>Plano de execução (48h) e equipa</a></div>
+    <div><a href="#s12"><span>12</span>Guião da demo, riscos e Q&amp;A</a></div>
+  </nav>
+</header>
+
+<!-- ================= 1 ================= -->
+<section id="s1">
+  <div class="kicker">1 · Resumo executivo</div>
+  <h2>Um lava-jato com fila digital, cliente que volta, e recebimentos que um banco consegue ler</h2>
+  <p class="lead">O LavaJá Pass resolve o desafio pedido (tráfego e fidelização) e, como efeito do próprio uso, gera o histórico de recebimentos que o Moza Banco precisa para servir este tipo de negócio.</p>
+  <div class="grid3">
+    <div class="card"><span class="tag">Cliente</span><h4>Não espera no pátio</h4><p class="small">Check-in pelo WhatsApp em menos de 1 minuto, posição na fila e aviso quando o carro está pronto. Sem app para instalar.</p></div>
+    <div class="card"><span class="tag">Lava Já</span><h4>Enche os dias fracos</h4><p class="small">Selos digitais, <b>selo a dobrar</b> de terça a quinta de manhã e campanhas segmentadas para clientes inativos.</p></div>
+    <div class="card"><span class="tag">Moza Banco</span><h4>Novo comerciante, dados reais</h4><p class="small">Recebimentos digitais liquidados na conta Moza do comerciante, e um score transparente que separa dados verificados de dados declarados.</p></div>
+  </div>
+  <h3>O que nos diferencia</h3>
+  <table>
+    <tr><th>Solução típica de hackathon</th><th>LavaJá Pass</th></tr>
+    <tr><td>Bot com fila e cartão de selos</td><td>Fila + selos <b>e</b> o incentivo de tráfego é o selo a dobrar, não o desconto: muda o comportamento sem destruir a margem</td></tr>
+    <tr><td>"Pagamento com app do banco"</td><td>O cliente paga com a carteira que já usa (M-Pesa, e-Mola, mKesh, app Moza); <b>o dinheiro assenta na conta Moza do comerciante</b></td></tr>
+    <tr><td>Score de crédito "caixa preta"</td><td>Fórmula com 6 componentes visíveis, que pesa só receita <b>verificada</b> e é honesta sobre o histórico curto (classe B, "elegível para análise")</td></tr>
+    <tr><td>Esquece o lavador</td><td>O operador vê as lavagens que fez no dia; é ele quem tem interesse em registar todos os carros, incluindo os pagos em numerário</td></tr>
+    <tr><td>Demo dependente de uma biblioteca não oficial</td><td>WhatsApp Cloud API (oficial) + simulador web de WhatsApp como plano B, com o mesmo backend</td></tr>
+  </table>
+  <div class="callout blue"><b>Nota sobre os números deste documento.</b> Todos os valores de operação (lavagens, receita, percentagens) são <b>dados de demonstração</b> gerados para a demo e coerentes entre si. Os valores reais serão recolhidos na visita ao Lava Já antes do hackathon (secção 2.2). Os resultados esperados aparecem como <b>metas de piloto</b>, nunca como resultados obtidos.</div>
+</section>
+
+<!-- ================= 2 ================= -->
+<section id="s2" class="brk">
+  <div class="kicker">2 · Problema</div>
+  <h2>O que trava o Lava Já – Matola</h2>
+  <p class="lead">Padrão comum dos lava-jatos comunitários periurbanos. Cada ponto é uma hipótese a confirmar no terreno.</p>
+  <div class="grid2">
+    <div class="card"><h4>1. Tráfego desigual</h4><p class="small">Fila longa à sexta à tarde e ao fim de semana; baias paradas de terça a quinta de manhã. A capacidade existe, a procura é que está mal distribuída.</p></div>
+    <div class="card"><h4>2. Espera no pátio</h4><p class="small">O cliente fica 40 a 90 minutos no recinto sem saber quando o carro fica pronto. Parte desiste e vai a outro lado.</p></div>
+    <div class="card"><h4>3. Fidelização que não funciona</h4><p class="small">Cartões de papel perdem-se e são fáceis de falsificar. O dono não sabe quem são os seus clientes nem há quanto tempo não voltam.</p></div>
+    <div class="card"><h4>4. Negócio invisível para o banco</h4><p class="small">A maior parte dos pagamentos é em numerário, sem registo. Sem histórico, o dono não consegue crédito para equipamento (compressor, aspirador).</p></div>
+  </div>
+  <p class="small">Contexto de mercado: em Moçambique as carteiras móveis cresceram muito mais do que a rede bancária física; segundo o relatório de inclusão financeira do Banco de Moçambique citado pela Lusa (março 2026), a cobertura de ATMs caiu para 7,1 por 100.000 adultos em 2025, enquanto os agentes de carteiras móveis não bancárias ultrapassaram os 446 mil. Por isso a solução aceita as carteiras que o cliente já usa.</p>
+
+  <h3>2.1 Dados de demonstração (base única usada em todo o documento)</h3>
+  <table>
+    <tr><th>Parâmetro</th><th class="num">Valor</th><th>Nota</th></tr>
+    <tr><td>Baias</td><td class="num">4</td><td>Capacidade prática ≈ 28 lavagens/dia (07:00–18:00)</td></tr>
+    <tr><td>Serviços</td><td class="num">250 / 450 / 700 MZN</td><td>Simples (30 min) · Completa (50 min) · Motor + Completa (75 min)</td></tr>
+    <tr><td>Lavagens nos últimos 30 dias</td><td class="num">365</td><td>Mix: 45% Simples, 45% Completa, 10% Motor</td></tr>
+    <tr><td>Ticket médio</td><td class="num">385 MZN</td><td>0,45×250 + 0,45×450 + 0,10×700</td></tr>
+    <tr><td>Receita registada (30 dias)</td><td class="num">140.525 MZN</td><td>365 × 385</td></tr>
+    <tr><td>Recebido por carteira/app (verificado)</td><td class="num">87.126 MZN (62%)</td><td>Confirmado pelo gateway de pagamento</td></tr>
+    <tr><td>Numerário (declarado)</td><td class="num">53.399 MZN (38%)</td><td>Registado pelo operador, não verificável</td></tr>
+    <tr><td>Semana média (Seg → Dom)</td><td class="num">8 · 6 · 7 · 8 · 14 · 24 · 18</td><td>85 lavagens/semana; terça = 21% da capacidade, sábado = 86%</td></tr>
+    <tr><td>Clientes registados / retenção 30 dias</td><td class="num">212 / 48%</td><td>48% voltaram pelo menos uma vez em 30 dias</td></tr>
+    <tr><td>Clientes inativos (≥14 dias) com consentimento</td><td class="num">58</td><td>Alvo da campanha fora de pico</td></tr>
+  </table>
+
+  <h3>2.2 Pressupostos a validar na visita (antes de 22/10)</h3>
+  <div class="grid2">
+    <div class="card">
+      <h4>Perguntas ao dono</h4>
+      <ul class="small">
+        <li>Quantas baias e lavadores? Horário real?</li>
+        <li>Preços atuais e serviços mais pedidos</li>
+        <li>Carros por dia num dia fraco e num sábado</li>
+        <li>Que % paga por M-Pesa/e-Mola hoje? Tem conta bancária? Em que banco?</li>
+        <li>Que equipamento compraria com crédito, e quanto custa?</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h4>Perguntas aos lavadores e clientes</h4>
+      <ul class="small">
+        <li>Lavador: como é pago (fixo, por carro, gorjeta)? Tem smartphone e dados?</li>
+        <li>Cliente: quanto tempo espera? Usaria WhatsApp para saber quando está pronto?</li>
+        <li>Cliente: que carteira usa? Voltaria numa terça por selo a dobrar?</li>
+        <li>Tirar fotos (com autorização) do pátio e da fila para o pitch</li>
+      </ul>
+    </div>
+  </div>
+  <p class="small">Depois da visita, substituir os valores da tabela 2.1 pelos reais no script de seed (secção 9.6). Toda a demo e este documento recalculam a partir daí.</p>
+</section>
+
+<!-- ================= 3 ================= -->
+<section id="s3">
+  <div class="kicker">3 · Solução</div>
+  <h2>Três peças, um único fluxo de dados</h2>
+  <div class="flow"><span>Cliente faz check-in (WhatsApp)</span><i>→</i><span>Operador move a lavagem</span><i>→</i><span>Cliente avisado e paga</span><i>→</i><span>Selo creditado</span><i>→</i><span>Painel do gestor</span><i>→</i><span>Score Moza</span></div>
+  <div class="grid3">
+    <div class="card"><span class="tag">WhatsApp</span><h4>Bot do cliente</h4><p class="small">Check-in, fila virtual com hora prevista, aviso de pronto com link de pagamento, saldo de selos, opt-in para ofertas.</p></div>
+    <div class="card"><span class="tag">PWA mobile</span><h4>App do operador</h4><p class="small">Quadro de baias com botões grandes: Iniciar → Pronto → Entregar. Registo de entrada manual e de pagamento em numerário.</p></div>
+    <div class="card"><span class="tag">Web</span><h4>Painel gestor + Moza</h4><p class="small">Ocupação e receita, campanha fora de pico com um clique, e painel de pré-qualificação de crédito com extrato.</p></div>
+  </div>
+
+  <h3>3.1 Proposta de valor por interveniente</h3>
+  <table>
+    <tr><th>Interveniente</th><th>Dor principal</th><th>O que ganha</th><th>Métrica de sucesso (meta piloto 90 dias)</th></tr>
+    <tr><td><b>Condutor</b></td><td>Esperar sem saber quanto</td><td>Sai do pátio, recebe aviso, paga com a carteira que já tem, ganha recompensas</td><td>Tempo médio no pátio −50%</td></tr>
+    <tr><td><b>Lavador</b></td><td>Procurar donos, discussões sobre quem lavou o quê</td><td>Quadro simples; aviso automático ao cliente; registo das suas lavagens do dia</td><td>≥ 90% das lavagens registadas</td></tr>
+    <tr><td><b>Dono do Lava Já</b></td><td>Dias vazios, caixa sem controlo, sem crédito</td><td>Mais carros nos dias fracos, conciliação diária, acesso a crédito</td><td>+20% de lavagens Ter–Qui 07–12h; retenção 30 dias ≥ 55%</td></tr>
+    <tr><td><b>Moza Banco</b></td><td>Pequenos comerciantes fora do sistema, sem dados para crédito</td><td>Conta de comerciante ativa, fluxo recorrente, dados verificados para decidir crédito</td><td>≥ 50% da receita liquidada na conta Moza</td></tr>
+  </table>
+  <div class="callout warn"><b>As metas acima são hipóteses do piloto</b>, a medir pelo próprio sistema. Não são resultados já obtidos.</div>
+</section>
+
+<!-- ================= 4 ================= -->
+<section id="s4">
+  <div class="kicker">4 · Modelo de negócio</div>
+  <h2>Quem paga, quem ganha, e se a fidelização compensa</h2>
+  <h3>4.1 Modelo proposto</h3>
+  <ul>
+    <li><b>Para o Lava Já:</b> gratuito enquanto os recebimentos digitais assentarem na conta Moza do comerciante.</li>
+    <li><b>Para o Moza Banco:</b> receita de adquirência e saldo médio da conta do comerciante, e uma carteira de crédito produtivo com risco medido sobre dados reais.</li>
+    <li><b>Escala:</b> o mesmo produto serve barbearias, salões e oficinas da Matola. O lava-jato é o primeiro vertical.</li>
+  </ul>
+  <h3>4.2 Economia unitária da fidelização (dados de demonstração)</h3>
+  <table>
+    <tr><th>Item</th><th class="num">Valor</th><th>Cálculo</th></tr>
+    <tr><td>Regra</td><td class="num">5 selos → 1 Simples grátis</td><td>1 selo por lavagem paga; 2 selos Ter–Qui 07:00–12:00</td></tr>
+    <tr><td>Receita de 5 lavagens pagas</td><td class="num">1.925 MZN</td><td>5 × 385</td></tr>
+    <tr><td>Valor da recompensa (preço de tabela)</td><td class="num">250 MZN</td><td>Equivale a 13% de desconto efetivo</td></tr>
+    <tr><td>Custo real da recompensa</td><td class="num">muito menor</td><td>Resgate limitado a Ter–Qui: usa capacidade parada (água, produto e tempo de lavador)</td></tr>
+    <tr><td>Desconto de preço nas campanhas</td><td class="num">0%</td><td>O incentivo é o selo duplo, não o preço</td></tr>
+  </table>
+  <div class="callout"><b>Porque selo a dobrar e não desconto:</b> um desconto de 30% na terça reduz a receita de todos os clientes que viriam na mesma; o selo duplo só custa dinheiro quando o cliente volta e resgata, e o resgate é feito num dia em que a baia estaria parada.</div>
+  <h3>4.3 Custos de operação da demo e do piloto</h3>
+  <ul class="small">
+    <li>Supabase e Vercel: planos gratuitos chegam para a demo e para um piloto com um comerciante.</li>
+    <li>WhatsApp Cloud API: as conversas iniciadas pelo cliente (check-in) e as respostas dentro da janela de 24h são o caso principal; as mensagens de marketing (campanhas) têm custo por mensagem segundo a tabela da Meta para Moçambique, por isso as campanhas são segmentadas (só inativos com consentimento).</li>
+  </ul>
+</section>
+
+<!-- ================= 5 ================= -->
+<section id="s5" class="brk">
+  <div class="kicker">5 · Perfis</div>
+  <h2>Quatro pessoas, três interfaces</h2>
+  <p class="lead">O gestor do Lava Já e o analista do Moza partilham a mesma aplicação web, com permissões diferentes.</p>
+  <table>
+    <tr><th>Perfil</th><th>Quem é</th><th>Canal</th><th>Acesso</th><th>O que pode fazer</th></tr>
+    <tr><td><b>Cliente</b></td><td>Condutor da Matola, smartphone com WhatsApp</td><td>WhatsApp (bot)</td><td>Número de telefone (sem conta nem senha)</td><td>Check-in, consultar estado e selos, pagar, resgatar recompensa, aceitar ou recusar ofertas</td></tr>
+    <tr><td><b>Operador</b></td><td>Lavador ou atendente do pátio</td><td>PWA mobile</td><td>Nome + PIN de 4 dígitos</td><td>Ver fila, atribuir baia, mudar estado, registar entrada manual, registar pagamento em numerário</td></tr>
+    <tr><td><b>Gestor</b></td><td>Dono do Lava Já (ex.: Sr. Z. Cossa)</td><td>Web (desktop/tablet)</td><td>Email + senha (Supabase Auth)</td><td>Ver operação e receita, conciliação diária, criar e enviar campanhas, autorizar partilha de dados com o Moza</td></tr>
+    <tr><td><b>Analista Moza</b></td><td>Gestor de conta PME do Moza Banco</td><td>Web (mesma app, módulo Moza)</td><td>Email + senha, papel <code>analista_moza</code></td><td>Ver score e extrato <b>apenas</b> de comerciantes que autorizaram a partilha; pedir análise de crédito</td></tr>
+  </table>
+  <div class="callout blue"><b>Consentimento e privacidade.</b> O analista Moza só vê dados agregados do comerciante (receita, componentes do score), nunca telefones dos clientes finais. O comerciante ativa a partilha no seu painel. O cliente final dá consentimento explícito para ofertas no primeiro check-in.</div>
+</section>
+
+<!-- ================= 6 ================= -->
+<section id="s6">
+  <div class="kicker">6 · Jornadas</div>
+  <h2>Passo a passo por perfil</h2>
+  <p class="small">Cada passo indica o ecrã correspondente na secção 10 (ex.: <b>M2</b> = Mock 2).</p>
+
+  <h3>6.1 Cliente (condutor) — quinta-feira, 10:36</h3>
+  <ol class="steps">
+    <li><b>Chega e faz check-in.</b> Lê o QR do cartaz no pátio (abre o WhatsApp com "LAVAR") ou escreve ao número do Lava Já. <span class="scr">M1 · M2</span></li>
+    <li><b>Indica a matrícula e escolhe o serviço.</b> Se já é cliente, o bot sugere a última matrícula. Na primeira vez, aceita ou não receber ofertas. <span class="scr">M2</span></li>
+    <li><b>Recebe a posição e a hora prevista.</b> "Está em 1.º na fila. Previsão: pronto às 11:30." Pode sair do pátio. <span class="scr">M2</span></li>
+    <li><b>É avisado quando o carro está pronto</b>, com o valor e o link de pagamento. <span class="scr">M3</span></li>
+    <li><b>Paga com a carteira que usa</b> (M-Pesa, e-Mola, mKesh ou app Moza) ou paga em numerário ao operador. <span class="scr">M4</span></li>
+    <li><b>Recebe o recibo e os selos.</b> Como é quinta antes das 12h, ganha 2 selos: passa de 3 para 5 e desbloqueia uma Simples grátis. <span class="scr">M3</span></li>
+    <li><b>Semanas depois, recebe uma campanha</b> se ficar 14 dias sem lavar: "selo a dobrar terça a quinta de manhã". <span class="scr">M5</span></li>
+  </ol>
+
+  <h3>6.2 Operador (lavador)</h3>
+  <ol class="steps">
+    <li><b>Entra com o seu nome e PIN</b> no telemóvel do pátio ou no seu. <span class="scr">M6</span></li>
+    <li><b>Vê o quadro:</b> estado das 4 baias no topo e os carros agrupados por estado (Na fila, A lavar, Pronto). <span class="scr">M7</span></li>
+    <li><b>Toca em "Iniciar" e escolhe a baia livre.</b> O sistema recalcula a hora prevista dos outros clientes. <span class="scr">M7</span></li>
+    <li><b>Toca em "Pronto".</b> O cliente recebe o aviso automaticamente; o operador não precisa de procurar ninguém. <span class="scr">M7</span></li>
+    <li><b>Na entrega:</b> se o pagamento digital já foi confirmado, o cartão mostra "Pago" e basta tocar "Entregar". Se o cliente paga em numerário, regista o valor recebido. <span class="scr">M9</span></li>
+    <li><b>Cliente sem WhatsApp:</b> regista a entrada manualmente (matrícula + serviço). <span class="scr">M8</span></li>
+  </ol>
+
+  <h3>6.3 Gestor do Lava Já</h3>
+  <ol class="steps">
+    <li><b>Abre o painel</b> numa quinta de manhã: 6 lavagens, 3 de 4 baias ocupadas, e o alerta "terça e quarta só a 21–25% da capacidade". <span class="scr">M10</span></li>
+    <li><b>Cria uma campanha fora de pico:</b> o sistema propõe o segmento (58 clientes inativos com consentimento) e a mensagem. Um clique para enviar. <span class="scr">M11</span></li>
+    <li><b>No fecho do dia, vê a conciliação:</b> quanto entrou por carteira/app (verificado) e quanto foi declarado em numerário, por operador. <span class="scr">M10</span></li>
+    <li><b>Autoriza a partilha de dados com o Moza</b> para ser avaliado para crédito. <span class="scr">M12</span></li>
+  </ol>
+
+  <h3>6.4 Analista do Moza Banco</h3>
+  <ol class="steps">
+    <li><b>Abre o módulo Moza</b> e vê os comerciantes que autorizaram a partilha. <span class="scr">M12</span></li>
+    <li><b>Analisa o score e os seis componentes:</b> 66/100, classe B, "elegível para análise". Vê que o ponto fraco é a antiguidade do histórico (30 dias). <span class="scr">M12</span></li>
+    <li><b>Vê o montante indicativo e o plano:</b> até 80.000 MZN, 12 meses, retenção de 10% dos recebimentos digitais. <span class="scr">M12</span></li>
+    <li><b>Exporta o extrato</b> e pede análise formal. A decisão de crédito continua a ser do banco, pelos seus processos.</li>
+  </ol>
+</section>
+
+<!-- ================= 7 ================= -->
+<section id="s7" class="brk">
+  <div class="kicker">7 · Regras de negócio</div>
+  <h2>As regras que o código tem de cumprir</h2>
+  <h3>7.1 Ciclo de vida da lavagem</h3>
+  <div class="flow"><span>na_fila</span><i>→ Iniciar (baia) →</i><span>a_lavar</span><i>→ Pronto →</i><span>pronto</span><i>→ Entregar →</i><span>entregue</span><i>&nbsp;·&nbsp;</i><span>cancelada</span></div>
+  <table>
+    <tr><th>Regra</th><th>Detalhe</th></tr>
+    <tr><td>R1 · Transições</td><td>Só são válidas as setas acima. <code>cancelada</code> só a partir de <code>na_fila</code>. Toda a transição passa pela API (nunca escrita direta na base), para validar e enviar a mensagem ao cliente.</td></tr>
+    <tr><td>R2 · Baia</td><td>Ao iniciar, a baia tem de estar livre. O carro pronto continua na baia até ser levantado: a baia só fica livre na <code>entrega</code>. Por isso o aviso rápido ao cliente liberta capacidade.</td></tr>
+    <tr><td>R3 · Entrega</td><td><code>entregue</code> exige um pagamento <code>confirmado</code> (digital) ou um registo de numerário feito pelo operador, ou uma recompensa resgatada (valor 0).</td></tr>
+    <tr><td>R4 · Mensagens</td><td>Check-in → posição e hora prevista. <code>a_lavar</code> → "começámos". <code>pronto</code> → aviso + link de pagamento. Pagamento confirmado → recibo + selos.</td></tr>
+  </table>
+  <h3>7.2 Fila e hora prevista</h3>
+  <p>Simulação simples, recalculada a cada transição: cada baia tem um "livre a partir de" (agora, se livre; início + duração do serviço, se a lavar; ou pronto + 15 min de levantamento, se pronta). Os carros na fila, por ordem de chegada, ocupam a baia que fica livre mais cedo. A hora prevista de cada cliente é o fim da sua simulação. Durações: Simples 30, Completa 50, Motor + Completa 75 min.</p>
+  <h3>7.3 Fidelização</h3>
+  <table>
+    <tr><th>Regra</th><th>Detalhe</th></tr>
+    <tr><td>F1 · Ganhar</td><td>+1 selo por lavagem paga (digital ou numerário), creditado no momento do pagamento.</td></tr>
+    <tr><td>F2 · Fora de pico</td><td>+2 selos se a lavagem entrou de terça a quinta, entre 07:00 e 12:00 (configurável por comerciante).</td></tr>
+    <tr><td>F3 · Resgatar</td><td>Com 5 ou mais selos, o bot oferece "usar recompensa" no check-in: a lavagem Simples sai a 0 MZN e são debitados 5 selos. Resgate só de terça a quinta.</td></tr>
+    <tr><td>F4 · Registo</td><td>Os selos são um livro de movimentos (+1, +2, −5), nunca um contador editável. O saldo é a soma. Isto evita fraude e dá auditoria.</td></tr>
+  </table>
+  <h3>7.4 Pagamentos</h3>
+  <table>
+    <tr><th>Regra</th><th>Detalhe</th></tr>
+    <tr><td>P1 · Verificado</td><td>Um pagamento só é <code>verificado = true</code> quando confirmado por webhook do gateway, com assinatura HMAC-SHA256 válida. O numerário fica sempre <code>verificado = false</code>.</td></tr>
+    <tr><td>P2 · Idempotência</td><td>O webhook pode chegar duas vezes. A referência externa é única; uma segunda confirmação não credita selos de novo.</td></tr>
+    <tr><td>P3 · Liquidação</td><td>Na demo o gateway é simulado. Em produção, a liquidação na conta Moza do comerciante é feita pela via a acordar com o banco (carteiras móveis, mKesh, METIX ou outra).</td></tr>
+  </table>
+  <h3>7.5 Campanhas</h3>
+  <ul>
+    <li>Só para clientes com <code>aceita_promocoes = true</code>.</li>
+    <li>Segmento padrão: última lavagem há 14 dias ou mais. No máximo uma campanha por cliente a cada 7 dias.</li>
+    <li>Resposta "LAVAR" a uma campanha inicia o check-in; "PARAR" retira o consentimento.</li>
+    <li>Atribuição: uma lavagem conta como gerada pela campanha se o cliente a fez até 7 dias depois do envio.</li>
+  </ul>
+</section>
+
+<!-- ================= 8 ================= -->
+<section id="s8" class="brk">
+  <div class="kicker">8 · Crédito</div>
+  <h2>Pré-qualificação: um score que um analista de risco aceita discutir</h2>
+  <p class="lead">O score não aprova crédito. Indica se vale a pena o banco analisar este comerciante, e com que montante de partida.</p>
+  <h3>8.1 Princípios</h3>
+  <ul>
+    <li><b>Pesa o que é verificado.</b> Volume e % digital usam só pagamentos confirmados pelo gateway. O numerário declarado conta para regularidade, mas não para capacidade de pagamento.</li>
+    <li><b>É honesto sobre o tempo.</b> Com 30 dias de histórico o componente de antiguidade é baixo, e o resultado diz isso.</li>
+    <li><b>É explicável.</b> Cada componente aparece no painel com o seu valor.</li>
+  </ul>
+  <h3>8.2 Fórmula (0 a 100 pontos)</h3>
+  <table>
+    <tr><th>Componente</th><th class="num">Peso</th><th>Como se calcula</th><th class="num">Valor demo</th><th class="num">Pontos</th></tr>
+    <tr><td>Volume verificado</td><td class="num">25</td><td>min(1, receita digital 30d ÷ 100.000 MZN)</td><td class="num">0,87</td><td class="num">22</td></tr>
+    <tr><td>Regularidade</td><td class="num">20</td><td>1 − coeficiente de variação da receita semanal (mín. 0)</td><td class="num">0,82</td><td class="num">16</td></tr>
+    <tr><td>Tendência</td><td class="num">15</td><td>0,5 + crescimento 4 semanas × 2,5, limitado a [0, 1]</td><td class="num">0,60</td><td class="num">9</td></tr>
+    <tr><td>% digital verificado</td><td class="num">20</td><td>receita digital ÷ receita total</td><td class="num">0,62</td><td class="num">12</td></tr>
+    <tr><td>Retenção de clientes</td><td class="num">10</td><td>% clientes que voltaram em 30 dias</td><td class="num">0,48</td><td class="num">5</td></tr>
+    <tr><td>Antiguidade do histórico</td><td class="num">10</td><td>min(1, dias de histórico ÷ 180)</td><td class="num">0,17</td><td class="num">2</td></tr>
+    <tr><th>Total</th><th class="num">100</th><th></th><th></th><th class="num">66</th></tr>
+  </table>
+  <div class="grid3">
+    <div class="stat"><b>A · ≥ 75</b><span>Pré-qualificado: montante indicativo completo</span></div>
+    <div class="stat" style="border-color:var(--blue)"><b style="color:var(--blue)">B · 60–74</b><span>Elegível para análise (resultado da demo)</span></div>
+    <div class="stat"><b>C · &lt; 60</b><span>Histórico insuficiente: continuar a registar</span></div>
+  </div>
+  <h3>8.3 Montante indicativo e amortização</h3>
+  <table>
+    <tr><th>Passo</th><th class="num">Valor demo</th></tr>
+    <tr><td>Receita digital verificada (30 dias)</td><td class="num">87.126 MZN</td></tr>
+    <tr><td>Retenção automática de 10% dos recebimentos digitais</td><td class="num">≈ 8.713 MZN/mês</td></tr>
+    <tr><td>Capacidade em 12 meses</td><td class="num">≈ 104.551 MZN</td></tr>
+    <tr><td>÷ fator de custo ilustrativo 1,25 (juros e margem a definir pelo banco)</td><td class="num">≈ 83.641 MZN</td></tr>
+    <tr><td><b>Montante indicativo</b> (arredondado para baixo a múltiplos de 5.000)</td><td class="num"><b>80.000 MZN</b></td></tr>
+  </table>
+  <p class="small">Finalidade de referência: compressor de alta pressão e aspirador industrial (valores a confirmar na visita). A retenção sobre recebimentos (<i>revenue-based financing</i>) ajusta a prestação ao movimento: semana fraca, prestação menor.</p>
+  <div class="callout warn"><b>Mensagem para o júri:</b> "com 30 dias o Lava Já é classe B. Com 90 dias de dados ao mesmo ritmo, só a antiguidade sobe 3 pontos e a tendência e o volume, se a campanha resultar, levam-no à classe A." Mostra que o modelo não promete o que não pode.</div>
+</section>
+
+<!-- ================= 9 ================= -->
+<section id="s9" class="brk">
+  <div class="kicker">9 · Proposta técnica</div>
+  <h2>Tudo o que a equipa precisa para construir a demo</h2>
+
+  <h3>9.1 Arquitetura</h3>
+  <div style="margin:12px 0 18px"><svg viewBox="0 0 680 300" width="100%" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Arquitetura do LavaJá Pass" style="font-family:Inter,sans-serif;max-width:720px;display:block;margin:0 auto"><defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#5E6873"/></marker></defs><rect x="0" y="0" width="680" height="300" rx="14" fill="#F5F6F8"/><rect x="10.0" y="16" width="124" height="52" rx="9" fill="#fff" stroke="#1E7B47" stroke-width="1.6"/><text x="72.0" y="38" text-anchor="middle" font-size="11.5" font-weight="700" fill="#16191D">WhatsApp Cloud API</text><text x="72.0" y="55" text-anchor="middle" font-size="10" fill="#5E6873">número de teste Meta</text><line x1="64.0" y1="72" x2="64.0" y2="124" stroke="#5E6873" stroke-width="1.3" marker-end="url(#ah)"/><rect x="144.0" y="16" width="124" height="52" rx="9" fill="#fff" stroke="#1E7B47" stroke-width="1.6" stroke-dasharray="5 4"/><text x="206.0" y="38" text-anchor="middle" font-size="11.5" font-weight="700" fill="#16191D">Simulador WhatsApp</text><text x="206.0" y="55" text-anchor="middle" font-size="10" fill="#5E6873">/simulador · plano B</text><line x1="198.0" y1="72" x2="198.0" y2="124" stroke="#5E6873" stroke-width="1.3" marker-end="url(#ah)"/><rect x="278.0" y="16" width="124" height="52" rx="9" fill="#fff" stroke="#16191D" stroke-width="1.6"/><text x="340.0" y="38" text-anchor="middle" font-size="11.5" font-weight="700" fill="#16191D">PWA Operador</text><text x="340.0" y="55" text-anchor="middle" font-size="10" fill="#5E6873">/operador</text><line x1="332.0" y1="72" x2="332.0" y2="124" stroke="#5E6873" stroke-width="1.3" marker-end="url(#ah)"/><line x1="348.0" y1="124" x2="348.0" y2="72" stroke="#1F5FA8" stroke-width="1.3" stroke-dasharray="3 3" marker-end="url(#ah)"/><rect x="412.0" y="16" width="124" height="52" rx="9" fill="#fff" stroke="#16191D" stroke-width="1.6"/><text x="474.0" y="38" text-anchor="middle" font-size="11.5" font-weight="700" fill="#16191D">Painel Gestor + Moza</text><text x="474.0" y="55" text-anchor="middle" font-size="10" fill="#5E6873">/gestor · /moza</text><line x1="466.0" y1="72" x2="466.0" y2="124" stroke="#5E6873" stroke-width="1.3" marker-end="url(#ah)"/><line x1="482.0" y1="124" x2="482.0" y2="72" stroke="#1F5FA8" stroke-width="1.3" stroke-dasharray="3 3" marker-end="url(#ah)"/><rect x="546.0" y="16" width="124" height="52" rx="9" fill="#fff" stroke="#16191D" stroke-width="1.6"/><text x="608.0" y="38" text-anchor="middle" font-size="11.5" font-weight="700" fill="#16191D">Checkout simulado</text><text x="608.0" y="55" text-anchor="middle" font-size="10" fill="#5E6873">/pagar/[ref]</text><line x1="600.0" y1="72" x2="600.0" y2="124" stroke="#5E6873" stroke-width="1.3" marker-end="url(#ah)"/><line x1="616.0" y1="124" x2="616.0" y2="72" stroke="#1F5FA8" stroke-width="1.3" stroke-dasharray="3 3" marker-end="url(#ah)"/><rect x="70" y="128" width="540" height="62" rx="10" fill="#fff" stroke="#C8102E" stroke-width="1.8"/><text x="340" y="152" text-anchor="middle" font-size="12.5" font-weight="700" fill="#16191D">Next.js 15 (App Router) · TypeScript · Route Handlers</text><text x="340" y="172" text-anchor="middle" font-size="10" fill="#5E6873">Bot (máquina de estados) · Transições · Fila/ETA · Selos · Campanhas · Webhook HMAC · Score</text><line x1="340" y1="192" x2="340" y2="222" stroke="#5E6873" stroke-width="1.3" marker-end="url(#ah)"/><rect x="170" y="226" width="340" height="58" rx="10" fill="#fff" stroke="#16191D" stroke-width="1.6"/><text x="340" y="250" text-anchor="middle" font-size="12.5" font-weight="700" fill="#16191D">Supabase</text><text x="340" y="269" text-anchor="middle" font-size="10" fill="#5E6873">PostgreSQL · Auth (gestor/analista) · Realtime · Row Level Security</text></svg><p class="small" style="text-align:center;margin-top:6px">Setas contínuas: pedidos HTTPS (webhooks e API) · Setas tracejadas azuis: Supabase Realtime a refrescar os ecrãs</p></div>
+  <p><b>Decisões e porquê:</b></p>
+  <ul>
+    <li><b>Uma única app Next.js</b> (frontends + API). Sem Express à parte: menos peças para pôr de pé em 48h e um só deploy.</li>
+    <li><b>WhatsApp Cloud API em vez de Baileys.</b> Baileys não é oficial e o número pode ser bloqueado durante a demo. A Cloud API tem número de teste gratuito e até 5 destinatários de teste: chega para a demo.</li>
+    <li><b>Simulador web de WhatsApp</b> que chama o mesmo endpoint do bot. Se a rede ou a Meta falharem, a demo continua sem mudar o backend.</li>
+    <li><b>Mensagens enviadas pela API, Realtime só para ecrãs.</b> A lógica fica num sítio só; o Realtime apenas atualiza o quadro do operador e o painel.</li>
+    <li><b>Deploy:</b> Vercel + Supabase cloud. Plano B: <code>next start</code> num portátil com hotspot móvel próprio.</li>
+  </ul>
+
+  <h3>9.2 Stack</h3>
+  <table>
+    <tr><th>Camada</th><th>Tecnologia</th></tr>
+    <tr><td>Frontend</td><td>Next.js 15, React, Tailwind CSS, shadcn/ui, lucide-react, Recharts (gráfico de ocupação)</td></tr>
+    <tr><td>PWA</td><td><code>manifest.json</code> + ícone; ecrã do operador otimizado para 360 px de largura, botões ≥ 48 px</td></tr>
+    <tr><td>API</td><td>Next.js Route Handlers (Node runtime), Zod para validar payloads</td></tr>
+    <tr><td>Dados</td><td>Supabase Postgres, <code>@supabase/supabase-js</code>, Realtime em <code>lavagens</code> e <code>pagamentos</code></td></tr>
+    <tr><td>WhatsApp</td><td>Meta WhatsApp Cloud API (Graph API), webhook de verificação e de mensagens</td></tr>
+    <tr><td>Pagamento</td><td>Gateway simulado interno + webhook assinado HMAC-SHA256 (<code>X-LavaJa-Signature</code>)</td></tr>
+    <tr><td>Extrato</td><td>Opcional: <code>@react-pdf/renderer</code> para o PDF do extrato do comerciante</td></tr>
+  </table>
+
+  <h3>9.3 Modelo de dados (SQL para o Supabase)</h3>
+  <p class="small">Correções face à versão anterior: tabela <code>veiculos</code> mantida, estados uniformizados, <code>verificado</code> começa a <code>false</code> (antes <code>liquidado DEFAULT TRUE</code> marcava todos os pagamentos como liquidados), e selos como livro de movimentos.</p>
+<pre><span class="c">-- 0. Extensões e tipos</span>
+create extension if not exists pgcrypto;
+create type estado_lavagem   as enum ('na_fila','a_lavar','pronto','entregue','cancelada');
+create type metodo_pagamento as enum ('mpesa','emola','mkesh','app_moza','numerario','recompensa');
+create type estado_pagamento as enum ('pendente','confirmado','falhado');
+create type papel_utilizador as enum ('gestor','analista_moza');
+
+<span class="c">-- 1. Comerciante e equipa</span>
+create table comercios (
+  id uuid primary key default gen_random_uuid(),
+  nome text not null,
+  conta_moza_mascarada text,                 <span class="c">-- ex.: 0023-****-01 (nunca o número completo)</span>
+  num_baias smallint not null default 4,
+  partilha_moza boolean not null default false,
+  fora_pico jsonb not null default '{"dias":[2,3,4],"inicio":"07:00","fim":"12:00"}',
+  criado_em timestamptz not null default now()
+);
+create table perfis (                         <span class="c">-- liga auth.users a um papel</span>
+  user_id uuid primary key references auth.users(id),
+  comercio_id uuid references comercios(id),
+  papel papel_utilizador not null
+);
+create table operadores (
+  id uuid primary key default gen_random_uuid(),
+  comercio_id uuid not null references comercios(id),
+  nome text not null,
+  pin_hash text not null,                    <span class="c">-- crypt(pin, gen_salt('bf'))</span>
+  ativo boolean not null default true
+);
+create table servicos (
+  id smallint primary key,
+  nome text not null,
+  preco numeric(10,2) not null,
+  duracao_min smallint not null
+);
+insert into servicos values (1,'Simples',250,30),(2,'Completa',450,50),(3,'Motor + Completa',700,75);
+
+<span class="c">-- 2. Clientes e viaturas</span>
+create table clientes (
+  id uuid primary key default gen_random_uuid(),
+  comercio_id uuid not null references comercios(id),
+  telefone text not null,                    <span class="c">-- E.164: +2588XXXXXXXX</span>
+  nome text,
+  aceita_promocoes boolean not null default false,
+  criado_em timestamptz not null default now(),
+  unique (comercio_id, telefone)
+);
+create table veiculos (
+  id uuid primary key default gen_random_uuid(),
+  cliente_id uuid not null references clientes(id),
+  matricula text not null,                   <span class="c">-- normalizada: 'AHM 482 MP'</span>
+  unique (cliente_id, matricula)
+);
+
+<span class="c">-- 3. Operação</span>
+create table lavagens (
+  id uuid primary key default gen_random_uuid(),
+  comercio_id uuid not null references comercios(id),
+  veiculo_id uuid not null references veiculos(id),
+  servico_id smallint not null references servicos(id),
+  valor numeric(10,2) not null,              <span class="c">-- 0 quando é recompensa</span>
+  referencia text not null unique,           <span class="c">-- LJ-2210-0042</span>
+  estado estado_lavagem not null default 'na_fila',
+  baia smallint check (baia between 1 and 8),
+  operador_id uuid references operadores(id),
+  canal_entrada text not null default 'whatsapp' check (canal_entrada in ('whatsapp','manual','simulador')),
+  fora_de_pico boolean not null default false,
+  campanha_id uuid,
+  entrou_em  timestamptz not null default now(),
+  iniciou_em timestamptz, pronto_em timestamptz, entregue_em timestamptz
+);
+create index on lavagens (comercio_id, estado);
+create index on lavagens (comercio_id, entrou_em);
+
+create table pagamentos (
+  id uuid primary key default gen_random_uuid(),
+  lavagem_id uuid not null references lavagens(id),
+  metodo metodo_pagamento,
+  valor numeric(10,2) not null,
+  estado estado_pagamento not null default 'pendente',
+  verificado boolean not null default false, <span class="c">-- true SÓ via webhook com HMAC válido</span>
+  ref_externa text unique,                   <span class="c">-- idempotência do webhook</span>
+  registado_por uuid references operadores(id),
+  criado_em timestamptz not null default now(),
+  confirmado_em timestamptz
+);
+
+<span class="c">-- 4. Fidelização (livro de movimentos)</span>
+create table selos_movimentos (
+  id bigint generated always as identity primary key,
+  cliente_id uuid not null references clientes(id),
+  lavagem_id uuid references lavagens(id),
+  quantidade smallint not null,              <span class="c">-- +1, +2, -5</span>
+  motivo text not null check (motivo in ('lavagem','fora_de_pico','resgate','ajuste')),
+  criado_em timestamptz not null default now(),
+  unique (lavagem_id, motivo)                <span class="c">-- impede crédito duplicado</span>
+);
+create view v_saldo_selos as
+  select cliente_id, coalesce(sum(quantidade),0)::int as saldo
+  from selos_movimentos group by cliente_id;
+
+<span class="c">-- 5. Campanhas</span>
+create table campanhas (
+  id uuid primary key default gen_random_uuid(),
+  comercio_id uuid not null references comercios(id),
+  nome text not null,
+  oferta text not null,                      <span class="c">-- 'selo_duplo'</span>
+  dias_inatividade smallint not null default 14,
+  mensagem text not null,
+  enviada_em timestamptz,
+  criada_em timestamptz not null default now()
+);
+create table campanha_envios (
+  campanha_id uuid references campanhas(id),
+  cliente_id uuid references clientes(id),
+  enviado_em timestamptz not null default now(),
+  estado text not null default 'enviado',
+  primary key (campanha_id, cliente_id)
+);
+
+<span class="c">-- 6. Estado da conversa do bot</span>
+create table conversas (
+  telefone text primary key,
+  comercio_id uuid not null references comercios(id),
+  estado text not null default 'INICIO',
+  contexto jsonb not null default '{}',
+  atualizado_em timestamptz not null default now()
+);
+
+<span class="c">-- 7. Vista diária para painel e score</span>
+create view v_receita_diaria as
+select l.comercio_id, date_trunc('day', p.confirmado_em) as dia,
+       sum(p.valor) filter (where p.verificado)      as digital_verificado,
+       sum(p.valor) filter (where p.metodo='numerario') as numerario_declarado,
+       count(*) as pagamentos
+from pagamentos p join lavagens l on l.id = p.lavagem_id
+where p.estado = 'confirmado' and p.metodo &lt;&gt; 'recompensa'
+group by 1, 2;
+
+<span class="c">-- Realtime</span>
+alter publication supabase_realtime add table lavagens, pagamentos;</pre>
+  <p class="small"><b>Segurança (RLS):</b> ativar RLS em todas as tabelas. Gestor lê e escreve só o seu <code>comercio_id</code>. Analista Moza lê apenas <code>v_receita_diaria</code> e o endpoint do score de comerciantes com <code>partilha_moza = true</code>. O operador não usa Supabase Auth: a PWA chama a API com um token de sessão emitido após PIN válido, e a API usa a <i>service role</i> do lado do servidor.</p>
+
+  <h3>9.4 API</h3>
+  <table>
+    <tr><th>Método e rota</th><th>Quem chama</th><th>Função</th></tr>
+    <tr><td><code>GET /api/whatsapp/webhook</code></td><td>Meta</td><td>Verificação do webhook (<code>hub.challenge</code>)</td></tr>
+    <tr><td><code>POST /api/whatsapp/webhook</code></td><td>Meta / simulador</td><td>Mensagem recebida → máquina de estados do bot</td></tr>
+    <tr><td><code>POST /api/operador/login</code></td><td>PWA</td><td>Nome + PIN → token de sessão (8h)</td></tr>
+    <tr><td><code>GET /api/fila</code></td><td>PWA / painel</td><td>Lavagens ativas, baias e hora prevista de cada uma</td></tr>
+    <tr><td><code>POST /api/lavagens</code></td><td>PWA</td><td>Entrada manual (matrícula, serviço, telefone opcional)</td></tr>
+    <tr><td><code>POST /api/lavagens/{id}/transicao</code></td><td>PWA</td><td><code>{ para, baia? }</code> → valida R1–R3, grava, envia mensagem</td></tr>
+    <tr><td><code>POST /api/lavagens/{id}/numerario</code></td><td>PWA</td><td>Regista pagamento em numerário (não verificado) e credita selos</td></tr>
+    <tr><td><code>GET /api/pagar/{ref}</code></td><td>Checkout</td><td>Dados da lavagem para a página de pagamento</td></tr>
+    <tr><td><code>POST /api/pagar/{ref}</code></td><td>Checkout</td><td><code>{ metodo }</code> → gateway simulado agenda o webhook (2 s)</td></tr>
+    <tr><td><code>POST /api/pagamentos/webhook</code></td><td>Gateway simulado</td><td>Verifica HMAC, confirma (idempotente), credita selos, envia recibo</td></tr>
+    <tr><td><code>GET /api/gestor/resumo?dia=</code></td><td>Painel</td><td>KPIs do dia, ocupação semanal, conciliação</td></tr>
+    <tr><td><code>POST /api/campanhas</code> · <code>POST /api/campanhas/{id}/enviar</code></td><td>Painel</td><td>Criar (devolve tamanho do segmento) e enviar</td></tr>
+    <tr><td><code>GET /api/moza/score?comercio=</code></td><td>Módulo Moza</td><td>Score, componentes, classe, montante indicativo</td></tr>
+    <tr><td><code>GET /api/moza/extrato?comercio=</code></td><td>Módulo Moza</td><td>Extrato de 30 dias (JSON ou PDF)</td></tr>
+  </table>
+
+  <h3>9.5 Bot — máquina de estados</h3>
+  <table>
+    <tr><th>Estado</th><th>Recebe</th><th>Responde / próximo estado</th></tr>
+    <tr><td><code>INICIO</code></td><td>Qualquer texto ou "LAVAR"</td><td>Se tem lavagem ativa → estado dela. Se é cliente com matrícula → "Lavar AHM 482 MP? 1 Sim · 2 Outra" (<code>CONFIRMA_MATRICULA</code>). Senão → pede matrícula (<code>PEDE_MATRICULA</code>)</td></tr>
+    <tr><td><code>PEDE_MATRICULA</code></td><td>Texto</td><td>Normaliza e valida (ex.: <code>/^[A-Z]{3}\s?\d{3}\s?[A-Z]{2}$/</code> ou formato antigo). Erro → repete. OK → <code>PEDE_SERVICO</code></td></tr>
+    <tr><td><code>PEDE_SERVICO</code></td><td>1, 2 ou 3 (ou 0 = recompensa, se saldo ≥ 5)</td><td>Cliente novo → <code>PEDE_OPTIN</code>. Senão cria lavagem → posição e hora prevista → <code>EM_SERVICO</code></td></tr>
+    <tr><td><code>PEDE_OPTIN</code></td><td>SIM / NÃO</td><td>Grava <code>aceita_promocoes</code>, cria lavagem → <code>EM_SERVICO</code></td></tr>
+    <tr><td><code>EM_SERVICO</code></td><td>"ESTADO", "SELOS", "CANCELAR"</td><td>Responde estado, saldo ou cancela (se ainda <code>na_fila</code>). Após entrega volta a <code>INICIO</code></td></tr>
+    <tr><td>Global</td><td>"PARAR"</td><td><code>aceita_promocoes = false</code>, confirma</td></tr>
+  </table>
+
+  <h3>9.6 Algoritmos de referência</h3>
+  <h4>Hora prevista (fila)</h4>
+<pre>type Baia = { n: number; livreEm: Date };
+export function calcularPrevisoes(baias: Baia[], fila: { id: string; duracaoMin: number }[]) {
+  const b = baias.map(x =&gt; ({ ...x }));
+  const res: Record&lt;string, { inicio: Date; fim: Date; baia: number }&gt; = {};
+  for (const l of fila) {                              <span class="c">// fila já ordenada por entrou_em</span>
+    b.sort((x, y) =&gt; x.livreEm.getTime() - y.livreEm.getTime());
+    const inicio = b[0].livreEm;
+    const fim = new Date(inicio.getTime() + l.duracaoMin * 60_000);
+    res[l.id] = { inicio, fim, baia: b[0].n };
+    b[0].livreEm = fim;
+  }
+  return res;
+}</pre>
+  <h4>Score</h4>
+<pre>export function calcularScore(m: {
+  receitaDigital30d: number; receitaTotal30d: number;
+  receitaSemanal: number[];          <span class="c">// últimas 4 semanas, total (digital + numerário)</span>
+  retencao30d: number;               <span class="c">// 0..1</span>
+  diasHistorico: number;
+}) {
+  const clamp = (v: number) =&gt; Math.max(0, Math.min(1, v));
+  const s = m.receitaSemanal;
+  const media = s.reduce((a, b) =&gt; a + b, 0) / s.length;
+  const dp = Math.sqrt(s.reduce((a, b) =&gt; a + (b - media) ** 2, 0) / s.length);
+  const crescimento = s[0] &gt; 0 ? (s[s.length - 1] - s[0]) / s[0] : 0;
+  const c = {
+    volume:       25 * clamp(m.receitaDigital30d / 100_000),
+    regularidade: 20 * clamp(1 - dp / media),
+    tendencia:    15 * clamp(0.5 + crescimento * 2.5),
+    digital:      20 * clamp(m.receitaDigital30d / m.receitaTotal30d),
+    retencao:     10 * clamp(m.retencao30d),
+    historico:    10 * clamp(m.diasHistorico / 180),
+  };
+  const total = Math.round(Object.values(c).reduce((a, b) =&gt; a + b, 0));
+  const classe = total &gt;= 75 ? 'A' : total &gt;= 60 ? 'B' : 'C';
+  const retencaoMensal = 0.10 * m.receitaDigital30d;
+  const montante = Math.floor((retencaoMensal * 12 / 1.25) / 5000) * 5000;
+  return { total, classe, componentes: c, montanteIndicativo: classe === 'C' ? 0 : montante };
+}</pre>
+  <h4>Webhook de pagamento (assinatura e idempotência)</h4>
+<pre>import crypto from 'node:crypto';
+export async function POST(req: Request) {
+  const raw = await req.text();
+  const sig = req.headers.get('x-lavaja-signature') ?? '';
+  const esperado = crypto.createHmac('sha256', process.env.GATEWAY_SECRET!).update(raw).digest('hex');
+  if (sig.length !== esperado.length ||
+      !crypto.timingSafeEqual(Buffer.from(sig), Buffer.from(esperado)))
+    return new Response('assinatura inválida', { status: 401 });
+  const ev = JSON.parse(raw);                        <span class="c">// { ref_externa, referencia, metodo, valor }</span>
+  <span class="c">// 1) update pagamentos set estado='confirmado', verificado=true ... where ref_externa = ev.ref_externa and estado='pendente'</span>
+  <span class="c">// 2) se 0 linhas afetadas → já processado → 200 sem efeitos</span>
+  <span class="c">// 3) inserir selos (+1 ou +2) — a constraint unique(lavagem_id, motivo) protege contra duplicados</span>
+  <span class="c">// 4) enviar recibo + saldo de selos por WhatsApp</span>
+  return Response.json({ ok: true });
+}</pre>
+  <h4>Dados de seed</h4>
+  <p class="small">Script <code>scripts/seed.ts</code> gera 30 dias de histórico com os parâmetros da tabela 2.1 (distribuição semanal 8/6/7/8/14/24/18, mix de serviços, 62% digital, 212 clientes, 48% de retorno) e deixa o estado "hoje" pronto para a demo: 6 lavagens no dia, 2 a lavar, 1 pronta, e a cliente de demonstração com 3 selos. Comando <code>npm run seed:reset</code> repõe tudo entre ensaios.</p>
+
+  <h3>9.7 Variáveis de ambiente</h3>
+<pre>NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+SUPABASE_SERVICE_ROLE_KEY=        <span class="c"># só no servidor</span>
+WA_PHONE_NUMBER_ID=               <span class="c"># número de teste da Meta</span>
+WA_ACCESS_TOKEN=
+WA_VERIFY_TOKEN=
+WA_MODE=cloud                     <span class="c"># cloud | simulador</span>
+GATEWAY_SECRET=                   <span class="c"># HMAC do gateway simulado</span>
+DEMO_AGORA=                       <span class="c"># opcional: forçar "agora" p/ janela fora de pico (ex.: 2026-10-22T10:36:00+02:00)</span></pre>
+  <div class="callout red"><b>Atenção à hora da demo:</b> o selo duplo só se aplica de terça a quinta antes das 12:00. O dia 22/10 é quinta, mas o pitch pode ser na sexta (23/10) à tarde. Usar <code>DEMO_AGORA</code> para fixar a hora simulada, e dizê-lo com naturalidade ao júri ("simulamos uma quinta às 10:36").</div>
+
+  <h3>9.8 Estrutura do projeto</h3>
+<pre>lavaja-pass/
+├─ app/
+│  ├─ operador/        (login PIN, quadro, entrada manual, cobrança)
+│  ├─ gestor/          (painel, campanhas)
+│  ├─ moza/            (pré-qualificação, extrato)
+│  ├─ pagar/[ref]/     (checkout simulado)
+│  ├─ simulador/       (WhatsApp web de plano B)
+│  └─ api/             (rotas da secção 9.4)
+├─ lib/  bot.ts · fila.ts · selos.ts · score.ts · whatsapp.ts · gateway.ts · supabase.ts
+├─ supabase/migrations/001_schema.sql
+├─ scripts/seed.ts
+└─ public/manifest.json</pre>
+</section>
+
+<!-- ================= 10 MOCKS ================= -->
+<section id="s10" class="brk">
+  <div class="kicker">10 · Mocks</div>
+  <h2>Todas as telas da demo</h2>
+  <p class="lead">Doze ecrãs, na ordem em que aparecem na apresentação. Os dados coincidem com a base de demonstração da secção 2.1.</p>
+  <table>
+    <tr><th>#</th><th>Ecrã</th><th>Perfil</th><th>#</th><th>Ecrã</th><th>Perfil</th></tr>
+    <tr><td>M1</td><td>Cartaz do pátio com QR</td><td>Cliente</td><td>M7</td><td>Quadro de baias</td><td>Operador</td></tr>
+    <tr><td>M2</td><td>WhatsApp: check-in e fila</td><td>Cliente</td><td>M8</td><td>Entrada manual</td><td>Operador</td></tr>
+    <tr><td>M3</td><td>WhatsApp: pronto, pagamento, selos</td><td>Cliente</td><td>M9</td><td>Entrega e cobrança</td><td>Operador</td></tr>
+    <tr><td>M4</td><td>Checkout de pagamento</td><td>Cliente</td><td>M10</td><td>Painel do gestor</td><td>Gestor</td></tr>
+    <tr><td>M5</td><td>WhatsApp: campanha recebida</td><td>Cliente</td><td>M11</td><td>Campanha fora de pico</td><td>Gestor</td></tr>
+    <tr><td>M6</td><td>Login por PIN</td><td>Operador</td><td>M12</td><td>Pré-qualificação Moza</td><td>Analista Moza</td></tr>
+  </table>
+
+  <!-- M1 + M2 -->
+  <div class="mock-title"><span class="n">M1 · M2</span><h4>Cartaz do pátio e check-in pelo WhatsApp</h4></div>
+  <div class="mock">
+    <div class="phones">
+      <div class="poster">
+        <div class="top"><b>Lava sem esperar.</b><span>Lava Já – Matola · LavaJá Pass</span></div>
+        <div class="mid">
+          <div style="font-weight:700;color:var(--ink);font-size:14px">Lê o código com a câmara</div>
+          <div class="qr"><svg viewBox="-1 -1 27 27" width="150" height="150" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges" role="img" aria-label="Código QR ilustrativo"><rect x="-1" y="-1" width="27" height="27" fill="#fff"/><g fill="#16191D"><rect x="0" y="0" width="1" height="1"/><rect x="1" y="0" width="1" height="1"/><rect x="2" y="0" width="1" height="1"/><rect x="3" y="0" width="1" height="1"/><rect x="4" y="0" width="1" height="1"/><rect x="5" y="0" width="1" height="1"/><rect x="6" y="0" width="1" height="1"/><rect x="8" y="0" width="1" height="1"/><rect x="9" y="0" width="1" height="1"/><rect x="10" y="0" width="1" height="1"/><rect x="11" y="0" width="1" height="1"/><rect x="12" y="0" width="1" height="1"/><rect x="14" y="0" width="1" height="1"/><rect x="15" y="0" width="1" height="1"/><rect x="18" y="0" width="1" height="1"/><rect x="19" y="0" width="1" height="1"/><rect x="20" y="0" width="1" height="1"/><rect x="21" y="0" width="1" height="1"/><rect x="22" y="0" width="1" height="1"/><rect x="23" y="0" width="1" height="1"/><rect x="24" y="0" width="1" height="1"/><rect x="0" y="1" width="1" height="1"/><rect x="6" y="1" width="1" height="1"/><rect x="8" y="1" width="1" height="1"/><rect x="9" y="1" width="1" height="1"/><rect x="10" y="1" width="1" height="1"/><rect x="12" y="1" width="1" height="1"/><rect x="13" y="1" width="1" height="1"/><rect x="15" y="1" width="1" height="1"/><rect x="16" y="1" width="1" height="1"/><rect x="18" y="1" width="1" height="1"/><rect x="24" y="1" width="1" height="1"/><rect x="0" y="2" width="1" height="1"/><rect x="2" y="2" width="1" height="1"/><rect x="3" y="2" width="1" height="1"/><rect x="4" y="2" width="1" height="1"/><rect x="6" y="2" width="1" height="1"/><rect x="11" y="2" width="1" height="1"/><rect x="15" y="2" width="1" height="1"/><rect x="18" y="2" width="1" height="1"/><rect x="20" y="2" width="1" height="1"/><rect x="21" y="2" width="1" height="1"/><rect x="22" y="2" width="1" height="1"/><rect x="24" y="2" width="1" height="1"/><rect x="0" y="3" width="1" height="1"/><rect x="2" y="3" width="1" height="1"/><rect x="3" y="3" width="1" height="1"/><rect x="4" y="3" width="1" height="1"/><rect x="6" y="3" width="1" height="1"/><rect x="9" y="3" width="1" height="1"/><rect x="10" y="3" width="1" height="1"/><rect x="11" y="3" width="1" height="1"/><rect x="13" y="3" width="1" height="1"/><rect x="14" y="3" width="1" height="1"/><rect x="18" y="3" width="1" height="1"/><rect x="20" y="3" width="1" height="1"/><rect x="21" y="3" width="1" height="1"/><rect x="22" y="3" width="1" height="1"/><rect x="24" y="3" width="1" height="1"/><rect x="0" y="4" width="1" height="1"/><rect x="2" y="4" width="1" height="1"/><rect x="3" y="4" width="1" height="1"/><rect x="4" y="4" width="1" height="1"/><rect x="6" y="4" width="1" height="1"/><rect x="8" y="4" width="1" height="1"/><rect x="15" y="4" width="1" height="1"/><rect x="18" y="4" width="1" height="1"/><rect x="20" y="4" width="1" height="1"/><rect x="21" y="4" width="1" height="1"/><rect x="22" y="4" width="1" height="1"/><rect x="24" y="4" width="1" height="1"/><rect x="0" y="5" width="1" height="1"/><rect x="6" y="5" width="1" height="1"/><rect x="8" y="5" width="1" height="1"/><rect x="9" y="5" width="1" height="1"/><rect x="12" y="5" width="1" height="1"/><rect x="13" y="5" width="1" height="1"/><rect x="14" y="5" width="1" height="1"/><rect x="15" y="5" width="1" height="1"/><rect x="16" y="5" width="1" height="1"/><rect x="18" y="5" width="1" height="1"/><rect x="24" y="5" width="1" height="1"/><rect x="0" y="6" width="1" height="1"/><rect x="1" y="6" width="1" height="1"/><rect x="2" y="6" width="1" height="1"/><rect x="3" y="6" width="1" height="1"/><rect x="4" y="6" width="1" height="1"/><rect x="5" y="6" width="1" height="1"/><rect x="6" y="6" width="1" height="1"/><rect x="12" y="6" width="1" height="1"/><rect x="13" y="6" width="1" height="1"/><rect x="14" y="6" width="1" height="1"/><rect x="18" y="6" width="1" height="1"/><rect x="19" y="6" width="1" height="1"/><rect x="20" y="6" width="1" height="1"/><rect x="21" y="6" width="1" height="1"/><rect x="22" y="6" width="1" height="1"/><rect x="23" y="6" width="1" height="1"/><rect x="24" y="6" width="1" height="1"/><rect x="10" y="7" width="1" height="1"/><rect x="14" y="7" width="1" height="1"/><rect x="15" y="7" width="1" height="1"/><rect x="16" y="7" width="1" height="1"/><rect x="0" y="8" width="1" height="1"/><rect x="5" y="8" width="1" height="1"/><rect x="6" y="8" width="1" height="1"/><rect x="8" y="8" width="1" height="1"/><rect x="11" y="8" width="1" height="1"/><rect x="12" y="8" width="1" height="1"/><rect x="15" y="8" width="1" height="1"/><rect x="16" y="8" width="1" height="1"/><rect x="17" y="8" width="1" height="1"/><rect x="20" y="8" width="1" height="1"/><rect x="24" y="8" width="1" height="1"/><rect x="1" y="9" width="1" height="1"/><rect x="2" y="9" width="1" height="1"/><rect x="7" y="9" width="1" height="1"/><rect x="10" y="9" width="1" height="1"/><rect x="11" y="9" width="1" height="1"/><rect x="12" y="9" width="1" height="1"/><rect x="13" y="9" width="1" height="1"/><rect x="15" y="9" width="1" height="1"/><rect x="16" y="9" width="1" height="1"/><rect x="17" y="9" width="1" height="1"/><rect x="19" y="9" width="1" height="1"/><rect x="20" y="9" width="1" height="1"/><rect x="23" y="9" width="1" height="1"/><rect x="3" y="10" width="1" height="1"/><rect x="4" y="10" width="1" height="1"/><rect x="5" y="10" width="1" height="1"/><rect x="6" y="10" width="1" height="1"/><rect x="8" y="10" width="1" height="1"/><rect x="9" y="10" width="1" height="1"/><rect x="12" y="10" width="1" height="1"/><rect x="16" y="10" width="1" height="1"/><rect x="18" y="10" width="1" height="1"/><rect x="19" y="10" width="1" height="1"/><rect x="0" y="11" width="1" height="1"/><rect x="5" y="11" width="1" height="1"/><rect x="7" y="11" width="1" height="1"/><rect x="12" y="11" width="1" height="1"/><rect x="16" y="11" width="1" height="1"/><rect x="17" y="11" width="1" height="1"/><rect x="18" y="11" width="1" height="1"/><rect x="19" y="11" width="1" height="1"/><rect x="20" y="11" width="1" height="1"/><rect x="21" y="11" width="1" height="1"/><rect x="0" y="12" width="1" height="1"/><rect x="3" y="12" width="1" height="1"/><rect x="6" y="12" width="1" height="1"/><rect x="8" y="12" width="1" height="1"/><rect x="9" y="12" width="1" height="1"/><rect x="12" y="12" width="1" height="1"/><rect x="13" y="12" width="1" height="1"/><rect x="15" y="12" width="1" height="1"/><rect x="16" y="12" width="1" height="1"/><rect x="17" y="12" width="1" height="1"/><rect x="19" y="12" width="1" height="1"/><rect x="21" y="12" width="1" height="1"/><rect x="22" y="12" width="1" height="1"/><rect x="23" y="12" width="1" height="1"/><rect x="1" y="13" width="1" height="1"/><rect x="5" y="13" width="1" height="1"/><rect x="6" y="13" width="1" height="1"/><rect x="7" y="13" width="1" height="1"/><rect x="9" y="13" width="1" height="1"/><rect x="10" y="13" width="1" height="1"/><rect x="11" y="13" width="1" height="1"/><rect x="14" y="13" width="1" height="1"/><rect x="15" y="13" width="1" height="1"/><rect x="19" y="13" width="1" height="1"/><rect x="20" y="13" width="1" height="1"/><rect x="22" y="13" width="1" height="1"/><rect x="23" y="13" width="1" height="1"/><rect x="2" y="14" width="1" height="1"/><rect x="4" y="14" width="1" height="1"/><rect x="6" y="14" width="1" height="1"/><rect x="7" y="14" width="1" height="1"/><rect x="10" y="14" width="1" height="1"/><rect x="11" y="14" width="1" height="1"/><rect x="13" y="14" width="1" height="1"/><rect x="14" y="14" width="1" height="1"/><rect x="15" y="14" width="1" height="1"/><rect x="16" y="14" width="1" height="1"/><rect x="17" y="14" width="1" height="1"/><rect x="18" y="14" width="1" height="1"/><rect x="19" y="14" width="1" height="1"/><rect x="21" y="14" width="1" height="1"/><rect x="23" y="14" width="1" height="1"/><rect x="24" y="14" width="1" height="1"/><rect x="0" y="15" width="1" height="1"/><rect x="1" y="15" width="1" height="1"/><rect x="2" y="15" width="1" height="1"/><rect x="5" y="15" width="1" height="1"/><rect x="6" y="15" width="1" height="1"/><rect x="8" y="15" width="1" height="1"/><rect x="10" y="15" width="1" height="1"/><rect x="11" y="15" width="1" height="1"/><rect x="13" y="15" width="1" height="1"/><rect x="17" y="15" width="1" height="1"/><rect x="21" y="15" width="1" height="1"/><rect x="22" y="15" width="1" height="1"/><rect x="23" y="15" width="1" height="1"/><rect x="24" y="15" width="1" height="1"/><rect x="0" y="16" width="1" height="1"/><rect x="2" y="16" width="1" height="1"/><rect x="3" y="16" width="1" height="1"/><rect x="4" y="16" width="1" height="1"/><rect x="8" y="16" width="1" height="1"/><rect x="9" y="16" width="1" height="1"/><rect x="10" y="16" width="1" height="1"/><rect x="11" y="16" width="1" height="1"/><rect x="12" y="16" width="1" height="1"/><rect x="13" y="16" width="1" height="1"/><rect x="14" y="16" width="1" height="1"/><rect x="18" y="16" width="1" height="1"/><rect x="20" y="16" width="1" height="1"/><rect x="21" y="16" width="1" height="1"/><rect x="22" y="16" width="1" height="1"/><rect x="23" y="16" width="1" height="1"/><rect x="24" y="16" width="1" height="1"/><rect x="8" y="17" width="1" height="1"/><rect x="9" y="17" width="1" height="1"/><rect x="10" y="17" width="1" height="1"/><rect x="17" y="17" width="1" height="1"/><rect x="18" y="17" width="1" height="1"/><rect x="20" y="17" width="1" height="1"/><rect x="23" y="17" width="1" height="1"/><rect x="0" y="18" width="1" height="1"/><rect x="1" y="18" width="1" height="1"/><rect x="2" y="18" width="1" height="1"/><rect x="3" y="18" width="1" height="1"/><rect x="4" y="18" width="1" height="1"/><rect x="5" y="18" width="1" height="1"/><rect x="6" y="18" width="1" height="1"/><rect x="14" y="18" width="1" height="1"/><rect x="15" y="18" width="1" height="1"/><rect x="16" y="18" width="1" height="1"/><rect x="17" y="18" width="1" height="1"/><rect x="18" y="18" width="1" height="1"/><rect x="24" y="18" width="1" height="1"/><rect x="0" y="19" width="1" height="1"/><rect x="6" y="19" width="1" height="1"/><rect x="8" y="19" width="1" height="1"/><rect x="9" y="19" width="1" height="1"/><rect x="10" y="19" width="1" height="1"/><rect x="12" y="19" width="1" height="1"/><rect x="15" y="19" width="1" height="1"/><rect x="16" y="19" width="1" height="1"/><rect x="17" y="19" width="1" height="1"/><rect x="22" y="19" width="1" height="1"/><rect x="23" y="19" width="1" height="1"/><rect x="24" y="19" width="1" height="1"/><rect x="0" y="20" width="1" height="1"/><rect x="2" y="20" width="1" height="1"/><rect x="3" y="20" width="1" height="1"/><rect x="4" y="20" width="1" height="1"/><rect x="6" y="20" width="1" height="1"/><rect x="9" y="20" width="1" height="1"/><rect x="11" y="20" width="1" height="1"/><rect x="12" y="20" width="1" height="1"/><rect x="13" y="20" width="1" height="1"/><rect x="15" y="20" width="1" height="1"/><rect x="18" y="20" width="1" height="1"/><rect x="19" y="20" width="1" height="1"/><rect x="22" y="20" width="1" height="1"/><rect x="23" y="20" width="1" height="1"/><rect x="24" y="20" width="1" height="1"/><rect x="0" y="21" width="1" height="1"/><rect x="2" y="21" width="1" height="1"/><rect x="3" y="21" width="1" height="1"/><rect x="4" y="21" width="1" height="1"/><rect x="6" y="21" width="1" height="1"/><rect x="11" y="21" width="1" height="1"/><rect x="13" y="21" width="1" height="1"/><rect x="14" y="21" width="1" height="1"/><rect x="15" y="21" width="1" height="1"/><rect x="16" y="21" width="1" height="1"/><rect x="17" y="21" width="1" height="1"/><rect x="18" y="21" width="1" height="1"/><rect x="19" y="21" width="1" height="1"/><rect x="20" y="21" width="1" height="1"/><rect x="21" y="21" width="1" height="1"/><rect x="23" y="21" width="1" height="1"/><rect x="0" y="22" width="1" height="1"/><rect x="2" y="22" width="1" height="1"/><rect x="3" y="22" width="1" height="1"/><rect x="4" y="22" width="1" height="1"/><rect x="6" y="22" width="1" height="1"/><rect x="10" y="22" width="1" height="1"/><rect x="11" y="22" width="1" height="1"/><rect x="12" y="22" width="1" height="1"/><rect x="13" y="22" width="1" height="1"/><rect x="14" y="22" width="1" height="1"/><rect x="16" y="22" width="1" height="1"/><rect x="18" y="22" width="1" height="1"/><rect x="19" y="22" width="1" height="1"/><rect x="21" y="22" width="1" height="1"/><rect x="22" y="22" width="1" height="1"/><rect x="0" y="23" width="1" height="1"/><rect x="6" y="23" width="1" height="1"/><rect x="8" y="23" width="1" height="1"/><rect x="11" y="23" width="1" height="1"/><rect x="12" y="23" width="1" height="1"/><rect x="14" y="23" width="1" height="1"/><rect x="15" y="23" width="1" height="1"/><rect x="16" y="23" width="1" height="1"/><rect x="17" y="23" width="1" height="1"/><rect x="20" y="23" width="1" height="1"/><rect x="22" y="23" width="1" height="1"/><rect x="24" y="23" width="1" height="1"/><rect x="0" y="24" width="1" height="1"/><rect x="1" y="24" width="1" height="1"/><rect x="2" y="24" width="1" height="1"/><rect x="3" y="24" width="1" height="1"/><rect x="4" y="24" width="1" height="1"/><rect x="5" y="24" width="1" height="1"/><rect x="6" y="24" width="1" height="1"/><rect x="8" y="24" width="1" height="1"/><rect x="9" y="24" width="1" height="1"/><rect x="10" y="24" width="1" height="1"/><rect x="11" y="24" width="1" height="1"/><rect x="12" y="24" width="1" height="1"/><rect x="13" y="24" width="1" height="1"/><rect x="14" y="24" width="1" height="1"/><rect x="15" y="24" width="1" height="1"/><rect x="19" y="24" width="1" height="1"/><rect x="20" y="24" width="1" height="1"/><rect x="22" y="24" width="1" height="1"/><rect x="23" y="24" width="1" height="1"/><rect x="24" y="24" width="1" height="1"/></g></svg></div>
+          <div style="font-size:12px;color:var(--muted)">ou envia <b style="color:var(--ink)">LAVAR</b> para</div>
+          <div class="num">+258 8X XXX XXXX</div>
+          <div style="margin-top:12px;font-size:12px;text-align:left;line-height:1.7">
+            ✓ Sabe a hora a que o carro fica pronto<br>
+            ✓ Paga com M-Pesa, e-Mola, mKesh ou app Moza<br>
+            ✓ 5 selos = 1 lavagem Simples grátis<br>
+            <b style="color:var(--red)">★ Ter–Qui até às 12h: selo a dobrar</b>
+          </div>
+        </div>
+        <div class="bot">Os seus dados são usados só para o serviço. Escreva PARAR a qualquer momento.</div>
+      </div>
+      <div class="phone"><div class="notch"></div><div class="screen">
+        <div class="wa-head"><div class="wa-av">LJ</div><div><b>Lava Já – Matola</b><small>Conta comercial</small></div></div>
+        <div class="wa-body">
+          <div class="wa-day">HOJE</div>
+          <div class="msg out">LAVAR<time>10:36</time></div>
+          <div class="msg in">Olá Carla! 👋 Bem-vinda de volta ao Lava Já.<br>Lavar o carro <b>AHM 482 MP</b>?<div class="btns"><span>1 · Sim</span><span>2 · Outra matrícula</span></div><time>10:36</time></div>
+          <div class="msg out">1<time>10:36</time></div>
+          <div class="msg in">Escolha o serviço:<br>1 · Simples — 250 MZN<br>2 · Completa — 450 MZN<br>3 · Motor + Completa — 700 MZN<br><br>⭐ Hoje até às 12h: <b>selo a dobrar</b><time>10:36</time></div>
+          <div class="msg out">2<time>10:37</time></div>
+          <div class="msg in">✅ Registado! Ref. <b>LJ-2210-0042</b><br>🚗 Está em <b>1.º na fila</b><br>🕐 Pronto por volta das <b>11:30</b><br><br>Pode sair do pátio, avisamos aqui. Escreva ESTADO a qualquer momento.<time>10:37</time></div>
+        </div>
+      </div></div>
+    </div>
+    <div class="cap"><b>M1</b> Cartaz A3 afixado à entrada; o QR abre o WhatsApp com o texto "LAVAR" já escrito. <b>M2</b> Cliente recorrente: o bot sugere a última matrícula. Um cliente novo recebe também a pergunta de consentimento para ofertas (SIM/NÃO).</div>
+  </div>
+
+  <!-- M3 + M4 -->
+  <div class="mock-title brk"><span class="n">M3 · M4</span><h4>Aviso de pronto, pagamento e selos</h4></div>
+  <div class="mock">
+    <div class="phones">
+      <div class="phone"><div class="notch"></div><div class="screen">
+        <div class="wa-head"><div class="wa-av">LJ</div><div><b>Lava Já – Matola</b><small>Conta comercial</small></div></div>
+        <div class="wa-body">
+          <div class="msg in">🧽 Começámos a lavar o seu carro na <b>Baia 4</b>.<time>10:45</time></div>
+          <div class="msg in">✨ O <b>AHM 482 MP</b> está pronto na <b>Baia 4</b>!<br><br>Total: <b>450,00 MZN</b><br>Pague aqui com a sua carteira:<br><span style="color:#027EB5">lavaja.app/pagar/LJ-2210-0042</span><br><br>Ou pague ao operador na entrega.<time>11:31</time></div>
+          <div class="msg in">✅ Pagamento recebido<br>450,00 MZN · M-Pesa · Ref. LJ-2210-0042<br><br>⭐ <b>+2 selos</b> (quinta fora de pico)
+            <div class="stamps"><i>★</i><i>★</i><i>★</i><i class="n">★</i><i class="n">★</i></div>
+            🎉 <b>5 de 5!</b> A sua próxima lavagem Simples é grátis (Ter–Qui).<br>Obrigado, Carla!<time>11:33</time></div>
+          <div class="msg out">Obrigada 🙏<time>11:34</time></div>
+        </div>
+      </div></div>
+      <div class="phone"><div class="notch"></div><div class="screen">
+        <div class="app-top"><b>LavaJá Pass</b><span class="pill a">Demonstração</span></div>
+        <div style="padding:14px">
+          <div style="font-size:11px;color:var(--muted)">Pagar a</div>
+          <div style="font-weight:800;font-size:16px;color:var(--ink)">Lava Já – Matola</div>
+          <div style="margin:12px 0;padding:12px;border-radius:12px;background:var(--soft)">
+            <div style="display:flex;justify-content:space-between;font-size:12px"><span>Completa · AHM 482 MP</span><span>LJ-2210-0042</span></div>
+            <div style="font-size:28px;font-weight:800;color:var(--ink);margin-top:4px">450,00 <span style="font-size:14px">MZN</span></div>
+          </div>
+          <div class="lbl">Pagar com</div>
+          <div class="field sel"><b>M-Pesa</b><span>●</span></div>
+          <div class="field"><span>e-Mola</span><span>○</span></div>
+          <div class="field"><span>mKesh</span><span>○</span></div>
+          <div class="field"><span>App Moza</span><span>○</span></div>
+          <div class="lbl">Número</div>
+          <div class="field"><span>+258 84 ••• ••12</span><span style="color:var(--muted)">editar</span></div>
+          <div class="btn p">Pagar 450,00 MZN</div>
+          <div style="font-size:10.5px;color:var(--muted);margin-top:10px;text-align:center">Valor liquidado na conta Moza do comerciante.<br>Ambiente de demonstração: pagamento simulado.</div>
+        </div>
+      </div></div>
+    </div>
+    <div class="cap"><b>M3</b> Mensagens automáticas a cada mudança de estado; o recibo mostra os selos e o desbloqueio da recompensa. <b>M4</b> Página aberta pelo link: o cliente escolhe a carteira e confirma. Na demo, o gateway simulado envia o webhook assinado 2 segundos depois.</div>
+  </div>
+
+  <!-- M5 + M6 -->
+  <div class="mock-title brk"><span class="n">M5 · M6</span><h4>Campanha recebida e login do operador</h4></div>
+  <div class="mock">
+    <div class="phones">
+      <div class="phone"><div class="notch"></div><div class="screen">
+        <div class="wa-head"><div class="wa-av">LJ</div><div><b>Lava Já – Matola</b><small>Conta comercial</small></div></div>
+        <div class="wa-body">
+          <div class="wa-day">TERÇA-FEIRA</div>
+          <div class="msg in">Olá Bento! Já lá vão 16 dias desde a última lavagem do <b>ACX 731 MC</b> 🚗<br><br>⭐ De <b>terça a quinta, até às 12h</b>, cada lavagem vale <b>selo a dobrar</b> e não há fila.<br><br>Tem 2 selos. Com uma lavagem hoje fica com 4.<div class="btns"><span>LAVAR</span><span>PARAR ofertas</span></div><time>08:05</time></div>
+          <div class="msg out">LAVAR<time>08:41</time></div>
+          <div class="msg in">Ótimo! Lavar o <b>ACX 731 MC</b>?<div class="btns"><span>1 · Sim</span><span>2 · Outra matrícula</span></div><time>08:41</time></div>
+          <div class="msg out">1<time>08:41</time></div>
+          <div class="msg in">Escolha o serviço:<br>1 · Simples — 250 MZN<br>2 · Completa — 450 MZN<br>3 · Motor + Completa — 700 MZN<time>08:41</time></div>
+        </div>
+      </div></div>
+      <div class="phone"><div class="notch"></div><div class="screen">
+        <div class="op-head"><div><b>Lava Já · Pátio</b><br><small>Entrar no turno</small></div><span class="online">ONLINE</span></div>
+        <div style="padding:14px">
+          <div class="lbl">Quem és?</div>
+          <div class="chips"><span class="on">Amílcar</span><span>Délcio</span><span>Fátima</span><span>Ivo</span></div>
+          <div class="lbl" style="text-align:center;margin-top:18px">PIN</div>
+          <div class="pin"><i class="f"></i><i class="f"></i><i></i><i></i></div>
+          <div class="keypad"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span style="border:0"></span><span>0</span><span style="font-size:13px">⌫</span></div>
+          <div class="btn k">Entrar</div>
+        </div>
+      </div></div>
+    </div>
+    <div class="cap"><b>M5</b> Mensagem de campanha (modelo aprovado de marketing) só para clientes com consentimento; "LAVAR" inicia o check-in diretamente. <b>M6</b> Login do operador por nome e PIN de 4 dígitos: rápido com as mãos molhadas, sem email nem senha.</div>
+  </div>
+
+  <!-- M7 + M8 -->
+  <div class="mock-title brk"><span class="n">M7 · M8</span><h4>Quadro de baias e entrada manual</h4></div>
+  <div class="mock">
+    <div class="phones">
+      <div class="phone"><div class="notch"></div><div class="screen">
+        <div class="op-head"><div><b>Lava Já · Pátio</b><br><small>Qui 22/10 · Amílcar · 3 lavagens tuas hoje</small></div><span class="online">ONLINE</span></div>
+        <div class="baias"><div class="busy">B1<br>A lavar</div><div class="busy">B2<br>A lavar</div><div class="ready">B3<br>Pronto</div><div class="free">B4<br>Livre</div></div>
+        <div class="tabs"><span class="on">Todos (4)</span><span>Fila (1)</span><span>A lavar (2)</span><span>Pronto (1)</span></div>
+        <div class="colhead">Na fila</div>
+        <div class="car queue"><div class="row" style="margin:0"><span class="plate">AHM 482 MP</span><span class="pill a">1.º</span></div><div class="row"><span>Completa · 450 MZN · WhatsApp</span><span>há 4 min</span></div><div class="btn p sm">▶ Iniciar na Baia 4</div></div>
+        <div class="colhead">A lavar</div>
+        <div class="car wash"><div class="row" style="margin:0"><span class="plate">AFG 102 MP</span><span class="pill b">B1</span></div><div class="row"><span>Simples · 18 de 30 min</span><span>Amílcar</span></div><div class="mbar"><i style="width:60%;background:var(--blue)"></i></div><div class="btn k sm">✓ Pronto</div></div>
+        <div class="car wash"><div class="row" style="margin:0"><span class="plate">MMC 55 21</span><span class="pill b">B2</span></div><div class="row"><span>Motor + Completa · 41 de 75 min</span><span>Délcio</span></div><div class="mbar"><i style="width:55%;background:var(--blue)"></i></div></div>
+        <div class="colhead">Pronto</div>
+        <div class="car ready"><div class="row" style="margin:0"><span class="plate">AGB 550 MP</span><span class="pill g">PAGO · M-Pesa</span></div><div class="row"><span>Completa · B3 · pronto há 5 min</span></div><div class="btn p sm">Entregar</div></div>
+        <div class="fab">+ Registar entrada</div>
+      </div></div>
+      <div class="phone"><div class="notch"></div><div class="screen">
+        <div class="sheet"><div class="panel">
+          <div class="grab"></div>
+          <div style="font-weight:800;font-size:15px;color:var(--ink)">Nova entrada</div>
+          <div class="lbl">Matrícula</div>
+          <div class="plate-input">AAZ 219 MP</div>
+          <div class="lbl">Serviço</div>
+          <div class="chips"><span>Simples · 250</span><span class="on">Completa · 450</span><span>Motor · 700</span></div>
+          <div class="lbl">Telefone do cliente (opcional)</div>
+          <div class="field"><span style="color:var(--muted)">+258 8_ ___ ____</span></div>
+          <div style="font-size:10.5px;color:var(--muted);margin-top:4px">Com telefone, o cliente recebe avisos e selos pelo WhatsApp.</div>
+          <div style="margin-top:10px;padding:8px 10px;border-radius:10px;background:var(--soft);font-size:11.5px">Fila: <b>2.º</b> · Pronto por volta das <b>12:10</b></div>
+          <div class="btn r">Adicionar à fila</div>
+          <div class="btn o">Cancelar</div>
+        </div></div>
+      </div></div>
+    </div>
+    <div class="cap"><b>M7</b> Ecrã principal do operador: baias no topo, cartões por estado, um botão de ação por cartão (≥ 48 px). O contador "lavagens tuas hoje" é o incentivo para registar todos os carros. <b>M8</b> Entrada manual para clientes sem WhatsApp, com a hora prevista calculada antes de confirmar.</div>
+  </div>
+
+  <!-- M9 -->
+  <div class="mock-title brk"><span class="n">M9</span><h4>Entrega e cobrança</h4></div>
+  <div class="mock">
+    <div class="phones">
+      <div class="phone"><div class="notch"></div><div class="screen">
+        <div class="op-head"><div><b>Entregar viatura</b><br><small>Baia 1 · Simples</small></div><span class="online">ONLINE</span></div>
+        <div style="padding:14px">
+          <div class="plate" style="font-family:var(--mono);font-size:22px;font-weight:800;text-align:center;color:var(--ink)">AFG 102 MP</div>
+          <div style="text-align:center;font-size:12px;color:var(--muted)">Ref. LJ-2210-0039 · 250,00 MZN</div>
+          <div style="margin:14px 0;padding:10px 12px;border-radius:10px;background:var(--amber-soft);font-size:12px"><b>Pagamento ainda não recebido.</b><br>Link enviado ao cliente às 11:02.</div>
+          <div class="lbl">Como pagou?</div>
+          <div class="field"><span>Vai pagar pelo link agora</span><span>○</span></div>
+          <div class="field sel"><b>Recebi em numerário</b><span>●</span></div>
+          <div class="lbl">Valor recebido</div>
+          <div class="field"><b style="font-size:16px">250,00 MZN</b><span style="color:var(--muted)">troco 0</span></div>
+          <div style="font-size:10.5px;color:var(--muted);margin-top:6px">Fica registado em teu nome (Amílcar) na conciliação do dia.</div>
+          <div class="btn p">Confirmar e entregar</div>
+        </div>
+      </div></div>
+      <div class="phone"><div class="notch"></div><div class="screen">
+        <div class="op-head"><div><b>Entregar viatura</b><br><small>Baia 3 · Completa</small></div><span class="online">ONLINE</span></div>
+        <div style="padding:14px">
+          <div class="plate" style="font-family:var(--mono);font-size:22px;font-weight:800;text-align:center;color:var(--ink)">AGB 550 MP</div>
+          <div style="text-align:center;font-size:12px;color:var(--muted)">Ref. LJ-2210-0040 · 450,00 MZN</div>
+          <div style="margin:14px 0;padding:14px;border-radius:12px;background:var(--green-soft);text-align:center">
+            <div style="font-size:30px">✓</div>
+            <div style="font-weight:800;color:var(--green);font-size:15px">Pago · M-Pesa</div>
+            <div style="font-size:11.5px;color:var(--muted)">Confirmado às 11:21 · verificado</div>
+          </div>
+          <div style="font-size:12px;padding:8px 10px;border-radius:10px;background:var(--soft)">Cliente: <b>+258 84 ••• ••77</b><br>Selos: 2 → <b>3</b></div>
+          <div class="btn p" style="margin-top:14px">Entregar e libertar Baia 3</div>
+        </div>
+      </div></div>
+    </div>
+    <div class="cap"><b>M9</b> À esquerda, pagamento em numerário: o operador confirma o valor e fica registado como <i>declarado</i>. À direita, pagamento digital já confirmado pelo webhook: só falta entregar.</div>
+  </div>
+
+  <!-- M10 -->
+  <div class="mock-title brk"><span class="n">M10</span><h4>Painel do gestor do Lava Já</h4></div>
+  <div class="mock">
+    <div class="desk">
+      <div class="bar"><i></i><i></i><i></i><span class="url">lavaja.app/gestor</span></div>
+      <div class="dash">
+        <div class="side"><div class="brand">LavaJá <em>Pass</em></div><small>Lava Já – Matola</small>
+          <div class="it on">Visão geral</div><div class="it">Pátio ao vivo</div><div class="it">Clientes (212)</div><div class="it">Campanhas</div><div class="it">Conciliação</div><div class="moz">Moza Banco</div><div class="it">Crédito</div></div>
+        <div class="main">
+          <h5>Bom dia, Sr. Cossa</h5><div class="sub">Quinta-feira, 22 de outubro · 10:40 · dados de demonstração</div>
+          <div class="kpis">
+            <div class="kpi"><span>Lavagens hoje</span><b>6</b> <em>+1 na fila</em></div>
+            <div class="kpi"><span>Recebido hoje</span><b>1.850</b> <em>MZN</em></div>
+            <div class="kpi"><span>Recebido digital</span><b>86%</b> <em>do valor</em></div>
+            <div class="kpi"><span>Baias ocupadas</span><b>3 / 4</b> <em>75%</em></div>
+          </div>
+          <div class="panel2">
+            <div class="box2">
+              <div class="t"><span>Ocupação média por dia (últimos 30 dias)</span><span style="color:var(--muted);font-weight:500">% da capacidade</span></div>
+              <div class="bars">
+                <div><small>29%</small><i style="height:29%"></i></div>
+                <div><small>21%</small><i class="low" style="height:21%"></i></div>
+                <div><small>25%</small><i class="low" style="height:25%"></i></div>
+                <div><small>29%</small><i style="height:29%"></i></div>
+                <div><small>50%</small><i style="height:50%"></i></div>
+                <div><small>86%</small><i class="hi" style="height:86%"></i></div>
+                <div><small>64%</small><i style="height:64%"></i></div>
+              </div>
+              <div class="blabels"><span>Seg</span><span>Ter</span><span>Qua</span><span>Qui</span><span>Sex</span><span>Sáb</span><span>Dom</span></div>
+              <div class="alert"><b>Terça e quarta só a 21–25%.</b> 58 clientes com consentimento não lavam há 14+ dias. <span style="color:var(--red);font-weight:700">→ Criar campanha fora de pico</span></div>
+            </div>
+            <div class="box2">
+              <div class="t"><span>Pátio agora</span><span style="color:var(--green)">● ao vivo</span></div>
+              <div class="bayrow"><span><b>B1</b> AFG 102 MP</span><span class="pill b">A lavar 18m</span></div>
+              <div class="bayrow"><span><b>B2</b> MMC 55 21</span><span class="pill b">A lavar 41m</span></div>
+              <div class="bayrow"><span><b>B3</b> AGB 550 MP</span><span class="pill g">Pronto · pago</span></div>
+              <div class="bayrow"><span><b>B4</b> —</span><span class="pill a">Livre · 1 na fila</span></div>
+              <div class="t" style="margin-top:12px"><span>Conciliação de hoje</span></div>
+              <div class="bayrow"><span>Carteiras/app (verificado)</span><b>1.600 MZN</b></div>
+              <div class="bayrow"><span>Numerário · Amílcar</span><b>250 MZN</b></div>
+              
+              <div class="bayrow"><span>Por cobrar (em curso)</span><b>950 MZN</b></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="cap"><b>M10</b> Visão do dono: o que está a acontecer agora, onde está a capacidade parada, e a conciliação por método e por operador. Durante a demo, os cartões e a receita atualizam em tempo real quando o operador muda um estado ou chega um pagamento.</div>
+  </div>
+
+  <!-- M11 -->
+  <div class="mock-title"><span class="n">M11</span><h4>Criar campanha fora de pico</h4></div>
+  <div class="mock">
+    <div class="desk">
+      <div class="bar"><i></i><i></i><i></i><span class="url">lavaja.app/gestor/campanhas/nova</span></div>
+      <div class="modal-wrap"><div class="modal">
+        <h5>Nova campanha fora de pico</h5>
+        <div class="lbl" style="margin-top:4px">Oferta</div>
+        <div class="radio on"><i></i><div><b>Selo a dobrar</b> · Ter–Qui, 07:00–12:00<br><span style="color:var(--muted)">Recomendado: não baixa o preço; só custa quando o cliente volta.</span></div></div>
+        <div class="radio"><i></i><div><b>Desconto de preço</b><br><span style="color:var(--muted)">Reduz a receita de quem viria de qualquer forma.</span></div></div>
+        <div class="lbl">Para quem</div>
+        <div class="field"><span>Clientes com consentimento, sem lavar há <b>14+ dias</b></span><b style="color:var(--green)">58 clientes</b></div>
+        <div style="font-size:10.5px;color:var(--muted);margin-top:4px">Exclui quem recebeu uma campanha nos últimos 7 dias.</div>
+        <div class="lbl">Pré-visualização</div>
+        <div class="preview"><div class="msg in">Olá {nome}! Já lá vão {dias} dias desde a última lavagem do <b>{matrícula}</b> 🚗<br>⭐ De terça a quinta, até às 12h, cada lavagem vale <b>selo a dobrar</b> e não há fila.<div class="btns"><span>LAVAR</span><span>PARAR ofertas</span></div></div></div>
+        <div style="display:flex;gap:8px;margin-top:10px"><div class="btn o" style="flex:1">Guardar rascunho</div><div class="btn r" style="flex:1.4">Enviar agora a 58 clientes</div></div>
+        <div style="font-size:10.5px;color:var(--muted);margin-top:8px">Resultado medido no painel: lavagens feitas até 7 dias após o envio.</div>
+      </div></div>
+    </div>
+    <div class="cap"><b>M11</b> O sistema propõe o segmento e a mensagem; o gestor só confirma. Na demo, um segundo telemóvel da equipa está no segmento e recebe a mensagem M5 em direto.</div>
+  </div>
+
+  <!-- M12 -->
+  <div class="mock-title brk"><span class="n">M12</span><h4>Pré-qualificação de crédito — módulo Moza Banco</h4></div>
+  <div class="mock">
+    <div class="desk">
+      <div class="bar"><i></i><i></i><i></i><span class="url">lavaja.app/moza/comerciantes/lava-ja-matola</span></div>
+      <div class="dash">
+        <div class="side"><div class="brand">Moza <em>Insights</em></div><small>Analista PME · Agência Matola</small>
+          <div class="it">Comerciantes (1)</div><div class="it on">Lava Já – Matola</div><div class="it">Extratos</div><div class="moz">Dados partilhados pelo comerciante</div></div>
+        <div class="main">
+          <h5>Lava Já – Matola</h5><div class="sub">Titular: Z. Cossa · Conta Moza 0023-****-01 · Partilha autorizada em 22/10/2026 · Histórico: 30 dias</div>
+          <div class="kpis">
+            <div class="kpi"><span>Receita 30 dias</span><b>140.525</b> <em>MZN</em></div>
+            <div class="kpi"><span>Verificado (digital)</span><b>87.126</b> <em>62%</em></div>
+            <div class="kpi"><span>Numerário declarado</span><b>53.399</b> <em>38%</em></div>
+            <div class="kpi"><span>Retenção 30 dias</span><b>48%</b> <em>212 clientes</em></div>
+          </div>
+          <div class="panel2 even">
+            <div class="box2">
+              <div class="t"><span>Score de pré-qualificação</span><span class="pill b">Classe B</span></div>
+              <div style="display:flex;gap:14px;align-items:center">
+                <div class="score-ring"><div><b>66</b><small>de 100</small></div></div>
+                <div style="flex:1">
+                  <div class="comp"><span>Volume verif.</span><div class="mbar"><i style="width:88%"></i></div><b>22/25</b></div>
+                  <div class="comp"><span>Regularidade</span><div class="mbar"><i style="width:80%"></i></div><b>16/20</b></div>
+                  <div class="comp"><span>Tendência</span><div class="mbar"><i style="width:60%"></i></div><b>9/15</b></div>
+                  <div class="comp"><span>% digital</span><div class="mbar"><i style="width:60%"></i></div><b>12/20</b></div>
+                  <div class="comp"><span>Retenção</span><div class="mbar"><i style="width:50%"></i></div><b>5/10</b></div>
+                  <div class="comp"><span>Antiguidade</span><div class="mbar"><i style="width:20%;background:var(--amber)"></i></div><b>2/10</b></div>
+                </div>
+              </div>
+              <div class="alert" style="background:var(--blue-soft);border-color:#BFD4EE"><b style="color:var(--blue)">Elegível para análise.</b> Ponto fraco: histórico de 30 dias. Com 90 dias ao ritmo atual, estimativa de classe A.</div>
+            </div>
+            <div class="box2">
+              <div class="t"><span>Montante indicativo</span></div>
+              <div style="font-size:26px;font-weight:800;color:var(--ink)">80.000 <span style="font-size:13px">MZN</span></div>
+              <div style="font-size:11px;color:var(--muted);margin-bottom:8px">Finalidade: compressor + aspirador industrial</div>
+              <div class="bayrow"><span>Prazo</span><b>12 meses</b></div>
+              <div class="bayrow"><span>Amortização</span><b>10% dos recebim. digitais</b></div>
+              <div class="bayrow"><span>Retenção estimada</span><b>≈ 8.700 MZN/mês</b></div>
+              <div class="bayrow"><span>Taxa</span><b>a definir pelo banco</b></div>
+              <div class="btn r sm" style="margin-top:10px">Pedir análise de crédito</div>
+              <div class="btn o sm">Exportar extrato (PDF)</div>
+              <div style="font-size:9.5px;color:var(--muted);margin-top:6px">Indicativo. A decisão de crédito é do Moza Banco, segundo os seus processos de análise.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="cap"><b>M12</b> O analista vê os seis componentes, o que é verificado e o que é declarado, e um montante calculado a partir da capacidade de retenção. Na demo, o pagamento de 450 MZN feito minutos antes já aparece na receita verificada.</div>
+  </div>
+</section>
+
+<!-- ================= 11 ================= -->
+<section id="s11" class="brk">
+  <div class="kicker">11 · Execução</div>
+  <h2>Plano de 48 horas e divisão da equipa</h2>
+  <h3>11.1 Equipa sugerida (5 pessoas)</h3>
+  <table>
+    <tr><th>Papel</th><th>Perfil ideal</th><th>Responsável por</th></tr>
+    <tr><td>A · Backend e bot</td><td>Informática</td><td>Schema, API, máquina de estados do bot, WhatsApp Cloud API, webhook HMAC</td></tr>
+    <tr><td>B · App do operador</td><td>Informática</td><td>M6–M9, PWA, Realtime, simulador WhatsApp (plano B)</td></tr>
+    <tr><td>C · Painel e checkout</td><td>Informática</td><td>M4, M10–M12, gráficos, extrato</td></tr>
+    <tr><td>D · Dados e crédito</td><td>Economia / Finanças / Contabilidade</td><td>Seed realista, fórmula do score, economia unitária, respostas sobre crédito</td></tr>
+    <tr><td>E · Negócio e pitch</td><td>Gestão</td><td>Visita ao Lava Já, guião, slides, ensaios, Q&amp;A</td></tr>
+  </table>
+  <p class="small">Com 3 ou 4 pessoas: D junta-se a E, e C junta-se a B.</p>
+
+  <h3>11.2 Antes do hackathon (até 21/10, sem escrever código do produto se o regulamento o proibir)</h3>
+  <ul>
+    <li>Confirmar a inscrição até <b>16/10</b> (bit.ly/lava-ja) e ler o regulamento (o que é permitido preparar antes).</li>
+    <li>Visita ao Lava Já (secção 2.2), fotos, números reais.</li>
+    <li>Criar contas: Meta for Developers (app + número de teste WhatsApp, 2–5 números da equipa como destinatários), Supabase, Vercel.</li>
+    <li>Rever este documento com os números reais; preparar o esqueleto dos slides.</li>
+  </ul>
+
+  <h3>11.3 Durante o hackathon (ajustar ao horário oficial)</h3>
+  <table>
+    <tr><th>Bloco</th><th>A · Backend</th><th>B · Operador</th><th>C · Painel</th><th>D + E · Dados e pitch</th></tr>
+    <tr><td><b>Dia 1 · manhã</b></td><td>Projeto Next.js, schema, migrações, deploy vazio</td><td>Layout PWA, login PIN (M6)</td><td>Layout do painel (M10)</td><td>Script de seed, validação dos números</td></tr>
+    <tr><td><b>Dia 1 · tarde</b></td><td>Bot: estados INICIO → EM_SERVICO; transições</td><td>Quadro de baias (M7), entrada manual (M8)</td><td>Checkout (M4) + gateway simulado</td><td>Guião do pitch v1, slides de problema</td></tr>
+    <tr><td><b>Dia 1 · noite</b></td><td>Webhook HMAC, selos, recibo</td><td>Cobrança (M9), Realtime</td><td>Simulador WhatsApp (plano B)</td><td>Fórmula do score em código</td></tr>
+    <tr><td><b>Marco Dia 1</b></td><td colspan="4"><b>Fluxo completo do cliente funciona de ponta a ponta</b>: check-in → iniciar → pronto → pagar → selos.</td></tr>
+    <tr><td><b>Dia 2 · manhã</b></td><td>Campanhas: segmento + envio</td><td>Polimento mobile, PWA instalável</td><td>Campanhas (M11), crédito (M12)</td><td>Seed final, ensaio 1</td></tr>
+    <tr><td><b>Dia 2 · meio-dia</b></td><td colspan="4"><b>Congelar funcionalidades.</b> Gravar vídeo de 2 min da demo completa (plano B). Testes ponta a ponta 3 vezes com <code>seed:reset</code>.</td></tr>
+    <tr><td><b>Dia 2 · tarde</b></td><td colspan="4">Correções, ensaios 2 e 3 cronometrados, preparar telemóveis (carregados, modo avião exceto Wi-Fi/dados, notificações silenciadas exceto WhatsApp).</td></tr>
+  </table>
+  <div class="callout"><b>Corte de âmbito, se o tempo apertar</b> (por esta ordem): extrato em PDF → login por PIN (entrar direto como operador) → entrada manual → campanhas com envio real (mostrar só o segmento e enviar para 1 número). Nunca cortar: check-in, quadro, pagamento, selos, painel Moza.</div>
+</section>
+
+<!-- ================= 12 ================= -->
+<section id="s12" class="brk">
+  <div class="kicker">12 · Apresentação</div>
+  <h2>Guião da demo, riscos e perguntas do júri</h2>
+  <h3>12.1 Guião (5 minutos, dois ecrãs)</h3>
+  <table>
+    <tr><th class="num">Tempo</th><th>O que se diz</th><th>Ecrã 1 (telemóvel espelhado)</th><th>Ecrã 2 (portátil)</th></tr>
+    <tr><td class="num">0:00</td><td>Problema com dados reais da visita: "fomos ao Lava Já na terça às 10h: X carros, 4 baias."</td><td>Foto do pátio</td><td>Slide do problema</td></tr>
+    <tr><td class="num">0:40</td><td>"A Carla chega e lê o QR." Check-in em 20 segundos.</td><td>M1 → M2</td><td>M7: carro aparece na fila em tempo real</td></tr>
+    <tr><td class="num">1:30</td><td>"O Amílcar inicia e marca pronto. A Carla não teve de esperar no pátio."</td><td>M3: aviso chega</td><td>M7: Iniciar → Pronto</td></tr>
+    <tr><td class="num">2:10</td><td>"Paga com M-Pesa; o dinheiro vai para a conta Moza do Lava Já. É quinta de manhã: selo a dobrar, recompensa desbloqueada."</td><td>M4 → M3 recibo</td><td>M10: receita sobe 450 MZN</td></tr>
+    <tr><td class="num">2:50</td><td>"Terça e quarta estão a 21–25% da capacidade. Um clique." Telemóvel 2 recebe a campanha.</td><td>M5 (telemóvel 2)</td><td>M10 → M11</td></tr>
+    <tr><td class="num">3:30</td><td>"E o que ganha o Moza?" Score 66, classe B, componentes, o pagamento de há pouco já na receita verificada. 80.000 MZN indicativos com retenção de 10%.</td><td>—</td><td>M12</td></tr>
+    <tr><td class="num">4:30</td><td>Metas do piloto de 90 dias e o pedido: um piloto com o Lava Já e o Moza.</td><td>—</td><td>Slide final</td></tr>
+  </table>
+  <div class="callout"><b>Frase de fecho:</b> «Com o LavaJá Pass, o Lava Já enche os dias vazios e fideliza os clientes. Cada lavagem paga constrói o histórico que o Moza precisa para lhe dar crédito. Pedimos um piloto de 90 dias para o provar com dados reais.»</div>
+
+  <h3>12.2 Riscos e plano B</h3>
+  <table>
+    <tr><th>Risco</th><th>Prevenção</th><th>Plano B no momento</th></tr>
+    <tr><td>Wi-Fi do auditório falha</td><td>Hotspot móvel próprio com dados carregados</td><td>App local no portátil (<code>next start</code>) + simulador WhatsApp</td></tr>
+    <tr><td>WhatsApp / Meta não entrega a mensagem</td><td>Testar o número de teste na manhã do pitch</td><td><code>WA_MODE=simulador</code>: mesmo fluxo no simulador web</td></tr>
+    <tr><td>Hora real fora da janela fora de pico</td><td><code>DEMO_AGORA</code> fixado</td><td>Explicar a regra; mostrar o selo +1 normal</td></tr>
+    <tr><td>Dados sujos de ensaios anteriores</td><td><code>npm run seed:reset</code> antes de subir ao palco</td><td>Segundo projeto Supabase pronto com seed</td></tr>
+    <tr><td>Tudo falha</td><td>Vídeo de 2 min gravado no Dia 2</td><td>Narrar sobre o vídeo</td></tr>
+  </table>
+
+  <h3>12.3 Perguntas prováveis do júri</h3>
+  <table>
+    <tr><th>Pergunta</th><th>Resposta curta</th></tr>
+    <tr><td>"E se o cliente não tiver conta Moza?"</td><td>Não precisa. Paga com a carteira que já usa; quem tem conta Moza é o comerciante. É aí que o banco ganha.</td></tr>
+    <tr><td>"O dono não vai esconder o numerário?"</td><td>Pode, mas o score pesa sobretudo o verificado. E o lavador tem interesse em registar todos os carros, porque vê as lavagens que fez.</td></tr>
+    <tr><td>"30 dias chegam para dar crédito?"</td><td>Não, e o sistema diz isso: classe B, elegível para análise. O valor está em começar a recolher histórico verificável desde o dia 1.</td></tr>
+    <tr><td>"Como sabem que a campanha funciona?"</td><td>Medimos: lavagens até 7 dias após o envio, comparadas com o mesmo período sem campanha. Meta do piloto: +20% Ter–Qui de manhã.</td></tr>
+    <tr><td>"Quanto custa a fidelização?"</td><td>Uma Simples por cada 5 lavagens pagas (≈ 13% em preço de tabela), resgatada em dias de capacidade parada, por isso o custo real é menor.</td></tr>
+    <tr><td>"Como integram com o Moza na prática?"</td><td>Na demo é simulado. Em produção, a via de liquidação é a acordar com o banco (carteiras móveis, mKesh, METIX ou o gateway do Moza). A arquitetura já separa o gateway por trás de um webhook assinado.</td></tr>
+    <tr><td>"E a privacidade dos clientes?"</td><td>Consentimento explícito para ofertas, PARAR a qualquer momento, e o banco só vê dados agregados do comerciante que autorizou.</td></tr>
+    <tr><td>"Isto escala para além de um lava-jato?"</td><td>Sim: fila + fidelização + recebimentos servem barbearias, salões e oficinas. O lava-jato é o primeiro vertical.</td></tr>
+  </table>
+  <hr>
+  <p class="small">LavaJá Pass · Hackathon Moza xLab – UEM, 1.ª edição · Helio Simango &amp; Equipa · Documento de trabalho. Valores operacionais são dados de demonstração; o Moza Banco e a UEM são citados apenas como promotores do desafio. Fontes de contexto de mercado: Lusa (27/03/2026), relatório de indicadores de inclusão financeira do Banco de Moçambique.</p>
+</section>
+
+</div>
+</body>
+</html>
