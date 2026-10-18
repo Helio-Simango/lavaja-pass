@@ -4,12 +4,14 @@ import { UnauthenticatedError } from '../../../domain/errors.js';
 import { bodyOf } from '../request.js';
 import { clearSessionCookie, requestedProfile, SESSION_PROFILES, setSessionCookie } from '../session.js';
 
-export function createAuthController({ authService }, { secureCookies }) {
+export function createAuthController({ authService }, { secureCookies, clock }) {
   const cookieOptions = { secure: secureCookies };
 
   function signIn(res, { token, expiresAt, session }, extra = {}) {
-    const profile = setSessionCookie(res, session.role, { token, expiresAt }, cookieOptions);
-    res.json({ session: presentSession(session), profile, home: SESSION_PROFILES[profile].home, token, expiresAt, ...extra });
+    // O token não vai no corpo: só no cookie HttpOnly, fora do alcance do JavaScript da página.
+    const profile = setSessionCookie(res, session.role, { token, expiresAt }, { ...cookieOptions, now: clock.now() });
+    res.set('Cache-Control', 'no-store');
+    res.json({ session: presentSession(session), profile, home: SESSION_PROFILES[profile].home, expiresAt, ...extra });
   }
 
   return {

@@ -23,7 +23,7 @@ const P = Permission;
  * a rota é pública: saúde, entrada, catálogo de preços e o simulador (o "telemóvel" do cliente).
  */
 export function createApiRouter({ services, clock, demoResetToken = null, secureCookies = false }) {
-  const auth = createAuthController(services, { secureCookies });
+  const auth = createAuthController(services, { secureCookies, clock });
   const catalog = createCatalogController(services);
   const customers = createCustomerController(services);
   const washes = createWashController({ ...services, clock });

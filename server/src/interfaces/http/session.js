@@ -55,14 +55,20 @@ export function pageSession(req, authService, profile) {
   }
 }
 
-export function setSessionCookie(res, role, { token, expiresAt }, { secure }) {
+/**
+ * O JWT só vive neste cookie: HttpOnly (o JavaScript da página não o lê), SameSite=Strict (não segue
+ * pedidos vindos de outros sites), Secure atrás de HTTPS e com a duração da sessão. A duração vai em
+ * Max-Age (relativa), para não depender do relógio do browser; Expires fica para browsers antigos.
+ */
+export function setSessionCookie(res, role, { token, expiresAt }, { secure, now }) {
   const profile = profileOfRole(role);
   res.cookie(SESSION_PROFILES[profile].cookie, token, {
     httpOnly: true,
     sameSite: 'strict',
     secure,
     path: '/',
-    expires: new Date(expiresAt),
+    maxAge: Math.max(0, Date.parse(expiresAt) - now.getTime()),
+    priority: 'high',
   });
   return profile;
 }
