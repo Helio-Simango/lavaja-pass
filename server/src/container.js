@@ -3,6 +3,7 @@
 import { AppointmentService } from './application/appointment-service.js';
 import { AuthService } from './application/auth-service.js';
 import { BankReportService } from './application/bank-report-service.js';
+import { CampaignService } from './application/campaign-service.js';
 import { CatalogService } from './application/catalog-service.js';
 import { ChangeLogService } from './application/change-log-service.js';
 import { ConsentService } from './application/consent-service.js';
@@ -20,6 +21,7 @@ import { VehicleHistoryService } from './application/vehicle-history-service.js'
 import { WashService } from './application/wash-service.js';
 import { systemClock } from './infrastructure/clock.js';
 import { SqliteAppointmentRepository } from './infrastructure/database/repositories/appointment-repository.js';
+import { SqliteCampaignRepository } from './infrastructure/database/repositories/campaign-repository.js';
 import { SqliteCatalogRepository } from './infrastructure/database/repositories/catalog-repository.js';
 import { SqliteChangeLogRepository } from './infrastructure/database/repositories/change-log-repository.js';
 import { SqliteConsentRepository } from './infrastructure/database/repositories/consent-repository.js';
@@ -51,6 +53,7 @@ export function createContainer({ db, clock = systemClock, security = {}, demoVo
   const tokenService = new HmacJwtTokenService({ secret: security.tokenSecret ?? randomSecret(), clock });
   const repositories = {
     appointmentRepository: new SqliteAppointmentRepository(db),
+    campaignRepository: new SqliteCampaignRepository(db),
     catalogRepository: new SqliteCatalogRepository(db),
     changeLogRepository: new SqliteChangeLogRepository(db),
     consentRepository: new SqliteConsentRepository(db),
@@ -87,6 +90,7 @@ export function createContainer({ db, clock = systemClock, security = {}, demoVo
   const reconciliationService = new ReconciliationService(shared);
   const changeLogService = new ChangeLogService(shared);
   const authService = new AuthService({ ...shared, tokenService, passwordHasher, random: secureRandom, conversationService });
+  const campaignService = new CampaignService({ ...shared, conversationService, settingsService });
   const selfService = new SelfService({ customerService, consentService, washService, paymentService, loyaltyService, appointmentService });
 
   return {
@@ -99,6 +103,7 @@ export function createContainer({ db, clock = systemClock, security = {}, demoVo
       appointmentService,
       authService,
       bankReportService,
+      campaignService,
       catalogService,
       changeLogService,
       consentService,

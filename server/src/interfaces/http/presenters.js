@@ -662,3 +662,29 @@ export function presentReconciliation(day) {
     })),
   };
 }
+
+// ---------- Campanhas (M11) ----------
+
+export function presentCampaignPreview(preview) {
+  return {
+    policy: preview.policy,
+    offers: preview.offers,
+    template: preview.template,
+    footer: preview.footer,
+    count: preview.count,
+    excluded: preview.excluded,
+    sample: preview.sample,
+  };
+}
+
+export function presentCampaign(campaign) {
+  return {
+    id: campaign.id,
+    offer: { type: campaign.offerType, label: campaign.offer?.label ?? campaign.offerType },
+    template: campaign.template,
+    recipientsCount: campaign.recipientsCount,
+    sentBy: campaign.sentBy,
+    sentAt: campaign.sentAt,
+    result: campaign.result,
+  };
+}

@@ -4,6 +4,7 @@ import { createAdminController } from './controllers/admin-controller.js';
 import { createAppointmentController } from './controllers/appointment-controller.js';
 import { createAuthController } from './controllers/auth-controller.js';
 import { createBankController } from './controllers/bank-controller.js';
+import { createCampaignController } from './controllers/campaign-controller.js';
 import { createCatalogController } from './controllers/catalog-controller.js';
 import { createCustomerController } from './controllers/customer-controller.js';
 import { createDashboardController } from './controllers/dashboard-controller.js';
@@ -34,6 +35,7 @@ export function createApiRouter({ services, clock, demoResetToken = null, secure
   const appointments = createAppointmentController(services);
   const governance = createGovernanceController(services);
   const self = createSelfController(services);
+  const campaigns = createCampaignController(services);
   const admin = createAdminController(services, { demoResetToken });
   const router = Router();
 
@@ -111,6 +113,11 @@ export function createApiRouter({ services, clock, demoResetToken = null, secure
   // Painel do gestor
   router.get('/dashboard/summary', allow(P.BUSINESS_READ), dashboard.summary);
   router.get('/dashboard/weekly', allow(P.BUSINESS_READ), dashboard.weekly);
+
+  // Campanhas fora de pico: o gestor revê e confirma cada envio (nunca automático)
+  router.get('/campaigns', allow(P.CAMPAIGNS_MANAGE), campaigns.list);
+  router.get('/campaigns/preview', allow(P.CAMPAIGNS_MANAGE), campaigns.preview);
+  router.post('/campaigns', allow(P.CAMPAIGNS_MANAGE), campaigns.send);
 
   // Partilha com bancos: a lavadora (gestor) autoriza e revoga
   router.get('/institutions', allow(P.SHARING_MANAGE), bank.listInstitutions);
