@@ -1,0 +1,25 @@
+{
+  "name": "lavaja-pass",
+  "version": "2.0.3",
+  "private": true,
+  "description": "LavaJá Pass — protótipo para o Hackathon Moza xLab – UEM (caso Lava Já – Matola)",
+  "type": "module",
+  "main": "server/src/main.js",
+  "engines": {
+    "node": ">=22.13"
+  },
+  "scripts": {
+    "start": "node --env-file-if-exists=.env --disable-warning=ExperimentalWarning server/src/main.js",
+    "dev": "node --env-file-if-exists=.env --disable-warning=ExperimentalWarning --watch server/src/main.js",
+    "db:migrate": "node --env-file-if-exists=.env --disable-warning=ExperimentalWarning server/scripts/db-migrate.js",
+    "db:seed": "node --env-file-if-exists=.env --disable-warning=ExperimentalWarning server/scripts/db-seed.js",
+    "db:reset": "node --env-file-if-exists=.env --disable-warning=ExperimentalWarning server/scripts/db-reset.js",
+    "test": "node --disable-warning=ExperimentalWarning --test \"server/test/**/*.test.js\" \"client/test/**/*.test.js\" \"simulador/test/**/*.test.js\"",
+    "test:client": "node --test \"client/test/**/*.test.js\" \"simulador/test/**/*.test.js\"",
+    "test:unit": "node --disable-warning=ExperimentalWarning --test \"server/test/unit/**/*.test.js\"",
+    "test:integration": "node --disable-warning=ExperimentalWarning --test \"server/test/integration/**/*.test.js\""
+  },
+  "dependencies": {
+    "express": "^4.22.3"
+  }
+}

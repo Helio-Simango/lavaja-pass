@@ -1,5 +1,10 @@
 # Changelog
 
+## [2.0.3] — 2026-10-18
+
+- A página inicial volta à versão 2.0.0 (fundo branco, sem padrão, ilustração nem secções extra); sai `client/css/inicio.css`. A entrada mantém o botão "← Voltar ao início".
+- Corrigido: o `package.json` ficou vazio na 2.0.2 (erro no comando que actualizou a versão); foi reposto.
+
 ## [2.0.2] — 2026-10-18
 
 - Página de entrada simplificada: fundo branco, só o botão "← Voltar ao início" acima da escolha do perfil (sem padrão, título nem atalhos).

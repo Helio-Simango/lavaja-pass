@@ -5,224 +5,61 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <title>LavaJá Pass</title>
-  <meta name="description" content="LavaJá Pass: fila digital, fidelização e recebimentos que um banco consegue ler, para o Lava Já – Matola.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/css/app.css">
-  <link rel="stylesheet" href="/css/inicio.css">
+  <style>
+    .cover { width: min(1000px, 100%); border-bottom: 4px solid var(--red); padding-bottom: 18px; }
+    .event { display: flex; gap: 10px; align-items: center; font-size: 12.5px; font-weight: 700; color: var(--green); letter-spacing: 0.04em; text-transform: uppercase; }
+    .event i { width: 8px; height: 8px; border-radius: 50%; background: var(--red); }
+    .cover h1 { font-size: 46px; font-weight: 800; letter-spacing: -0.03em; margin: 14px 0 6px; }
+    .cover h1 em { font-style: normal; color: var(--red); }
+    .cover .sub { font-size: 17px; color: var(--muted); max-width: 640px; }
+    .extras { display: flex; gap: 10px; flex-wrap: wrap; width: min(1000px, 100%); margin-top: 14px; }
+  </style>
 </head>
-<body class="home">
-  <header class="topnav">
-    <div class="wrap">
-      <a class="logo" href="/"><img src="/favicon.svg" alt="">LavaJá <em>Pass</em></a>
-      <nav aria-label="Secções">
-        <a href="#desafio">O desafio</a>
-        <a href="#como-funciona">Como funciona</a>
-        <a href="#perfis">Perfis</a>
-        <a href="#valor">Para quem</a>
-        <a class="btn r" href="/entrar">Entrar</a>
-      </nav>
-    </div>
-  </header>
+<body>
+  <main class="center-page" style="align-items:stretch;max-width:1000px;margin:0 auto">
+    <header class="cover">
+      <div class="event"><i></i>Hackathon Moza xLab – UEM · Lava Já – Matola · Protótipo</div>
+      <h1>LavaJá <em>Pass</em></h1>
+      <p class="sub">Um lava-jato com fila digital, cliente que volta, e recebimentos que um banco consegue ler.</p>
+    </header>
 
-  <!-- Hero: o negócio e a ideia -->
-  <section class="hero">
-    <div class="wrap">
-      <div>
-        <span class="kicker"><i></i>Hackathon Moza xLab – UEM · 22 e 23/10/2026</span>
-        <h1>Lava sem<br>esperar. <em>Volta</em><br>sempre.</h1>
-        <p class="lead"><b>LavaJá Pass</b> é a fila digital, a fidelização e o registo de recebimentos do <b>Lava Já – Matola</b>. Cada lavagem paga constrói um histórico que, com autorização da lavadora, um banco consegue ler.</p>
-        <div class="cta">
-          <a class="btn r" href="/entrar">Entrar num perfil →</a>
-          <a class="btn ghost" href="/simulador?texto=LAVAR">Experimentar como cliente</a>
-          <a class="btn ghost" href="/cartaz">Ver o cartaz do pátio</a>
-        </div>
-        <div class="hero-tags"><span>Check-in pelo WhatsApp</span><span>Hora prevista</span><span>Paga com a carteira</span><span>Score indicativo para o banco</span></div>
-      </div>
-
-      <!-- Ilustração: viatura a ser lavada e o telemóvel do cliente -->
-      <div class="scene" aria-hidden="true">
-        <svg viewBox="0 0 520 380" role="img">
-          <defs>
-            <linearGradient id="car" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#ff5a6e"/><stop offset="1" stop-color="#c8102e"/></linearGradient>
-            <linearGradient id="glass" x1="0" x2="1"><stop offset="0" stop-color="#bfe9f7"/><stop offset="1" stop-color="#7fcbe6"/></linearGradient>
-            <linearGradient id="jet" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#9fe3f5" stop-opacity="0.9"/><stop offset="1" stop-color="#9fe3f5" stop-opacity="0"/></linearGradient>
-          </defs>
-          <!-- chão e reflexo -->
-          <ellipse cx="230" cy="318" rx="210" ry="18" fill="#0a2333" opacity="0.55"/>
-          <!-- jactos de água -->
-          <path d="M120 40 L80 230 L150 230 Z" fill="url(#jet)" opacity="0.55"/>
-          <path d="M330 30 L300 220 L370 220 Z" fill="url(#jet)" opacity="0.5"/>
-          <g fill="#9fe3f5" opacity="0.8"><circle cx="120" cy="40" r="7"/><circle cx="330" cy="30" r="7"/></g>
-          <!-- viatura -->
-          <path d="M60 268 Q58 230 96 222 L150 214 Q178 168 228 160 L300 158 Q344 160 370 206 L404 214 Q432 222 432 252 L432 268 Q432 282 418 282 L74 282 Q60 282 60 268 Z" fill="url(#car)"/>
-          <path d="M162 214 Q186 176 228 172 L268 171 L268 214 Z" fill="url(#glass)"/>
-          <path d="M282 171 L302 171 Q338 173 356 212 L282 214 Z" fill="url(#glass)"/>
-          <rect x="268" y="171" width="14" height="44" fill="#a00d25"/>
-          <rect x="84" y="242" width="40" height="8" rx="4" fill="#ffd27a"/>
-          <rect x="398" y="240" width="26" height="8" rx="4" fill="#ff9f9f"/>
-          <circle cx="140" cy="282" r="34" fill="#16191d"/><circle cx="140" cy="282" r="15" fill="#9aa3ad"/>
-          <circle cx="352" cy="282" r="34" fill="#16191d"/><circle cx="352" cy="282" r="15" fill="#9aa3ad"/>
-          <!-- matrícula -->
-          <rect x="196" y="244" width="76" height="20" rx="3" fill="#fff"/>
-          <text x="234" y="258" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="11" font-weight="700" fill="#16191d">AHM 482 MP</text>
-          <!-- espuma -->
-          <g fill="#fff">
-            <circle cx="110" cy="226" r="14"/><circle cx="128" cy="218" r="11"/><circle cx="94" cy="234" r="10"/>
-            <circle cx="214" cy="160" r="10"/><circle cx="232" cy="156" r="13"/><circle cx="250" cy="160" r="9"/>
-            <circle cx="380" cy="214" r="12"/><circle cx="396" cy="222" r="9"/>
-          </g>
-          <!-- bolhas a subir -->
-          <g fill="none" stroke="#e8f6fb" stroke-width="2">
-            <circle class="bubble" cx="70" cy="200" r="7"/><circle class="bubble" cx="180" cy="150" r="5"/>
-            <circle class="bubble" cx="300" cy="140" r="8"/><circle class="bubble" cx="420" cy="190" r="6"/>
-            <circle class="bubble" cx="250" cy="120" r="4"/><circle class="bubble" cx="40" cy="250" r="5"/>
-          </g>
-          <!-- telemóvel com a conversa -->
-          <g transform="translate(372 36)">
-            <rect width="138" height="250" rx="20" fill="#111"/>
-            <rect x="7" y="9" width="124" height="232" rx="14" fill="#efe7dd"/>
-            <rect x="7" y="9" width="124" height="34" rx="14" fill="#075e54"/>
-            <rect x="7" y="28" width="124" height="15" fill="#075e54"/>
-            <circle cx="24" cy="26" r="9" fill="#fff"/><text x="24" y="29.5" text-anchor="middle" font-size="8" font-weight="800" fill="#c8102e" font-family="Inter, sans-serif">LJ</text>
-            <text x="38" y="24" font-size="8.5" font-weight="700" fill="#fff" font-family="Inter, sans-serif">Lava Já – Matola</text>
-            <text x="38" y="34" font-size="6.5" fill="#cfe9e4" font-family="Inter, sans-serif">Conta comercial</text>
-            <rect x="80" y="54" width="44" height="18" rx="5" fill="#d9fdd3"/><text x="102" y="66" text-anchor="middle" font-size="8" font-weight="700" fill="#111" font-family="Inter, sans-serif">LAVAR</text>
-            <rect x="14" y="80" width="104" height="44" rx="6" fill="#fff"/>
-            <text x="20" y="93" font-size="7.5" fill="#111" font-family="Inter, sans-serif">✅ Está em 1.º na fila</text>
-            <text x="20" y="105" font-size="7.5" fill="#111" font-family="Inter, sans-serif">🕐 Pronto ~ 11:30</text>
-            <text x="20" y="117" font-size="6.5" fill="#667781" font-family="Inter, sans-serif">Pode sair do pátio.</text>
-            <rect x="14" y="132" width="104" height="54" rx="6" fill="#fff"/>
-            <text x="20" y="145" font-size="7.5" fill="#111" font-family="Inter, sans-serif">✨ AHM 482 MP está</text>
-            <text x="20" y="156" font-size="7.5" fill="#111" font-family="Inter, sans-serif">pronto! Total: 250 MZN</text>
-            <rect x="20" y="164" width="92" height="15" rx="4" fill="#e6f3ec"/><text x="66" y="174.5" text-anchor="middle" font-size="7" font-weight="700" fill="#1e7b47" font-family="Inter, sans-serif">Pagar com a carteira</text>
-            <rect x="14" y="194" width="104" height="38" rx="6" fill="#fff"/>
-            <text x="20" y="207" font-size="7.5" fill="#111" font-family="Inter, sans-serif">🎁 Ganhou 1 benefício</text>
-            <g transform="translate(20 214)" fill="#1e7b47"><circle cx="5" cy="5" r="5"/><circle cx="17" cy="5" r="5"/><circle cx="29" cy="5" r="5"/><circle cx="41" cy="5" r="5"/><circle cx="53" cy="5" r="5"/></g>
-          </g>
-        </svg>
-      </div>
+    <h2 style="margin-top:22px;font-size:18px">Quatro pessoas, três interfaces</h2>
+    <p class="muted small">Cada perfil entra com as suas credenciais e só vê o que lhe compete.</p>
+    <div class="profiles">
+      <a class="profile-card" href="/simulador">
+        <span class="pill g tag">Cliente</span>
+        <h3>Bot do cliente</h3>
+        <p class="small muted">WhatsApp (simulado): entrar na fila, estado, pagar e fidelização. Sem conta nem senha.</p>
+        <span class="small">Abrir o simulador →</span>
+      </a>
+      <a class="profile-card" href="/operador">
+        <span class="pill a tag">Operador</span>
+        <h3>App do pátio</h3>
+        <p class="small muted">Quadro de baias, entrada manual, entrega e numerário. Nome + PIN de 4 dígitos.</p>
+        <span class="small">Entrar no turno →</span>
+      </a>
+      <a class="profile-card" href="/gestor">
+        <span class="pill b tag">Gestor</span>
+        <h3>Painel do Lava Já</h3>
+        <p class="small muted">Operação e receita, conciliação, campanhas e partilha com o banco. Email + senha.</p>
+        <span class="small">Abrir o painel →</span>
+      </a>
+      <a class="profile-card" href="/moza">
+        <span class="pill r tag">Analista Moza</span>
+        <h3>Módulo Moza Banco</h3>
+        <p class="small muted">Só os comerciantes que autorizaram a partilha: score indicativo e extratos.</p>
+        <span class="small">Abrir o módulo →</span>
+      </a>
     </div>
-    <svg class="wave" viewBox="0 0 1440 70" preserveAspectRatio="none" aria-hidden="true"><path d="M0 40 C240 70 480 0 720 26 C960 52 1200 10 1440 34 L1440 70 L0 70 Z" fill="#fff"/></svg>
-  </section>
-
-  <!-- Base de demonstração (proposta v1, secção 2.1) -->
-  <div class="stats">
-    <div class="wrap">
-      <div class="grid">
-        <div><b>4</b><span>baias · ≈ 28 lavagens/dia</span></div>
-        <div><b>≈ 350</b><span>lavagens em 30 dias</span></div>
-        <div><b>212</b><span>clientes registados</span></div>
-        <div><b>≈ 62%</b><span>recebido em digital</span></div>
-        <div><b>21–25%</b><span>ocupação à terça e quarta</span></div>
-      </div>
-      <p>Base de demonstração da proposta (fictícia e coerente entre si). Os valores reais vêm da visita ao Lava Já.</p>
+    <div class="extras">
+      <a class="btn o sm" href="/cliente">Área do cliente</a>
+      <a class="btn o sm" href="/cartaz">Cartaz do pátio (M1)</a>
+      <a class="btn o sm" href="/entrar">Entrar</a>
     </div>
-  </div>
-
-  <!-- O desafio -->
-  <section class="block" id="desafio">
-    <div class="wrap">
-      <div class="section-kicker">O desafio do Moza Banco</div>
-      <h2>Como aumentar o tráfego e a fidelização de um car wash comunitário?</h2>
-      <p class="intro">O Lava Já – Matola é um lava-jato periurbano com quatro baias. Estas são as hipóteses que o LavaJá Pass ataca, a confirmar no terreno.</p>
-      <div class="problems">
-        <article class="problem"><span class="n">1</span>
-          <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 20h18M6 16v-4M10 16V8M14 16v-6M18 16V5"/></svg></div>
-          <h3>Tráfego desigual</h3><p>Fila longa à sexta e ao fim de semana; baias paradas de terça a quinta de manhã. A capacidade existe, a procura é que está mal distribuída.</p></article>
-        <article class="problem"><span class="n">2</span>
-          <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></div>
-          <h3>Espera no pátio</h3><p>O cliente fica 40 a 90 minutos no recinto sem saber quando o carro fica pronto. Parte desiste e vai a outro lado.</p></article>
-        <article class="problem"><span class="n">3</span>
-          <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="6" width="18" height="12" rx="2"/><path d="M7 10h.01M11 10h.01M15 10h.01M7 14h10"/></svg></div>
-          <h3>Fidelização que não funciona</h3><p>Cartões de papel perdem-se e falsificam-se. O dono não sabe quem são os clientes nem há quanto tempo não voltam.</p></article>
-        <article class="problem"><span class="n">4</span>
-          <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 10l9-6 9 6M5 10v8M19 10v8M9 10v8M15 10v8M3 20h18"/></svg></div>
-          <h3>Invisível para o banco</h3><p>A maior parte dos pagamentos é em numerário, sem registo. Sem histórico, o dono não consegue crédito para equipamento.</p></article>
-      </div>
-      <p class="context"><b>Contexto:</b> em Moçambique, as carteiras móveis cresceram muito mais do que a rede bancária física. Por isso o cliente paga com a carteira que já usa, ou em numerário, sempre registado com a sua origem.</p>
-    </div>
-  </section>
-
-  <!-- Como funciona -->
-  <section class="block tint" id="como-funciona">
-    <div class="wrap">
-      <div class="section-kicker">Três peças, um único fluxo de dados</div>
-      <h2>Do QR no pátio ao relatório do banco</h2>
-      <p class="intro">O mesmo registo serve o cliente, o lavador, o dono e, só com autorização, o banco.</p>
-      <div class="flow">
-        <div class="step"><span class="emoji">📱</span><b>Check-in</b><span>O cliente lê o QR e escreve LAVAR no WhatsApp.</span><br><small>M1 · M2</small></div>
-        <div class="step"><span class="emoji">🕐</span><b>Fila e hora prevista</b><span>Sabe a posição e pode sair do pátio.</span><br><small>M2</small></div>
-        <div class="step"><span class="emoji">🧽</span><b>Baias</b><span>O operador inicia e marca pronto com um toque.</span><br><small>M7 · M8</small></div>
-        <div class="step"><span class="emoji">💳</span><b>Aviso e pagamento</b><span>Link para a carteira ou numerário declarado.</span><br><small>M3 · M4 · M9</small></div>
-        <div class="step"><span class="emoji">⭐</span><b>Fidelização</b><span>Cada lavagem paga avança o cartão; campanhas fora de pico.</span><br><small>M5 · M11</small></div>
-        <div class="step"><span class="emoji">🏦</span><b>Moza Banco</b><span>Score indicativo e extrato, só com autorização.</span><br><small>M10 · M12</small></div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Perfis -->
-  <section class="block" id="perfis">
-    <div class="wrap">
-      <div class="section-kicker">Quatro pessoas, três interfaces</div>
-      <h2>Entre no perfil e veja só o que lhe compete</h2>
-      <p class="intro">Cada perfil tem a sua entrada e as suas permissões. As contas de demonstração estão no README e no roteiro.</p>
-      <div class="profiles-grid">
-        <a class="pcard c1" href="/simulador?texto=LAVAR">
-          <span class="who">Cliente · condutor</span><h3>Bot no WhatsApp</h3>
-          <p>Entrar na fila, estado, pagar com a carteira, fidelização e ofertas. Sem app nem senha.</p>
-          <span class="access">Telefone + código na conversa</span><span class="go">Abrir o simulador →</span></a>
-        <a class="pcard c2" href="/operador">
-          <span class="who">Operador · lavador</span><h3>App do pátio</h3>
-          <p>Quadro de baias com botões grandes, entrada manual, entrega e numerário em seu nome.</p>
-          <span class="access">Nome + PIN de 4 dígitos</span><span class="go">Entrar no turno →</span></a>
-        <a class="pcard c3" href="/gestor">
-          <span class="who">Gestor · dono</span><h3>Painel do Lava Já</h3>
-          <p>Operação e receita, capacidade parada, campanhas, conciliação e partilha com o banco.</p>
-          <span class="access">Email + senha</span><span class="go">Abrir o painel →</span></a>
-        <a class="pcard c4" href="/moza">
-          <span class="who">Analista · Moza Banco</span><h3>Pré-qualificação</h3>
-          <p>Comerciantes que autorizaram a partilha: score indicativo, componentes e extratos.</p>
-          <span class="access">Email + senha · só a sua instituição</span><span class="go">Abrir o módulo →</span></a>
-      </div>
-    </div>
-  </section>
-
-  <!-- Proposta de valor -->
-  <section class="block tint" id="valor">
-    <div class="wrap">
-      <div class="section-kicker">Quem ganha</div>
-      <h2>Valor para cada interveniente</h2>
-      <p class="intro">Metas do piloto, a medir pelo próprio sistema. Não são resultados já obtidos.</p>
-      <div class="values">
-        <div class="value"><h3>🚗 Condutor</h3><dl><dt>Dor</dt><dd>Esperar sem saber quanto</dd><dt>Ganha</dt><dd>Sai do pátio, recebe o aviso, paga com a carteira e acumula benefícios</dd></dl><div class="goal">Meta: tempo no pátio −50%</div></div>
-        <div class="value v2"><h3>🧽 Lavador</h3><dl><dt>Dor</dt><dd>Procurar donos, discussões sobre quem lavou o quê</dd><dt>Ganha</dt><dd>Quadro simples, aviso automático e as suas lavagens do dia</dd></dl><div class="goal">Meta: ≥ 90% das lavagens registadas</div></div>
-        <div class="value v3"><h3>🏪 Dono do Lava Já</h3><dl><dt>Dor</dt><dd>Dias vazios, caixa sem controlo, sem crédito</dd><dt>Ganha</dt><dd>Mais carros nos dias fracos, conciliação diária, histórico para o banco</dd></dl><div class="goal">Meta: +20% de lavagens Ter–Qui 07–12h</div></div>
-        <div class="value v4"><h3>🏦 Moza Banco</h3><dl><dt>Dor</dt><dd>Pequenos comerciantes sem dados para crédito</dd><dt>Ganha</dt><dd>Actividade registada e autorizada, com a origem de cada valor</dd></dl><div class="goal">Meta: a validar com o banco</div></div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Confiança -->
-  <section class="block dark">
-    <div class="wrap">
-      <div class="section-kicker" style="color:#ff8a98">Dados com origem e com autorização</div>
-      <h2>O que o banco vê, e o que nunca vê</h2>
-      <p class="intro">O digital confirmado e o numerário declarado nunca se misturam; cada acesso fica registado e a lavadora pode revogar a qualquer momento.</p>
-      <div class="trust">
-        <div><b>Autorização explícita</b><span>Finalidade, âmbito, período e validade escolhidos pela lavadora. Revogável.</span></div>
-        <div><b>Só agregados</b><span>O banco nunca vê nomes nem telefones dos clientes finais.</span></div>
-        <div><b>Score indicativo</b><span>Seis componentes visíveis. Não aprova crédito: a decisão é sempre do banco.</span></div>
-      </div>
-      <div class="cta"><a class="btn r" href="/entrar">Entrar num perfil →</a><a class="btn ghost" href="/cartaz">Cartaz do pátio (M1)</a></div>
-    </div>
-  </section>
-
-  <footer class="foot">
-    <div class="wrap">
-      <span>LavaJá Pass · protótipo para o Hackathon Moza xLab – UEM · caso Lava Já – Matola</span>
-      <span>Dados fictícios · WhatsApp e pagamentos simulados · sem parceria formal com o Moza Banco</span>
-    </div>
-  </footer>
+    <p class="muted small" style="margin-top:22px">Dados de demonstração fictícios. Pagamentos e WhatsApp simulados. O score é indicativo: a decisão de crédito é do banco. Sem parceria formal com o Moza Banco.</p>
+  </main>
 </body>
 </html>
