@@ -36,6 +36,10 @@ export class CustomerService {
     return this.#withVehicles(customer);
   }
 
+  count() {
+    return this.#customers.count();
+  }
+
   list({ limit = DEFAULT_LIST_LIMIT } = {}) {
     return this.#customers.list({ limit }).map((customer) => this.#withVehicles(customer));
   }

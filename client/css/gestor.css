@@ -1,0 +1,61 @@
+/* Painel do gestor e módulo do analista: gráficos, agenda, conciliação e tabelas.
+   Séries com a paleta validada (digital confirmado vs numerário declarado, lado a lado). */
+:root {
+  --series-1: #2a78d6;
+  --series-2: #eb6834;
+  --chart-grid: #e2e5e9;
+  --surface: #fff;
+}
+
+.view { display: none; }
+.view.on { display: block; }
+
+.chart { position: relative; }
+.chart svg { display: block; width: 100%; height: auto; overflow: visible; }
+.chart .axis-label { font-size: 12px; fill: var(--muted); }
+.chart .grid-line { stroke: var(--chart-grid); stroke-width: 1; }
+.chart .hit { fill: transparent; cursor: default; }
+.chart .hit:focus { outline: none; }
+.chart .column.active .hit { fill: var(--soft); }
+.chart-legend { display: flex; gap: 14px; flex-wrap: wrap; font-size: 12.5px; color: var(--text); margin: 0 0 8px; padding: 0; list-style: none; }
+.chart-legend li { display: flex; align-items: center; gap: 6px; }
+.chart-legend .swatch { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
+.chart-tooltip { position: absolute; pointer-events: none; background: #fff; color: var(--text); border: 1px solid var(--line); border-radius: 8px; padding: 6px 10px; font-size: 12.5px; box-shadow: 0 4px 14px rgb(0 0 0 / 0.12); white-space: nowrap; z-index: 2; }
+.chart-tooltip strong { display: block; color: var(--ink); margin-bottom: 2px; }
+.chart-tooltip .row { display: flex; align-items: center; gap: 6px; }
+.chart details, .box details { margin-top: 6px; font-size: 12.5px; }
+.chart details summary, .box details summary { cursor: pointer; color: var(--muted); }
+
+.tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; margin-bottom: 12px; }
+.tile { background: #fff; border: 1px solid var(--line); border-radius: var(--radius); padding: 10px 12px; }
+.tile .label { font-size: 10.5px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); }
+.tile .value { font-size: 20px; font-weight: 800; color: var(--ink); margin: 2px 0; font-variant-numeric: tabular-nums; }
+.tile .sub { font-size: 12px; color: var(--muted); }
+.tile details { margin-top: 4px; font-size: 12px; }
+.tile summary { cursor: pointer; color: var(--muted); list-style: none; }
+.tile summary::-webkit-details-marker { display: none; }
+
+.agenda { display: grid; grid-template-columns: 40px 1fr; gap: 8px 10px; align-items: center; margin-top: 6px; }
+.agenda .station { font-weight: 700; color: var(--ink); font-size: 13px; }
+.agenda .track { position: relative; height: 30px; background: var(--soft); border-radius: 6px; }
+.agenda .block { position: absolute; top: 3px; bottom: 3px; border-radius: 4px; color: #fff; font-size: 11px; line-height: 24px; padding: 0 5px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; box-shadow: 0 0 0 2px #fff; }
+.agenda .block.appointment { background: var(--series-1); }
+.agenda .block.yard { background: var(--series-2); }
+.agenda .block.requested { opacity: 0.6; }
+.agenda .now { position: absolute; top: 0; bottom: 0; width: 2px; background: var(--ink); opacity: 0.6; }
+.agenda .hours { grid-column: 2; display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); }
+
+.issue { border-top: 1px solid var(--line); padding: 8px 0; font-size: 13px; }
+.issue:first-child { border-top: 0; }
+.issue .corrections { margin: 4px 0 0; padding-left: 18px; font-size: 12px; color: var(--muted); }
+.issue form { display: flex; gap: 6px; margin-top: 6px; }
+.issue input, .counted { padding: 5px 8px; font-size: 12.5px; border: 1.5px solid var(--line); border-radius: 8px; }
+.counted { width: 110px; }
+
+.price-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.check { display: flex; gap: 8px; align-items: flex-start; font-size: 13px; margin-top: 10px; }
+.check input { margin-top: 3px; }
+.authorization { border-top: 1px solid var(--line); padding: 10px 0; }
+.authorization:first-child { border-top: 0; padding-top: 0; }
+.authorization header { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; }
+.authorization p { margin: 4px 0; font-size: 12.5px; }

@@ -1,16 +1,16 @@
-// Capacidade e agenda do dia (M10): blocos das marcações e do pátio por posto, numa linha temporal
+// Capacidade e agenda do dia (agenda por baia): blocos das marcações e do pátio por posto, numa linha temporal
 // entre a abertura e o fecho. As horas do pátio são estimativas.
 import { escapeHtml, formatTime } from '../core/dom.js';
 
 const MAPUTO_OFFSET = '+02:00';
 const POLICY_ROWS = [
-  ['Postos activos', (_, stations) => `${stations.filter((s) => s.active).length}`, 'registado'],
+  ['Baias activas', (_, stations) => `${stations.filter((s) => s.active).length}`, 'registado'],
   ['Trabalhadores', (p) => `${p.workers}`, 'declarado'],
   ['Horário', (p) => `${p.openingHours.open}–${p.openingHours.close}`, 'declarado'],
   ['Margem de segurança', (p) => `${p.safetyMarginMin} min`, 'proposta'],
   ['Confirmação de marcações', (p) => (p.confirmation === 'manual' ? 'manual pela lavadora' : 'automática'), 'D-09'],
   ['Tolerância para atrasos', (p) => `${p.lateToleranceMin} min`, 'D-10'],
-  ['Postos reservados para a fila', (p) => `${p.reservedStationsForQueue}`, 'D-12'],
+  ['Baias reservadas para a fila', (p) => `${p.reservedStationsForQueue}`, 'D-12'],
   ['Horário libertado', (p) => (p.autoOffers ? 'proposto à marcação seguinte' : 'não é proposto'), 'D-14'],
 ];
 
@@ -50,7 +50,7 @@ export function renderCapacity({ agenda, table, policyTable, line }, capacity, n
 
   policyTable.innerHTML = POLICY_ROWS.map(
     ([label, value, origin]) => `<tr><td>${escapeHtml(label)}</td><td>${escapeHtml(value(policy, capacity.stations))}</td>
-      <td><span class="pill ${origin.startsWith('D-') ? 'amber' : ''}">${escapeHtml(origin)}</span></td></tr>`,
+      <td><span class="pill ${origin.startsWith('D-') ? 'a' : ''}">${escapeHtml(origin)}</span></td></tr>`,
   ).join('');
-  line.textContent = `${capacity.stations.filter((s) => s.active).length} postos · ${policy.workers} trabalhadores (declarado) · margem de ${policy.safetyMarginMin} min (proposta) · horas do pátio são estimativas`;
+  line.textContent = `${capacity.stations.filter((s) => s.active).length} baias · ${policy.workers} trabalhadores (declarado) · margem de ${policy.safetyMarginMin} min (proposta) · horas do pátio são estimativas`;
 }

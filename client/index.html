@@ -3,49 +3,63 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <title>LavaJá Pass</title>
-  <link rel="stylesheet" href="/css/base.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/app.css">
   <style>
-    .hero { padding: 24px 0 8px; }
-    .hero h1 { font-size: 32px; }
-    .hero h1 span { color: var(--red); }
-    .hero p { max-width: 680px; }
-    .modules { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; margin-top: 20px; }
-    .module { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px; text-decoration: none; color: inherit; }
-    a.module:hover { border-color: var(--muted); }
-    .module h2 { font-size: 16px; margin-bottom: 4px; }
-    .module p { margin: 6px 0 0; font-size: 14px; color: var(--muted); }
-    .module.soon { opacity: 0.6; }
+    .cover { width: min(1000px, 100%); border-bottom: 4px solid var(--red); padding-bottom: 18px; }
+    .event { display: flex; gap: 10px; align-items: center; font-size: 12.5px; font-weight: 700; color: var(--green); letter-spacing: 0.04em; text-transform: uppercase; }
+    .event i { width: 8px; height: 8px; border-radius: 50%; background: var(--red); }
+    .cover h1 { font-size: 46px; font-weight: 800; letter-spacing: -0.03em; margin: 14px 0 6px; }
+    .cover h1 em { font-style: normal; color: var(--red); }
+    .cover .sub { font-size: 17px; color: var(--muted); max-width: 640px; }
+    .extras { display: flex; gap: 10px; flex-wrap: wrap; width: min(1000px, 100%); margin-top: 14px; }
   </style>
 </head>
 <body>
-  <header class="topbar">
-    <a class="brand" href="/">LavaJá <span>Pass</span></a>
-    <nav>
-      <a href="/painel">Painel</a>
-      <a href="/patio">Pátio</a>
-      <a href="/catalogo">Catálogo</a>
-      <a href="/banco">Banco</a>
-      <a href="/simulador">Simulador</a>
-    </nav>
-    <span class="demo-flag">DADOS DE DEMONSTRAÇÃO</span>
-  </header>
-  <main>
-    <section class="hero">
-      <h1>LavaJá <span>Pass</span></h1>
-      <p>Organiza a actividade das pequenas lavadoras (clientes, viaturas, serviços, filas, recebimentos e fidelização). Com autorização da lavadora, essa actividade torna-se informação estruturada que um banco pode usar na sua própria análise.</p>
-      <p class="notice">Protótipo do Hackathon Moza xLab – UEM (caso "Lava Já – Matola"). Sem autenticação, com conversas e pagamentos simulados. Não usar com dados reais.</p>
-    </section>
-    <section class="modules" aria-label="Módulos">
-      <a class="module" href="/patio"><h2>Pátio</h2><span class="pill green">Disponível · I-2</span><p>Fila, postos, estimativas e registo de serviços.</p></a>
-      <a class="module" href="/patio"><h2>Pagamentos</h2><span class="pill green">Disponível · I-3</span><p>Digital simulado e numerário declarado, sempre separados.</p></a>
-      <a class="module" href="/simulador"><h2>Fidelização</h2><span class="pill green">Disponível · I-4</span><p>Uma conta por cliente, progresso por classe.</p></a>
-      <a class="module" href="/simulador"><h2>Simulador</h2><span class="pill green">Disponível · I-5</span><p>Conversa estilo WhatsApp, um endereço por número.</p></a>
-      <a class="module" href="/painel"><h2>Painel e Catálogo</h2><span class="pill green">Disponível · I-6</span><p>Indicadores com definição e origem.</p></a>
-      <a class="module" href="/painel#capacidade"><h2>Marcações e capacidade</h2><span class="pill green">Disponível · I-8</span><p>Uma marcação confirmada nunca é antecipada sem aceitação.</p></a>
-      <a class="module" href="/painel#fecho"><h2>Fecho do dia</h2><span class="pill green">Disponível · I-9</span><p>Caixa por operador, inconsistências e correcções.</p></a>
-      <a class="module" href="/banco"><h2>Banco</h2><span class="pill green">Disponível · I-7</span><p>Relatório autorizado para o Moza Banco (demonstração).</p></a>
-    </section>
+  <main class="center-page" style="align-items:stretch;max-width:1000px;margin:0 auto">
+    <header class="cover">
+      <div class="event"><i></i>Hackathon Moza xLab – UEM · Lava Já – Matola · Protótipo</div>
+      <h1>LavaJá <em>Pass</em></h1>
+      <p class="sub">Um lava-jato com fila digital, cliente que volta, e recebimentos que um banco consegue ler.</p>
+    </header>
+
+    <h2 style="margin-top:22px;font-size:18px">Quatro pessoas, três interfaces</h2>
+    <p class="muted small">Cada perfil entra com as suas credenciais e só vê o que lhe compete.</p>
+    <div class="profiles">
+      <a class="profile-card" href="/simulador">
+        <span class="pill g tag">Cliente</span>
+        <h3>Bot do cliente</h3>
+        <p class="small muted">WhatsApp (simulado): entrar na fila, estado, pagar e fidelização. Sem conta nem senha.</p>
+        <span class="small">Abrir o simulador →</span>
+      </a>
+      <a class="profile-card" href="/operador">
+        <span class="pill a tag">Operador</span>
+        <h3>App do pátio</h3>
+        <p class="small muted">Quadro de baias, entrada manual, entrega e numerário. Nome + PIN de 4 dígitos.</p>
+        <span class="small">Entrar no turno →</span>
+      </a>
+      <a class="profile-card" href="/gestor">
+        <span class="pill b tag">Gestor</span>
+        <h3>Painel do Lava Já</h3>
+        <p class="small muted">Operação e receita, conciliação, campanhas e partilha com o banco. Email + senha.</p>
+        <span class="small">Abrir o painel →</span>
+      </a>
+      <a class="profile-card" href="/moza">
+        <span class="pill r tag">Analista Moza</span>
+        <h3>Módulo Moza Banco</h3>
+        <p class="small muted">Só os comerciantes que autorizaram a partilha: score indicativo e extratos.</p>
+        <span class="small">Abrir o módulo →</span>
+      </a>
+    </div>
+    <div class="extras">
+      <a class="btn o sm" href="/cliente">Área do cliente</a>
+      <a class="btn o sm" href="/cartaz">Cartaz do pátio (M1)</a>
+      <a class="btn o sm" href="/entrar">Entrar</a>
+    </div>
+    <p class="muted small" style="margin-top:22px">Dados de demonstração fictícios. Pagamentos e WhatsApp simulados. O score é indicativo: a decisão de crédito é do banco. Sem parceria formal com o Moza Banco.</p>
   </main>
 </body>
 </html>

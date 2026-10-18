@@ -101,6 +101,35 @@ export function completedByWeekday(washes, period, timeZone) {
   return WEEKDAY_LABELS.map((label, index) => ({ weekday: index + 1, label, completed: counts[index] }));
 }
 
+/**
+ * Ocupação média por dia da semana (M10): lavagens concluídas por dia ÷ capacidade prática diária
+ * (≈ 28 lavagens/dia com 4 baias na proposta v1). Só dias completos: o dia de hoje não entra.
+ * @param period { from, to } · @param dailyCapacity lavagens/dia (declarado, por validar)
+ */
+export function occupancyByWeekday(washes, period, { dailyCapacity, timeZone }) {
+  const todayStart = startOfLocalDay(period.to, timeZone);
+  const fullDays = { from: period.from, to: new Date(todayStart - 1).toISOString() };
+  const occurrences = new Array(7).fill(0);
+  for (let ms = Date.parse(fullDays.to); ms > Date.parse(period.from); ms -= DAY_MS) {
+    occurrences[weekdayIndex(new Date(ms).toISOString(), timeZone)] += 1;
+  }
+  return completedByWeekday(washes, fullDays, timeZone).map((day, index) => {
+    const averagePerDay = occurrences[index] ? day.completed / occurrences[index] : 0;
+    return { ...day, days: occurrences[index], averagePerDay, occupancy: dailyCapacity > 0 ? averagePerDay / dailyCapacity : null };
+  });
+}
+
+/** Dias da semana com ocupação abaixo do limiar (alerta "capacidade parada" do M10). */
+export function lowOccupancyDays(occupancy, threshold) {
+  return occupancy.filter((day) => day.days > 0 && day.occupancy !== null && day.occupancy < threshold);
+}
+
+function startOfLocalDay(iso, timeZone) {
+  const local = new Date(iso).toLocaleString('sv-SE', { timeZone }).replace(' ', 'T');
+  const offsetMs = Date.parse(`${local}Z`) - Date.parse(iso);
+  return Date.parse(`${local.slice(0, 10)}T00:00:00Z`) - offsetMs;
+}
+
 /** Concluídos agrupados por um campo (classe, plano). */
 export function completedBy(washes, period, field) {
   const completed = washes.filter((w) => w.status === 'completed' && inPeriod(w.completedAt, period));

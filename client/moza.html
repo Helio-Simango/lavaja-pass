@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="pt">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <title>Moza Insights · LavaJá Pass</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/app.css">
+  <link rel="stylesheet" href="/css/gestor.css">
+</head>
+<body>
+  <div class="dash">
+    <nav class="side" aria-label="Módulo do analista">
+      <a class="brand" href="#comerciante">Moza <em>Insights</em></a>
+      <div class="org" id="analyst-unit">Analista PME · Agência Matola</div>
+      <a class="nav-item" href="#comerciantes" data-nav="comerciantes">Comerciantes <span id="merchant-count"></span></a>
+      <a class="nav-item" href="#comerciante" data-nav="comerciante" id="nav-merchant">Comerciante</a>
+      <a class="nav-item" href="#extratos" data-nav="extratos">Extratos</a>
+      <div class="section-label">Dados partilhados pelo comerciante</div>
+      <div class="who"><div><b id="who-name"></b><span id="who-org"></span></div><button class="btn link" id="logout" type="button">Sair</button></div>
+    </nav>
+
+    <main class="main">
+      <!-- Comerciantes que autorizaram a partilha -->
+      <section class="view" data-view="comerciantes">
+        <div class="main-head"><div><h1>Comerciantes</h1><div class="sub">Só aparecem os comerciantes que autorizaram a partilha com a sua instituição.</div></div>
+          <span class="demo-flag">DEMONSTRAÇÃO</span></div>
+        <div class="box"><table class="data" id="merchants"></table></div>
+      </section>
+
+      <!-- M12 · Pré-qualificação de crédito -->
+      <section class="view" data-view="comerciante">
+        <div class="main-head">
+          <div><h1 id="merchant-name">Comerciante</h1><div class="sub" id="merchant-line"></div></div>
+          <span class="demo-flag">DEMONSTRAÇÃO</span>
+        </div>
+        <div id="report-error" class="callout warn" hidden></div>
+        <div id="report-body">
+          <div class="kpis" id="report-kpis"></div>
+          <div class="panel2">
+            <div class="box">
+              <div class="t">Score de pré-qualificação <span class="pill b" id="score-class"></span></div>
+              <div class="score">
+                <div class="score-ring" id="score-ring" role="img"><div><b id="score-total"></b><small>de 100</small></div></div>
+                <div class="comps" id="score-components"></div>
+              </div>
+              <div class="callout blue small" id="score-note"></div>
+              <details><summary>Como se calcula</summary><table class="data" id="score-definitions"></table></details>
+            </div>
+            <div class="box">
+              <div class="t">Montante indicativo</div>
+              <div class="amount" id="amount"></div>
+              <p class="muted small" id="purpose"></p>
+              <div id="amount-lines"></div>
+              <p class="error-box" id="request-error" hidden></p>
+              <button class="btn r block" id="request-analysis" type="button">Pedir análise de crédito</button>
+              <a class="btn o block" id="export" href="#" download>Exportar extrato (CSV)</a>
+              <p class="hint" id="disclaimer"></p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Extratos: actividade, recebimentos por origem, qualidade dos dados e notas -->
+      <section class="view" data-view="extratos">
+        <div class="main-head"><div><h1>Extratos</h1><div class="sub" id="extract-line"></div></div></div>
+        <div class="panel2 even">
+          <div class="box"><div class="t">Recebimentos por semana, por origem</div><div id="report-receipts"></div></div>
+          <div class="box"><div class="t">Serviços concluídos por semana</div><div id="report-activity"></div><p class="muted small" id="report-mix"></p></div>
+        </div>
+        <div class="box"><div class="t">Qualidade dos dados</div><table class="data" id="report-quality"></table></div>
+        <div class="panel2 even">
+          <div class="box"><div class="t">Notas</div><ul id="report-notes" class="small"></ul></div>
+          <div class="box"><div class="t">Os seus pedidos de análise</div><div id="my-requests"></div></div>
+        </div>
+      </section>
+    </main>
+  </div>
+  <script type="module" src="/js/moza/main.js"></script>
+</body>
+</html>

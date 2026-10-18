@@ -125,7 +125,9 @@ function presentWashPayment(wash) {
   return {
     status: paymentState,
     label,
-    effective: effective ? { id: effective.id, method: effective.method, declaredBy: effective.declaredBy } : null,
+    effective: effective
+      ? { id: effective.id, method: effective.method, declaredBy: effective.declaredBy, at: effective.confirmedAt ?? effective.declaredAt ?? null }
+      : null,
   };
 }
 
@@ -151,6 +153,7 @@ export function presentWash(wash) {
     source: wash.source,
     queuedAt: wash.queuedAt,
     startedAt: wash.startedAt,
+    startedBy: wash.startedBy ?? null,
     readyAt: wash.readyAt,
     completedAt: wash.completedAt,
     cancelledAt: wash.cancelledAt,
@@ -309,6 +312,26 @@ export function presentDashboard(summary) {
     })),
     yardNow: summary.yardNow,
     activeSharingAuthorizations: summary.activeSharingAuthorizations,
+    capacity: summary.capacity,
+    occupancy: summary.occupancy.map((day) => ({ ...day, occupancyPercent: day.occupancy === null ? null : Math.round(day.occupancy * 100) })),
+    lowOccupancy: summary.lowOccupancy.map((day) => ({ label: day.label, occupancyPercent: Math.round(day.occupancy * 100) })),
+  };
+}
+
+export function presentToday(today) {
+  const mzn = (cents) => presentMoney(cents, 'MZN');
+  const received = today.digitalCents + today.cashCents;
+  return {
+    date: today.date,
+    washes: today.washes,
+    completed: today.completed,
+    received: mzn(received),
+    digital: { ...mzn(today.digitalCents), origin: 'Confirmado em simulação' },
+    cash: { ...mzn(today.cashCents), origin: 'Declarado por operador' },
+    digitalSharePercent: received ? Math.round((today.digitalCents / received) * 100) : null,
+    cashByOperator: today.cashByOperator.map(({ operator, cents }) => ({ operator, amount: mzn(cents) })),
+    receivable: { ...mzn(today.receivableCents), count: today.receivableCount },
+    yardNow: today.yardNow,
   };
 }
 
@@ -616,7 +639,7 @@ const CHANGE_ENTITY_LABELS = Object.freeze({
   class_plan_price: 'Preço',
   vehicle: 'Viatura',
   loyalty_rules: 'Regras de fidelização',
-  station: 'Posto',
+  station: 'Baia',
 });
 
 export function presentChange(entry) {

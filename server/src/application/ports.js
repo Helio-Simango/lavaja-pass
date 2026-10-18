@@ -28,6 +28,7 @@
  * @property {(id: number) => object|null} findById
  * @property {(phone: string) => object|null} findByPhone
  * @property {(options: {limit:number}) => object[]} list
+ * @property {() => number} count
  * @property {(customer: {phone:string, name:string}, now: string) => number} insert
  */
 

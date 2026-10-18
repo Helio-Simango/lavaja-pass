@@ -1,11 +1,9 @@
-// Catálogo (M14): planos e preços por classe, classes e parâmetros de fidelização.
+// Catálogo e regras (M14): planos e preços por classe, classes, fidelização, baias e alterações.
+// Cada alteração fica registada em nome do gestor da sessão.
 import { api } from '../core/api-client.js';
 import { $, enableCloseButtons, escapeHtml, hideMessage, showMessage, withoutCurrency } from '../core/dom.js';
-import { bindOperatorInput } from '../core/operator.js';
-import { parseAmountToCents } from '../patio/cash-dialog.js';
+import { parseAmountToCents } from '../core/format.js';
 
-const actor = bindOperatorInput($('#operator'));
-const dialog = $('#plan-dialog');
 const state = { plans: [], classes: [], editing: null };
 
 // Parâmetros de fidelização e a decisão pendente a que cada um corresponde (cap. 11).
@@ -32,10 +30,10 @@ async function loadPlans() {
           return `<td class="num">${price ? escapeHtml(withoutCurrency(price.price.display)) : '<span class="muted">sem preço</span>'}</td>`;
         })
         .join('');
-      const status = plan.active ? '<span class="pill green">Activo</span>' : '<span class="pill">Indisponível</span>';
+      const status = plan.active ? '<span class="pill g">Activo</span>' : '<span class="pill">Indisponível</span>';
       return `<tr><td>${escapeHtml(plan.name)}<div class="muted small">${escapeHtml(plan.description ?? '')}</div></td>
         <td class="num">${plan.baseDurationMin} min</td>${prices}<td>${status}</td>
-        <td><button class="link-button" data-edit="${plan.id}">Editar</button></td></tr>`;
+        <td><button class="btn link" data-edit="${plan.id}">Editar</button></td></tr>`;
     })
     .join('');
 }
@@ -51,7 +49,7 @@ async function loadRules() {
   $('#rules-version').textContent = `v${rules.version}${rules.toValidate ? ' · por validar' : ''}`;
   $('#rules-table').innerHTML = RULE_ROWS.map(
     ([label, value, decision]) => `<tr><td>${escapeHtml(label)}</td><td>${escapeHtml(value(rules.params, rules.summary))}</td>
-      <td><span class="pill ${decision.startsWith('D-') ? 'amber' : ''}">${escapeHtml(decision)}</span></td></tr>`,
+      <td><span class="pill ${decision.startsWith('D-') ? 'a' : ''}">${escapeHtml(decision)}</span></td></tr>`,
   ).join('');
 }
 
@@ -63,8 +61,8 @@ const CHANGE_FORMATS = { priceCents: (v) => (v === null ? 'sem preço' : without
 async function loadStations() {
   const { stations } = await api('GET', '/stations');
   $('#stations-table').innerHTML = stations
-    .map((s) => `<tr><td><strong>${escapeHtml(s.code)}</strong></td><td>${s.active ? '<span class="pill green">Activo</span>' : '<span class="pill">Inactivo</span>'}</td>
-      <td><button class="link-button" data-station="${s.id}" data-active="${!s.active}">${s.active ? 'Desactivar' : 'Activar'}</button></td></tr>`)
+    .map((s) => `<tr><td><strong>${escapeHtml(s.code)}</strong></td><td>${s.active ? '<span class="pill g">Activa</span>' : '<span class="pill">Inactiva</span>'}</td>
+      <td><button class="btn link" data-station="${s.id}" data-active="${!s.active}">${s.active ? 'Desactivar' : 'Activar'}</button></td></tr>`)
     .join('');
 }
 
@@ -78,55 +76,64 @@ async function loadChanges() {
     .join('') || '<tr><td colspan="5" class="muted">Sem alterações.</td></tr>'}`;
 }
 
-$('#stations-table').addEventListener('click', async (event) => {
-  const button = event.target.closest('[data-station]');
-  if (!button) return;
-  await api('PATCH', `/stations/${button.dataset.station}`, { active: button.dataset.active === 'true' }, { actor: actor() });
-  await Promise.all([loadStations(), loadChanges()]);
-});
+/** Liga os eventos uma vez (a vista é criada uma só vez). */
+function bindEvents(dialog) {
+  $('#stations-table').addEventListener('click', async (event) => {
+    const button = event.target.closest('[data-station]');
+    if (!button) return;
+    await api('PATCH', `/stations/${button.dataset.station}`, { active: button.dataset.active === 'true' });
+    await Promise.all([loadStations(), loadChanges()]);
+  });
 
-// ---------- Editar plano ----------
+  // ---------- Editar plano ----------
 
-enableCloseButtons(dialog);
+  enableCloseButtons(dialog);
+  $('#plans-table').addEventListener('click', (event) => {
+    const button = event.target.closest('[data-edit]');
+    if (!button) return;
+    const plan = state.plans.find((p) => p.id === Number(button.dataset.edit));
+    state.editing = plan;
+    $('#plan-dialog-title').textContent = `Editar ${plan.name}`;
+    $('#plan-name').value = plan.name;
+    $('#plan-duration').value = plan.baseDurationMin;
+    $('#plan-active').checked = plan.active;
+    $('#plan-prices').innerHTML = state.classes
+      .map((c) => {
+        const price = plan.prices.find((p) => p.classCode === c.code);
+        return `<div><label class="lbl" for="price-${c.code}">Classe ${c.code}</label>
+          <input class="input" id="price-${c.code}" data-class="${c.code}" inputmode="decimal" value="${price ? escapeHtml(withoutCurrency(price.price.display)) : ''}"></div>`;
+      })
+      .join('');
+    hideMessage($('#plan-error'));
+    dialog.showModal();
+  });
 
-$('#plans-table').addEventListener('click', (event) => {
-  const button = event.target.closest('[data-edit]');
-  if (!button) return;
-  const plan = state.plans.find((p) => p.id === Number(button.dataset.edit));
-  state.editing = plan;
-  $('#plan-dialog-title').textContent = `Editar ${plan.name}`;
-  $('#plan-name').value = plan.name;
-  $('#plan-duration').value = plan.baseDurationMin;
-  $('#plan-active').checked = plan.active;
-  $('#plan-prices').innerHTML = state.classes
-    .map((c) => {
-      const price = plan.prices.find((p) => p.classCode === c.code);
-      return `<div><label for="price-${c.code}">Classe ${c.code}</label>
-        <input id="price-${c.code}" data-class="${c.code}" inputmode="decimal" value="${price ? escapeHtml(withoutCurrency(price.price.display)) : ''}"></div>`;
-    })
-    .join('');
-  hideMessage($('#plan-error'));
-  dialog.showModal();
-});
-
-$('form', dialog).addEventListener('submit', async (event) => {
-  event.preventDefault();
-  const plan = state.editing;
-  try {
-    const patch = { name: $('#plan-name').value, baseDurationMin: Number($('#plan-duration').value), active: $('#plan-active').checked };
-    await api('PATCH', `/plans/${plan.id}`, patch, { actor: actor() });
-    for (const input of dialog.querySelectorAll('[data-class]')) {
-      if (!input.value.trim()) continue;
-      const priceCents = parseAmountToCents(input.value);
-      if (priceCents === null) throw new Error(`Preço inválido para a classe ${input.dataset.class}.`);
-      await api('PUT', `/plans/${plan.id}/prices/${input.dataset.class}`, { priceCents }, { actor: actor() });
+  $('form', dialog).addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const plan = state.editing;
+    try {
+      const patch = { name: $('#plan-name').value, baseDurationMin: Number($('#plan-duration').value), active: $('#plan-active').checked };
+      await api('PATCH', `/plans/${plan.id}`, patch);
+      for (const input of dialog.querySelectorAll('[data-class]')) {
+        if (!input.value.trim()) continue;
+        const priceCents = parseAmountToCents(input.value);
+        if (priceCents === null) throw new Error(`Preço inválido para a classe ${input.dataset.class}.`);
+        await api('PUT', `/plans/${plan.id}/prices/${input.dataset.class}`, { priceCents });
+      }
+      dialog.close();
+      await Promise.all([loadPlans(), loadChanges()]);
+    } catch (error) {
+      showMessage($('#plan-error'), error.message);
     }
-    dialog.close();
-    await Promise.all([loadPlans(), loadChanges()]);
-  } catch (error) {
-    showMessage($('#plan-error'), error.message);
-  }
-});
+  });
+}
 
-await loadClasses();
-await Promise.all([loadPlans(), loadRules(), loadStations(), loadChanges()]);
+export function createCatalogView() {
+  bindEvents($('#plan-dialog'));
+  return {
+    async load() {
+      await loadClasses();
+      await Promise.all([loadPlans(), loadRules(), loadStations(), loadChanges()]);
+    },
+  };
+}

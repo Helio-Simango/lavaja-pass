@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { after, before, describe, it } from 'node:test';
 import { demoIds, startTestServer } from '../helpers.js';
 
-// AGB 550 MP (Completa A, 450,00) está pronto no P2; ABC 123 MC (Completa B, 600,00) está em fila.
+// AGB 550 MP (Completa A, 450,00) está pronto na B2; ABC 123 MC (Completa B, 600,00) está em fila.
 describe('API de pagamentos simulados (I-3)', () => {
   let t;
   let READY_WASH;

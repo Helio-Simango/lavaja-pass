@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="pt">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <title>Os meus serviços · LavaJá Pass</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/app.css">
+</head>
+<body class="phone-app">
+  <!-- Área do cliente: estado, pagamentos, marcações e fidelização (só os seus dados) -->
+  <div class="phone">
+    <header class="op-head" style="background:#075e54">
+      <div><b id="business">Lava Já – Matola</b><small id="who">A carregar…</small></div>
+      <button class="btn link" id="logout" type="button" style="color:#d9fdd3">Sair</button>
+    </header>
+    <main class="phone-body">
+      <div class="colhead">No pátio</div>
+      <div id="active"></div>
+      <div class="colhead">Marcações</div>
+      <div id="appointments"></div>
+      <div class="colhead">Fidelização</div>
+      <div id="loyalty"></div>
+      <div class="colhead">Histórico</div>
+      <div id="history"></div>
+      <p class="hint phone-pad">Para entrar na fila ou marcar, use a conversa: escreva <b>LAVAR</b>. <a id="chat-link" href="/simulador">Abrir a conversa</a></p>
+    </main>
+  </div>
+  <script type="module" src="/js/cliente/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="pt">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <meta name="theme-color" content="#16191d">
+  <title>Pátio · LavaJá Pass</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/app.css">
+</head>
+<body class="phone-app">
+  <div class="phone">
+    <!-- M7 · Quadro de baias -->
+    <header class="op-head">
+      <div>
+        <b>Lava Já · Pátio</b>
+        <small id="op-sub">A carregar…</small>
+      </div>
+      <div style="text-align:right">
+        <span class="online" id="online">ONLINE</span><br>
+        <button class="btn link" id="logout" type="button">Sair do turno</button>
+      </div>
+    </header>
+    <div class="baias" id="baias" aria-label="Baias"></div>
+    <nav class="tabs" role="tablist" id="tabs">
+      <button role="tab" data-filter="all" aria-selected="true">Todos <span data-count="all"></span></button>
+      <button role="tab" data-filter="queued">Fila <span data-count="queued"></span></button>
+      <button role="tab" data-filter="in_progress">A lavar <span data-count="in_progress"></span></button>
+      <button role="tab" data-filter="ready">Pronto <span data-count="ready"></span></button>
+      <button role="tab" data-filter="appointments">Marcações <span data-count="appointments"></span></button>
+    </nav>
+    <main class="phone-body" id="board" aria-live="polite"></main>
+    <p class="error-box" id="board-error" hidden style="margin:0 10px"></p>
+    <div class="fab-bar"><button class="fab" id="open-entry" type="button">+ Registar entrada</button></div>
+
+    <!-- M8 · Entrada manual -->
+    <div class="sheet-backdrop" id="entry-sheet" hidden>
+      <form class="sheet" id="entry-form" novalidate>
+        <div class="grab"></div>
+        <h3>Nova entrada</h3>
+        <label class="lbl" for="entry-plate">Matrícula</label>
+        <input class="input plate-input" id="entry-plate" placeholder="AAZ 219 MP" autocomplete="off" maxlength="12">
+        <p class="hint" id="entry-known"></p>
+        <div id="entry-class-block" hidden>
+          <span class="lbl">Classe da viatura</span>
+          <div class="chips" id="entry-classes" role="radiogroup" aria-label="Classe"></div>
+        </div>
+        <span class="lbl">Serviço</span>
+        <div class="chips" id="entry-plans" role="radiogroup" aria-label="Serviço"></div>
+        <label class="lbl" for="entry-phone">Telefone do cliente (opcional)</label>
+        <input class="input" id="entry-phone" inputmode="tel" placeholder="+258 8_ ___ ____" autocomplete="off">
+        <p class="hint">Com telefone, o cliente recebe avisos e o progresso de fidelização pelo WhatsApp.</p>
+        <div id="entry-new-customer" hidden>
+          <label class="lbl" for="entry-name">Nome (opcional)</label>
+          <input class="input" id="entry-name" maxlength="80" autocomplete="off">
+          <span class="lbl">O cliente aceita (consentimentos separados)</span>
+          <label class="radio" style="cursor:default"><input type="checkbox" id="entry-loyalty"> <span><b>Programa de fidelização</b><small>acumula lavagens e ganha benefícios</small></span></label>
+          <label class="radio" style="cursor:default"><input type="checkbox" id="entry-marketing"> <span><b>Receber ofertas</b><small>pode responder PARAR a qualquer momento</small></span></label>
+        </div>
+        <p class="summary-line" id="entry-estimate">Escolha a matrícula e o serviço.</p>
+        <p class="error-box" id="entry-error" hidden></p>
+        <button class="btn r block" type="submit" id="entry-submit" disabled>Adicionar à fila</button>
+        <button class="btn o block" type="button" data-close-sheet>Cancelar</button>
+      </form>
+    </div>
+
+    <!-- Escolher baia / cancelar -->
+    <div class="sheet-backdrop" id="action-sheet" hidden>
+      <div class="sheet" id="action-body"></div>
+    </div>
+
+    <!-- M9 · Entrega e cobrança -->
+    <section class="sheet-backdrop" id="delivery" hidden style="background:#fff;justify-content:flex-start">
+      <header class="op-head">
+        <div><b>Entregar viatura</b><small id="delivery-sub"></small></div>
+        <button class="btn link" type="button" data-close-delivery>Voltar</button>
+      </header>
+      <div class="phone-pad" id="delivery-body"></div>
+    </section>
+  </div>
+  <script type="module" src="/js/operador/main.js"></script>
+</body>
+</html>
