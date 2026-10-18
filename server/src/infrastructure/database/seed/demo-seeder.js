@@ -23,6 +23,19 @@ import {
   YARD_START_OFFSET_MIN,
   YARD_TIMELINE,
 } from './demo-data.js';
+import {
+  pick,
+  PITCH_CUSTOMERS_TOTAL,
+  PITCH_DIGITAL_SHARE,
+  PITCH_OPERATORS,
+  PITCH_PLAN_MIX,
+  PITCH_UNPAID_SHARE,
+  PITCH_WEEKDAY_WASHES,
+  pitchCustomers,
+  pitchVisits,
+  seededRandom,
+  shuffle,
+} from './pitch-data.js';
 
 const DAY_MS = 86_400_000;
 const MINUTE_MS = 60_000;
@@ -30,8 +43,14 @@ const MINUTE_MS = 60_000;
 const SEED_ACTOR = 'demonstração';
 
 /** @returns false se a base já tinha dados (nada é alterado). */
-/** @param passwordHasher para os testes usarem um custo de hash mais baixo */
-export function seedDemo(db, { clock = systemClock, passwordHasher } = {}) {
+/** Volumes: "pitch" = base da proposta v1 (212 clientes, ~365 lavagens); "compact" = só os clientes do roteiro. */
+export const SeedVolume = Object.freeze({ PITCH: 'pitch', COMPACT: 'compact' });
+
+/**
+ * @param passwordHasher para os testes usarem um custo de hash mais baixo
+ * @param volume SeedVolume (os testes usam "compact")
+ */
+export function seedDemo(db, { clock = systemClock, passwordHasher, volume = SeedVolume.PITCH } = {}) {
   if (hasReferenceData(db)) return false;
 
   // O relógio da demonstração começa 30 dias antes de "agora" e avança até ao pátio actual.
@@ -45,6 +64,7 @@ export function seedDemo(db, { clock = systemClock, passwordHasher } = {}) {
     services.loyaltyService.publishRules(DEMO_LOYALTY_RULES, { actor: SEED_ACTOR, toValidate: true });
     CUSTOMERS.forEach((customer) => services.customerService.register(customer));
     playHistory(db, services, demoClock, nowMs);
+    if (volume === SeedVolume.PITCH) playPitchHistory(db, services, demoClock, nowMs);
     seedSharing(repositories.sharingRepository, services, demoClock, nowMs);
     seedUsers(db, services.authService);
     demoClock.set(new Date(nowMs - YARD_START_OFFSET_MIN * MINUTE_MS).toISOString());
@@ -153,6 +173,66 @@ function playHistory(db, { washService, paymentService }, demoClock, nowMs) {
     if (entry.paid) payHistoricWash(paymentService, wash, index, operator);
     washService.transition(wash.id, { to: 'completed', allowUnpaid: !entry.paid, actor: operator });
   });
+}
+
+/**
+ * Base da proposta v1 (secção 2.1): clientes de fundo e lavagens dos últimos 29 dias com a semana
+ * média 8·6·7·8·14·24·18, distribuídas pelos 4 postos. Passa pelos casos de uso, como o resto.
+ */
+function playPitchHistory(db, { customerService, washService, paymentService }, demoClock, nowMs) {
+  const random = seededRandom(20_261_022);
+  const vehicleIds = pitchCustomers(PITCH_CUSTOMERS_TOTAL - CUSTOMERS.length, random).map(
+    (customer) => customerService.register(customer).vehicles[0].id,
+  );
+  const stationIds = STATIONS.map((code) => db.prepare('SELECT id FROM stations WHERE code = ?').get(code).id);
+  const planIds = Object.fromEntries(PITCH_PLAN_MIX.map(([code]) => [code, db.prepare('SELECT id FROM wash_plans WHERE code = ?').get(code).id]));
+
+  const slots = pitchSlots(nowMs);
+  const visits = shuffle(pitchVisits(vehicleIds.length, slots.length), random);
+  slots.forEach((slot, n) => {
+    demoClock.set(localToIso(slot.date, slot.time));
+    const wash = washService.register({ vehicleId: vehicleIds[visits[n]], planId: planIds[pick(random, PITCH_PLAN_MIX)], source: 'demo', actor: SEED_ACTOR });
+    const operator = PITCH_OPERATORS[n % PITCH_OPERATORS.length];
+    washService.transition(wash.id, { to: 'in_progress', stationId: stationIds[slot.index % stationIds.length], actor: operator });
+    demoClock.advanceMinutes(wash.durationMin);
+    washService.transition(wash.id, { to: 'ready', actor: operator });
+    const roll = random();
+    const paid = roll >= PITCH_UNPAID_SHARE;
+    if (paid) payPitchWash(paymentService, wash, operator, roll < PITCH_UNPAID_SHARE + PITCH_DIGITAL_SHARE);
+    demoClock.advanceMinutes(5);
+    washService.transition(wash.id, { to: 'completed', allowUnpaid: !paid, actor: operator });
+  });
+}
+
+/** Um lugar por lavagem: dia, posição no dia e hora local, já descontadas as lavagens do roteiro. */
+function pitchSlots(nowMs) {
+  const today = localDateOf(new Date(nowMs).toISOString());
+  const scripted = new Map();
+  for (const entry of historyEntries()) scripted.set(entry.daysAgo, (scripted.get(entry.daysAgo) ?? 0) + 1);
+  const slots = [];
+  for (let daysAgo = HISTORY_DAYS - 1; daysAgo >= 1; daysAgo -= 1) {
+    const date = addDays(today, -daysAgo);
+    const weekday = (new Date(`${date}T12:00:00Z`).getUTCDay() + 6) % 7;
+    const count = Math.max(0, PITCH_WEEKDAY_WASHES[weekday] - (scripted.get(daysAgo) ?? 0));
+    const rounds = Math.ceil(count / STATIONS.length);
+    const spacingMin = Math.floor((10 * 60) / Math.max(1, rounds));
+    for (let index = 0; index < count; index += 1) {
+      const minutes = 7 * 60 + Math.floor(index / STATIONS.length) * spacingMin + (index % STATIONS.length) * 7;
+      const time = `${String(Math.floor(minutes / 60)).padStart(2, '0')}:${String(minutes % 60).padStart(2, '0')}`;
+      slots.push({ date, index, time });
+    }
+  }
+  return slots;
+}
+
+function payPitchWash(paymentService, wash, operator, digital) {
+  const idempotencyKey = `demo-pitch-${wash.id}`;
+  if (!digital) {
+    paymentService.declareCash(wash.id, { amountCents: wash.finalPriceCents, declaredBy: operator, confirmed: true, idempotencyKey, actor: operator });
+    return;
+  }
+  const { payment } = paymentService.startDigital(wash.id, { amountCents: wash.finalPriceCents, idempotencyKey, actor: wash.customerName });
+  paymentService.simulate(payment.id, 'confirmed');
 }
 
 function historyEntries() {

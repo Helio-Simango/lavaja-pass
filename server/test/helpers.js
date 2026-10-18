@@ -20,14 +20,14 @@ const security = { tokenSecret: TEST_TOKEN_SECRET, passwordHasher: fastHasher };
 export function createTestDb({ clock = createFixedClock(DEMO_NOW), seed = true } = {}) {
   const db = openDatabase(IN_MEMORY);
   migrate(db);
-  if (seed) seedDemo(db, { clock, passwordHasher: fastHasher });
+  if (seed) seedDemo(db, { clock, passwordHasher: fastHasher, volume: 'compact' });
   return db;
 }
 
 export function createTestContext() {
   const clock = createFixedClock(DEMO_NOW);
   const db = createTestDb({ clock });
-  return { db, clock, ...createContainer({ db, clock, security }) };
+  return { db, clock, ...createContainer({ db, clock, security, demoVolume: 'compact' }) };
 }
 
 /**

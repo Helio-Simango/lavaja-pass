@@ -43,8 +43,9 @@ import { ConversationNotifier } from './interfaces/chat/notifier.js';
 
 /**
  * @param security { tokenSecret?, passwordHasher? } — sem segredo, as sessões valem só até reiniciar
+ * @param demoVolume volume da reposição da demonstração ("pitch" por omissão; os testes usam "compact")
  */
-export function createContainer({ db, clock = systemClock, security = {} }) {
+export function createContainer({ db, clock = systemClock, security = {}, demoVolume }) {
   const unitOfWork = new SqliteUnitOfWork(db);
   const passwordHasher = security.passwordHasher ?? new ScryptPasswordHasher();
   const tokenService = new HmacJwtTokenService({ secret: security.tokenSecret ?? randomSecret(), clock });
@@ -94,7 +95,7 @@ export function createContainer({ db, clock = systemClock, security = {} }) {
     security: { tokenService, passwordHasher },
     services: {
       // Reposição da demonstração (só exposta com token, confirmação e acesso local)
-      demoResetService: { reset: () => resetDemoDatabase(db, { clock, passwordHasher }) },
+      demoResetService: { reset: () => resetDemoDatabase(db, { clock, passwordHasher, volume: demoVolume }) },
       appointmentService,
       authService,
       bankReportService,

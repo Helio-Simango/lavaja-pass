@@ -119,4 +119,36 @@ export class SqliteSharingRepository {
       .all({ authorizationId: authorizationId ?? null })
       .map(toAccessLog);
   }
+
+  insertCreditRequest({ authorizationId, institutionId, requestedBy, scoreTotal, scoreClass, indicativeAmountCents, note }, now) {
+    const { lastInsertRowid } = this.#db
+      .prepare(`INSERT INTO credit_analysis_requests
+        (authorization_id, institution_id, requested_by, score_total, score_class, indicative_amount_cents, note, created_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)`)
+      .run(authorizationId, institutionId, requestedBy, scoreTotal, scoreClass, indicativeAmountCents, note, now);
+    return Number(lastInsertRowid);
+  }
+
+  listCreditRequests({ institutionId } = {}) {
+    return this.#db
+      .prepare(`SELECT r.*, a.reference, i.name AS institution_name FROM credit_analysis_requests r
+        JOIN data_sharing_authorizations a ON a.id = r.authorization_id
+        JOIN institutions i ON i.id = r.institution_id
+        WHERE (:institutionId IS NULL OR r.institution_id = :institutionId)
+        ORDER BY r.id DESC`)
+      .all({ institutionId: institutionId ?? null })
+      .map((row) => ({
+        id: row.id,
+        authorizationId: row.authorization_id,
+        authorizationReference: row.reference,
+        institutionId: row.institution_id,
+        institutionName: row.institution_name,
+        requestedBy: row.requested_by,
+        scoreTotal: row.score_total,
+        scoreClass: row.score_class,
+        indicativeAmountCents: row.indicative_amount_cents,
+        note: row.note,
+        createdAt: row.created_at,
+      }));
+  }
 }

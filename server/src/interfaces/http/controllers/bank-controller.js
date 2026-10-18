@@ -3,6 +3,7 @@ import { AccessAction } from '../../../application/bank-report-service.js';
 import {
   activityReportToCsv,
   presentAccessLog,
+  presentCreditRequest,
   presentActivityReport,
   presentAuthorization,
 } from '../presenters.js';
@@ -70,6 +71,27 @@ export function createBankController({ sharingService, bankReportService }) {
         .type('text/csv; charset=utf-8')
         .attachment(`relatorio-${report.authorization.reference}.csv`)
         .send(`﻿${activityReportToCsv(report)}`);
+    },
+
+    /** O analista pede uma análise de crédito formal (M12). */
+    requestCreditAnalysis(req, res) {
+      const body = bodyOf(req);
+      const request = bankReportService.requestCreditAnalysis({
+        institutionId: req.session.institutionId,
+        authorizationId: parseId(body.authorizationId, 'authorizationId'),
+        note: body.note,
+        actor: actorOf(req),
+      });
+      res.status(201).json({ request: presentCreditRequest(request) });
+    },
+
+    analystCreditRequests(req, res) {
+      res.json({ requests: bankReportService.creditRequests({ institutionId: req.session.institutionId }).map(presentCreditRequest) });
+    },
+
+    /** A lavadora vê os pedidos de análise feitos a partir das suas autorizações. */
+    creditRequests(req, res) {
+      res.json({ requests: bankReportService.creditRequests().map(presentCreditRequest) });
     },
   };
 }
