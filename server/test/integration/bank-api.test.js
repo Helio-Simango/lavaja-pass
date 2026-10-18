@@ -28,10 +28,11 @@ describe('API da vertente Banco (I-7)', () => {
     const { report: body } = res.body;
     assert.equal(body.business, 'Lava Já – Matola');
     assert.equal(body.authorization.reference, 'AUT-002');
-    assert.deepEqual(Object.keys(body.sections), ['activity', 'receipts', 'customers', 'dataQuality']);
+    assert.deepEqual(Object.keys(body.sections), ['prequalification', 'activity', 'receipts', 'customers', 'dataQuality']);
+    assert.deepEqual([body.holder, body.bankAccount], ['Z. Cossa', 'Conta Moza 0023-****-01']);
     assert.equal(body.sections.receipts.digitalConfirmed.origin, 'Confirmado em simulação');
     assert.equal(body.sections.receipts.cashDeclared.origin, 'Declarado por operador');
-    assert.ok(body.notes.some((note) => /não é uma avaliação nem uma pontuação de crédito/i.test(note)));
+    assert.ok(body.notes.some((note) => /score de pré-qualificação é indicativo: não aprova crédito/i.test(note)));
   });
 
   it('não inclui dados pessoais dos clientes finais', async () => {
@@ -105,8 +106,41 @@ describe('API da vertente Banco (I-7)', () => {
     assert.equal((await t.api('POST', '/api/sharing/authorizations/2/revoke', {}, analyst)).status, 403);
   });
 
+  it('a pré-qualificação (M12) tem os seis componentes, a classe e o montante indicativo', async () => {
+    const score = (await report(2)).body.report.sections.prequalification;
+    assert.deepEqual(score.components.map((c) => c.weight), [25, 20, 15, 20, 10, 10]);
+    assert.equal(score.total, Math.round(score.components.reduce((sum, c) => sum + c.ratio * c.weight, 0)));
+    assert.ok(['A', 'B', 'C'].includes(score.scoreClass));
+    const lowest = score.components.reduce((low, c) => (c.ratio < low.ratio ? c : low));
+    assert.equal(score.weakest.key, lowest.key); // o ponto fraco é o componente mais baixo
+    assert.equal(score.indicative.termMonths, 12);
+    assert.equal(score.indicative.amount.cents % 500_000, 0);
+    assert.equal(score.summary.digital30d.origin, 'Confirmado em simulação');
+    assert.match(score.disclaimer, /decisão de crédito é do banco/);
+  });
+
+  it('o pedido de análise de crédito fica registado e a lavadora vê-o', async () => {
+    const res = await t.api('POST', '/api/bank/credit-requests', { authorizationId: 2, note: 'Encaminhado para análise PME' }, t.as('bank_analyst'));
+    assert.equal(res.status, 201);
+    assert.equal(res.body.request.requestedBy, ANALYST);
+    assert.equal(res.body.request.authorizationReference, 'AUT-002');
+    const seen = (await t.api('GET', '/api/sharing/credit-requests')).body.requests;
+    assert.deepEqual(seen.map((r) => r.note), ['Encaminhado para análise PME']);
+    assert.equal((await t.api('POST', '/api/bank/credit-requests', { authorizationId: 2 }, t.as('manager'))).status, 403);
+    assert.throws(() => t.db.prepare('DELETE FROM credit_analysis_requests').run(), /só aceita novos registos/);
+  });
+
+  it('sem a secção autorizada não há score nem pedido de análise', async () => {
+    const { authorization } = (await t.api('POST', '/api/sharing/authorizations', {
+      institutionId: 1, purpose: 'Só actividade, sem score', sections: ['activity', 'receipts'], dataMonths: 3, validDays: 15, confirm: true,
+    })).body;
+    assert.equal((await report(authorization.id)).body.report.sections.prequalification, undefined);
+    const res = await t.api('POST', '/api/bank/credit-requests', { authorizationId: authorization.id }, t.as('bank_analyst'));
+    assert.equal(res.body.error.code, 'PREQUALIFICATION_NOT_AUTHORIZED');
+  });
+
   it('o Painel mostra as autorizações activas', async () => {
-    assert.equal((await t.api('GET', '/api/dashboard/summary')).body.activeSharingAuthorizations, 1);
+    assert.equal((await t.api('GET', '/api/dashboard/summary')).body.activeSharingAuthorizations, 2);
   });
 
   it('a base não deixa alterar uma autorização dada', () => {

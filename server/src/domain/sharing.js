@@ -1,6 +1,7 @@
 // Partilha com instituições bancárias (cap. 9.1 e 14.1): só com autorização explícita da lavadora,
 // para uma instituição, com finalidade, âmbito, período de dados e validade; revogável.
-// O relatório é informação adicional: não é uma pontuação de crédito.
+// O relatório é informação adicional. A pré-qualificação (secção própria, I-11) é indicativa:
+// não aprova crédito; a decisão é sempre do banco.
 import { AccessDeniedError, ConflictError, ValidationError } from './errors.js';
 
 export const ReportSection = Object.freeze({
@@ -8,6 +9,7 @@ export const ReportSection = Object.freeze({
   RECEIPTS: 'receipts',
   CUSTOMERS: 'customers',
   DATA_QUALITY: 'data_quality',
+  PREQUALIFICATION: 'prequalification',
 });
 
 export const SECTION_LABELS = Object.freeze({
@@ -15,6 +17,7 @@ export const SECTION_LABELS = Object.freeze({
   receipts: 'Recebimentos por origem',
   customers: 'Clientes (agregado)',
   data_quality: 'Qualidade dos dados',
+  prequalification: 'Pré-qualificação (score indicativo)',
 });
 
 export const AuthorizationStatus = Object.freeze({ ACTIVE: 'active', REVOKED: 'revoked', EXPIRED: 'expired' });
@@ -96,11 +99,11 @@ export function planRevoke(authorization, { reason, actor, now }) {
   return { changed: true, changes: { revokedAt: now, revokedBy: actor, revokeReason: text || null } };
 }
 
-/** Notas fixas de todos os relatórios (cap. 9.3, ponto 6). */
+/** Notas fixas de todos os relatórios (cap. 9.3, ponto 6; actualizadas no I-11). */
 export const REPORT_NOTES = Object.freeze([
-  'Este relatório é informação adicional, autorizada pela lavadora. Não é uma avaliação nem uma pontuação de crédito, não demonstra capacidade de reembolso e não substitui a análise do banco.',
+  'Este relatório é informação adicional, autorizada pela lavadora. O score de pré-qualificação é indicativo: não aprova crédito, não demonstra capacidade de reembolso e não substitui a análise do banco. A decisão de crédito é do banco, pelos seus processos.',
   'O digital confirmado resulta de uma simulação (protótipo): não são transacções reais.',
-  'O numerário é declarado por operadores identificados e não é verificado por uma fonte externa.',
+  'O numerário é declarado por operadores identificados e não é verificado por uma fonte externa; não conta para o volume nem para a % digital do score.',
   'Indicadores agregados: não inclui nomes nem telefones dos clientes finais.',
-  'Protótipo sem autenticação (D-16) e com dados de demonstração fictícios.',
+  'Acesso autenticado por perfil (D-16) e dados de demonstração fictícios.',
 ]);

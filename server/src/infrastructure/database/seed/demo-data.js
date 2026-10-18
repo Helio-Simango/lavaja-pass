@@ -52,6 +52,27 @@ export const SETTINGS = [
     description:
       'Marcações (por validar): horário e trabalhadores declarados; margem de segurança (proposta); D-09 confirmação manual; D-10 tolerância de 15 min; D-12 sem reserva para a fila; D-14 propor o horário libertado; D-11 e D-13 sem penalizações nem depósitos',
   },
+  { key: 'business.owner', value: 'Z. Cossa', description: 'Titular da lavadora (fictício, dados de demonstração)' },
+  {
+    key: 'business.bankAccount',
+    value: 'Conta Moza 0023-****-01',
+    description: 'Conta do comerciante mostrada ao analista (fictícia e mascarada, dados de demonstração)',
+  },
+  {
+    key: 'prequalification.params',
+    value: {
+      volumeReferenceCents: 10_000_000,
+      historyReferenceDays: 180,
+      classAMin: 75,
+      classBMin: 60,
+      retentionShare: 0.1,
+      termMonths: 12,
+      costFactor: 1.25,
+      roundingCents: 500_000,
+    },
+    description:
+      'Score de pré-qualificação (proposta v1, secção 8), por validar com o banco: volume de referência 100.000 MZN, antiguidade de referência 180 dias, classes A ≥ 75 e B ≥ 60, retenção de 10% dos recebimentos digitais, 12 meses, factor de custo ilustrativo 1,25',
+  },
   {
     key: 'demo.institution',
     value: 'Moza Banco',
@@ -139,8 +160,8 @@ export const DEMO_AUTHORIZATIONS = [
   },
   {
     daysAgo: 2,
-    purpose: 'Análise de oportunidade de financiamento de equipamento',
-    sections: ['activity', 'receipts', 'customers', 'data_quality'],
+    purpose: 'Financiamento de equipamento: compressor de alta pressão e aspirador industrial',
+    sections: ['activity', 'receipts', 'customers', 'data_quality', 'prequalification'],
     dataMonths: 6,
     validDays: 30,
     viewedDaysAgo: 1,

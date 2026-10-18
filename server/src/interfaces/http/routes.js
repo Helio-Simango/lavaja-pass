@@ -118,10 +118,13 @@ export function createApiRouter({ services, clock, demoResetToken = null, secure
   router.post('/sharing/authorizations', allow(P.SHARING_MANAGE), bank.grant);
   router.post('/sharing/authorizations/:id/revoke', allow(P.SHARING_MANAGE), bank.revoke);
   router.get('/sharing/access-logs', allow(P.SHARING_MANAGE), bank.accessLogs);
+  router.get('/sharing/credit-requests', allow(P.SHARING_MANAGE), bank.creditRequests);
 
   // Analista bancário: só a sua instituição e só o que a lavadora autorizou
   router.get('/bank/authorizations', allow(P.BANK_REPORTS), bank.analystAuthorizations);
   router.get('/bank/reports/activity', allow(P.BANK_REPORTS), bank.activityReport);
+  router.get('/bank/credit-requests', allow(P.BANK_REPORTS), bank.analystCreditRequests);
+  router.post('/bank/credit-requests', allow(P.BANK_REPORTS), bank.requestCreditAnalysis);
 
   // Área do cliente
   router.get('/me', allow(P.SELF_SERVICE), self.profile);
