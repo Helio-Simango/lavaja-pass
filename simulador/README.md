@@ -24,18 +24,22 @@ Menu (cap. 15.6), com `MENU` para voltar, `PARAR` para deixar de receber ofertas
 6. **Histórico:** últimas lavagens.
 7. **Fidelização:** cartão com progresso, nível e benefícios por classe.
 
-Os avisos automáticos (serviço iniciado, pronto, pagamento recebido, entregue com progresso de fidelização; marcação registada, confirmada, proposta e remarcada) aparecem destacados, distintos das respostas do assistente. Mover um serviço no Pátio gera os avisos na conversa do cliente.
+Comandos que valem em qualquer ponto: **LAVAR** (entra directamente na fila, como o QR do cartaz M1 e as campanhas M5), **ESTADO**, **MENU**, **PARAR** (deixa de receber ofertas), **ADERIR**, **ACEITAR** e **MANTER**.
+
+Os avisos automáticos (serviço iniciado, pronto com o link de pagamento M3, pagamento recebido, entregue com progresso de fidelização; marcação registada, confirmada, proposta e remarcada; código de acesso à área do cliente) aparecem marcados como "Aviso automático". As campanhas confirmadas pelo gestor chegam como mensagens da lavadora. As opções numeradas e as palavras LAVAR, PARAR, ACEITAR e MANTER aparecem como botões, como nos mocks. Mover um serviço no pátio do operador gera os avisos na conversa do cliente.
+
+O link de pagamento abre o checkout (`/pagar/:serviço`, M4) já com a sessão do cliente. Com `/simulador?texto=LAVAR` (o QR do cartaz), a conversa abre com "LAVAR" já escrito.
 
 ## Estrutura
 
 ```
 simulador/
 ├─ index.html          servida em /simulador e /simulador/whatsapp/:telefone
-├─ css/simulador.css   cores do WhatsApp (--wa-bg, --wa-in, --wa-out, --wa-head), claro e escuro
+├─ css/simulador.css   cores do WhatsApp (--wa-bg, --wa-in, --wa-out, --wa-head), sobre client/css/app.css
 ├─ js/
 │  ├─ main.js          lista de conversas, endereço por número, envio e consulta a cada 3 s
-│  ├─ chat-view.js     bolhas, avisos, separadores de dia, respostas rápidas
-│  └─ whatsapp-format.js  *negrito* e _itálico_ sobre texto escapado (testado em Node)
+│  ├─ chat-view.js     bolhas, avisos, separadores de dia, botões de resposta e respostas rápidas
+│  └─ whatsapp-format.js  *negrito*, _itálico_, links http(s) e opções, sobre texto escapado (testado em Node)
 └─ test/               testes da formatação (não servidos ao browser)
 ```
 
