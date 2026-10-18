@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="pt">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <title>Entrar · LavaJá Pass</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/app.css">
+  <link rel="stylesheet" href="/css/entrar.css">
+</head>
+<body>
+  <main class="center-page">
+    <a class="cover-brand" href="/" style="text-decoration:none">LavaJá <em>Pass</em></a>
+    <p class="muted">Entrar no perfil · <span class="demo-flag">DEMONSTRAÇÃO</span></p>
+
+    <div class="segmented profile-switch" role="group" aria-label="Perfil">
+      <button type="button" data-profile="operador">Operador</button>
+      <button type="button" data-profile="gestor">Gestor</button>
+      <button type="button" data-profile="analista">Analista Moza</button>
+      <button type="button" data-profile="cliente">Cliente</button>
+    </div>
+
+    <!-- M6 · Login do operador por nome e PIN -->
+    <section class="login-phone" data-panel="operador" hidden>
+      <div class="op-head">
+        <div><b>Lava Já · Pátio</b><small>Entrar no turno</small></div>
+        <span class="online">ONLINE</span>
+      </div>
+      <form class="phone-pad" id="operator-form">
+        <span class="lbl">Quem és?</span>
+        <div class="chips" id="operators" role="radiogroup" aria-label="Operador"></div>
+        <span class="lbl" style="text-align:center">PIN</span>
+        <div class="pin" id="pin-dots" aria-live="polite" aria-label="PIN"><i></i><i></i><i></i><i></i></div>
+        <div class="keypad" id="keypad">
+          <button type="button" data-key="1">1</button><button type="button" data-key="2">2</button><button type="button" data-key="3">3</button>
+          <button type="button" data-key="4">4</button><button type="button" data-key="5">5</button><button type="button" data-key="6">6</button>
+          <button type="button" data-key="7">7</button><button type="button" data-key="8">8</button><button type="button" data-key="9">9</button>
+          <span></span><button type="button" data-key="0">0</button><button type="button" data-key="back" aria-label="Apagar">⌫</button>
+        </div>
+        <p class="error-box" id="operator-error" hidden></p>
+        <button class="btn k block" type="submit" id="operator-submit">Entrar</button>
+        <p class="hint">Rápido com as mãos molhadas: o nome e um PIN de 4 dígitos. 5 tentativas erradas bloqueiam 15 minutos.</p>
+      </form>
+    </section>
+
+    <!-- Gestor e analista: email e senha -->
+    <section class="login-card" data-panel="gestor analista" hidden>
+      <h2 id="staff-title">Gestor do Lava Já</h2>
+      <p class="muted small" id="staff-sub">Painel da lavadora: operação, receita, conciliação, campanhas e partilha com o banco.</p>
+      <form id="staff-form" novalidate>
+        <label class="lbl" for="staff-email">Email</label>
+        <input class="input" id="staff-email" type="email" autocomplete="username" required>
+        <label class="lbl" for="staff-password">Senha</label>
+        <input class="input" id="staff-password" type="password" autocomplete="current-password" required>
+        <p class="error-box" id="staff-error" hidden></p>
+        <button class="btn k block" type="submit">Entrar</button>
+      </form>
+    </section>
+
+    <!-- Cliente: telefone e código enviado na conversa -->
+    <section class="login-card" data-panel="cliente" hidden>
+      <h2>Os meus serviços</h2>
+      <p class="muted small">Sem conta nem senha: enviamos um código para a sua conversa com o Lava Já.</p>
+      <form id="code-form" novalidate>
+        <label class="lbl" for="customer-phone">Telefone</label>
+        <input class="input" id="customer-phone" inputmode="tel" placeholder="84 123 4567" autocomplete="tel">
+        <button class="btn o block" type="submit" id="code-submit">Enviar código</button>
+      </form>
+      <form id="verify-form" novalidate hidden>
+        <p class="callout blue small" id="code-sent"></p>
+        <label class="lbl" for="customer-code">Código (6 dígitos)</label>
+        <input class="input mono" id="customer-code" inputmode="numeric" maxlength="7" autocomplete="one-time-code">
+        <button class="btn k block" type="submit">Entrar</button>
+      </form>
+      <p class="error-box" id="customer-error" hidden></p>
+    </section>
+
+    <p class="muted small" style="margin-top:18px">Acesso por perfil (D-16): cada perfil só vê o que lhe compete. Dados de demonstração fictícios.</p>
+  </main>
+  <script type="module" src="/js/entrar/main.js"></script>
+</body>
+</html>

@@ -73,10 +73,12 @@ function roundedBar(x, top, width, base, color) {
   return `<path d="${d}" fill="${color}"/>`;
 }
 
-function niceMax(value) {
+/** Topo do eixo: o menor passo "redondo" que, em TICKS divisões, cobre o valor máximo. */
+export function niceMax(value) {
   if (value <= 0) return 1;
-  const magnitude = 10 ** Math.floor(Math.log10(value));
-  const step = [1, 2, 2.5, 5, 10].find((m) => m * magnitude * TICKS >= value) * magnitude;
+  const rawStep = value / TICKS;
+  const magnitude = 10 ** Math.floor(Math.log10(rawStep));
+  const step = [1, 2, 2.5, 3, 4, 5, 6, 8, 10].find((m) => m * magnitude >= rawStep) * magnitude;
   return step * TICKS;
 }
 
