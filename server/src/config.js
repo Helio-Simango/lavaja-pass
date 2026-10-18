@@ -17,6 +17,20 @@ export function resolveDbPath(env = process.env) {
   return dbPath;
 }
 
+const MIN_JWT_SECRET_BYTES = 32;
+
+/** Segredo das sessões: ausente (aleatório) ou com 32+ bytes. Falha logo no arranque, com a forma de o gerar. */
+export function resolveJwtSecret(env = process.env) {
+  const secret = env.JWT_SECRET?.trim() || null;
+  if (secret && Buffer.byteLength(secret) < MIN_JWT_SECRET_BYTES) {
+    throw new Error(
+      `JWT_SECRET tem ${Buffer.byteLength(secret)} bytes; são precisos pelo menos ${MIN_JWT_SECRET_BYTES}. ` +
+        'Gere um com: node -e "console.log(require(\'node:crypto\').randomBytes(32).toString(\'hex\'))"',
+    );
+  }
+  return secret;
+}
+
 export function loadConfig(env = process.env) {
   const port = Number(env.PORT ?? 3000);
   return Object.freeze({
@@ -28,7 +42,7 @@ export function loadConfig(env = process.env) {
     // Reposição da demonstração pela API: desactivada se não houver token (cap. 14.4).
     demoResetToken: env.DEMO_RESET_TOKEN?.trim() || null,
     // Assinatura das sessões (I-11). Sem JWT_SECRET, um segredo aleatório: as sessões terminam ao reiniciar.
-    jwtSecret: env.JWT_SECRET?.trim() || null,
+    jwtSecret: resolveJwtSecret(env),
     // Cookies só por HTTPS: ligar quando o servidor estiver atrás de HTTPS.
     secureCookies: env.COOKIE_SECURE === 'true',
   });
