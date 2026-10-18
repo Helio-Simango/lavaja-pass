@@ -2,14 +2,18 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import { migrate } from '../../src/infrastructure/database/migrator.js';
 import { SqliteUnitOfWork } from '../../src/infrastructure/database/unit-of-work.js';
-import { createTestDb } from '../helpers.js';
+import { createContainer } from '../../src/container.js';
+import { createFixedClock } from '../../src/infrastructure/clock.js';
+import { IN_MEMORY, openDatabase } from '../../src/infrastructure/database/connection.js';
+import { seedDemo } from '../../src/infrastructure/database/seed/demo-seeder.js';
+import { createTestDb, DEMO_NOW, fastHasher } from '../helpers.js';
 
 describe('base de dados', () => {
   it('aplica as migrações uma única vez', () => {
     const db = createTestDb({ seed: false });
     assert.deepEqual(migrate(db), []);
     const versions = db.prepare('SELECT version FROM schema_migrations ORDER BY version').all().map((r) => r.version);
-    assert.deepEqual(versions, ['001_foundation.sql', '002_catalog_customers.sql', '003_washes.sql', '004_payments.sql', '005_loyalty.sql', '006_conversations.sql', '007_bank_sharing.sql', '008_appointments.sql', '009_reconciliation.sql', '010_autenticacao.sql']);
+    assert.deepEqual(versions, ['001_foundation.sql', '002_catalog_customers.sql', '003_washes.sql', '004_payments.sql', '005_loyalty.sql', '006_conversations.sql', '007_bank_sharing.sql', '008_appointments.sql', '009_reconciliation.sql', '010_autenticacao.sql', '011_pre_qualificacao.sql']);
     db.close();
   });
 
@@ -105,6 +109,24 @@ describe('base de dados', () => {
     const db = createTestDb();
     const row = db.prepare("SELECT value_json FROM settings WHERE key = 'demo.institution'").get();
     assert.equal(JSON.parse(row.value_json), 'Moza Banco');
+    db.close();
+  });
+
+  it('o volume "pitch" reproduz a base da proposta v1 (secção 2.1) e dá um score de classe B', () => {
+    const clock = createFixedClock(DEMO_NOW);
+    const db = openDatabase(IN_MEMORY);
+    migrate(db);
+    seedDemo(db, { clock, passwordHasher: fastHasher, volume: 'pitch' });
+    assert.equal(db.prepare('SELECT COUNT(*) AS total FROM customers').get().total, 212);
+    const completed = db.prepare("SELECT COUNT(*) AS total FROM washes WHERE status = 'completed'").get().total;
+    assert.ok(completed >= 330 && completed <= 380, `${completed} lavagens`);
+
+    const { services } = createContainer({ db, clock });
+    const report = services.bankReportService.activityReport({ institutionId: 1, authorizationId: 2, actor: 'teste' });
+    const score = report.sections.prequalification;
+    assert.equal(score.scoreClass, 'B');
+    assert.ok(score.metrics.digitalCents30d / score.metrics.totalCents30d > 0.55);
+    assert.ok(score.indicative.amountCents > 0);
     db.close();
   });
 });

@@ -4,7 +4,7 @@
 import { migrate } from './migrator.js';
 import { seedDemo } from './seed/demo-seeder.js';
 
-export function resetDemoDatabase(db, { clock, passwordHasher }) {
+export function resetDemoDatabase(db, { clock, passwordHasher, volume }) {
   const tables = db
     .prepare("SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%'")
     .all()
@@ -21,5 +21,5 @@ export function resetDemoDatabase(db, { clock, passwordHasher }) {
     db.exec('PRAGMA foreign_keys = ON;');
   }
   migrate(db);
-  seedDemo(db, { clock, passwordHasher });
+  seedDemo(db, { clock, passwordHasher, volume });
 }
