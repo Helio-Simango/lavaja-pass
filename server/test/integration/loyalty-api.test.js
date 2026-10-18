@@ -18,8 +18,8 @@ describe('API de fidelização (I-4)', () => {
     t.api(
       'POST',
       `/api/washes/${wash.id}/payments/cash`,
-      { amountCents: wash.price.final.cents, declaredBy: 'Amílcar', confirm: true },
-      { 'Idempotency-Key': key },
+      { amountCents: wash.price.final.cents, confirm: true },
+      { 'Idempotency-Key': key, ...t.as('operator', 'Amílcar') },
     );
   const freeStation = async () => (await t.api('GET', '/api/stations')).body.stations.find((s) => s.state === 'free').id;
 
@@ -117,7 +117,7 @@ describe('API de fidelização (I-4)', () => {
   it('publica uma nova versão das regras e regista a alteração', async () => {
     const { rules } = (await t.api('GET', '/api/loyalty/rules')).body;
     const params = { ...rules.params, benefit: { type: 'credit', creditCapCents: { A: 20000, B: 30000, C: 40000 } } };
-    const res = await t.api('PUT', '/api/loyalty/rules', { params }, { 'X-Actor': 'Gestora' });
+    const res = await t.api('PUT', '/api/loyalty/rules', { params });
     assert.equal(res.status, 201);
     assert.equal(res.body.rules.version, 2);
     assert.equal(res.body.rules.summary.benefit, 'Crédito com limite por classe');
@@ -126,7 +126,7 @@ describe('API de fidelização (I-4)', () => {
     const versions = (await t.api('GET', '/api/loyalty/rules')).body.versions;
     assert.deepEqual(versions.map((v) => v.version), [1, 2]);
     const [entry] = t.repositories.changeLogRepository.listFor('loyalty_rules', 2);
-    assert.equal(entry.actor, 'Gestora');
+    assert.equal(entry.actor, 'Z. Cossa');
   });
 
   it('recusa regras inválidas sem criar versão', async () => {

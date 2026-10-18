@@ -1,6 +1,8 @@
 import { Router } from 'express';
+import { Permission } from '../../domain/access.js';
 import { createAdminController } from './controllers/admin-controller.js';
 import { createAppointmentController } from './controllers/appointment-controller.js';
+import { createAuthController } from './controllers/auth-controller.js';
 import { createBankController } from './controllers/bank-controller.js';
 import { createCatalogController } from './controllers/catalog-controller.js';
 import { createCustomerController } from './controllers/customer-controller.js';
@@ -8,10 +10,19 @@ import { createDashboardController } from './controllers/dashboard-controller.js
 import { createGovernanceController } from './controllers/governance-controller.js';
 import { createLoyaltyController } from './controllers/loyalty-controller.js';
 import { createPaymentController } from './controllers/payment-controller.js';
+import { createSelfController } from './controllers/self-controller.js';
 import { createSimulatorController } from './controllers/simulator-controller.js';
 import { createWashController } from './controllers/wash-controller.js';
+import { allow, createAuthenticator } from './session.js';
 
-export function createApiRouter({ services, clock, demoResetToken = null }) {
+const P = Permission;
+
+/**
+ * Cada rota declara a permissão que exige (matriz em domain/access.js). Sem permissão declarada,
+ * a rota é pública: saúde, entrada, catálogo de preços e o simulador (o "telemóvel" do cliente).
+ */
+export function createApiRouter({ services, clock, demoResetToken = null, secureCookies = false }) {
+  const auth = createAuthController(services, { secureCookies });
   const catalog = createCatalogController(services);
   const customers = createCustomerController(services);
   const washes = createWashController({ ...services, clock });
@@ -22,81 +33,106 @@ export function createApiRouter({ services, clock, demoResetToken = null }) {
   const bank = createBankController(services);
   const appointments = createAppointmentController(services);
   const governance = createGovernanceController(services);
+  const self = createSelfController(services);
   const admin = createAdminController(services, { demoResetToken });
   const router = Router();
 
-  router.get('/health', (req, res) => res.json({ status: 'ok', name: 'LavaJá Pass', prototype: true }));
-  router.get('/settings', (req, res) => res.json({ settings: services.settingsService.list() }));
+  router.use(createAuthenticator(services.authService));
 
-  // Catálogo
+  router.get('/health', (req, res) => res.json({ status: 'ok', name: 'LavaJá Pass', prototype: true }));
+
+  // Entrada e sessão (I-11)
+  router.get('/auth/operators', auth.operators);
+  router.post('/auth/operator', auth.loginOperator);
+  router.post('/auth/staff', auth.loginStaff);
+  router.post('/auth/customer/code', auth.requestCustomerCode);
+  router.post('/auth/customer/verify', auth.verifyCustomerCode);
+  router.post('/auth/link', auth.redeemLink);
+  router.get('/auth/session', auth.current);
+  router.post('/auth/logout', auth.logout);
+
+  router.get('/settings', allow(P.BUSINESS_READ), (req, res) => res.json({ settings: services.settingsService.list() }));
+
+  // Catálogo (os preços são públicos, como no cartaz do pátio)
   router.get('/vehicle-classes', catalog.listClasses);
   router.get('/plans', catalog.listPlans);
-  router.patch('/plans/:id', catalog.updatePlan);
-  router.put('/plans/:id/prices/:classId', catalog.setPrice);
+  router.patch('/plans/:id', allow(P.CATALOG_MANAGE), catalog.updatePlan);
+  router.put('/plans/:id/prices/:classId', allow(P.CATALOG_MANAGE), catalog.setPrice);
 
   // Clientes e viaturas
-  router.get('/customers', customers.list);
-  router.post('/customers', customers.register);
-  router.get('/customers/:id', customers.get);
-  router.post('/customers/:id/vehicles', customers.addVehicle);
-  router.get('/vehicles', dashboard.listVehicles);
-  router.get('/vehicles/:id', customers.getVehicle);
-  router.patch('/vehicles/:id', customers.reclassifyVehicle);
-  router.get('/vehicles/:id/wash-history/summary', dashboard.historySummary);
-  router.get('/vehicles/:id/wash-history', dashboard.history);
+  router.get('/customers', allow(P.CUSTOMERS_READ), customers.list);
+  router.post('/customers', allow(P.YARD_OPERATE), customers.register);
+  router.get('/customers/:id', allow(P.CUSTOMERS_READ), customers.get);
+  router.post('/customers/:id/vehicles', allow(P.YARD_OPERATE), customers.addVehicle);
+  router.get('/vehicles', allow(P.BUSINESS_READ), dashboard.listVehicles);
+  router.get('/vehicles/:id', allow(P.CUSTOMERS_READ), customers.getVehicle);
+  router.patch('/vehicles/:id', allow(P.CATALOG_MANAGE), customers.reclassifyVehicle);
+  router.get('/vehicles/:id/wash-history/summary', allow(P.BUSINESS_READ), dashboard.historySummary);
+  router.get('/vehicles/:id/wash-history', allow(P.BUSINESS_READ), dashboard.history);
 
   // Serviços, fila e postos
-  router.get('/stations', washes.listStations);
-  router.get('/washes', washes.list);
-  router.post('/washes', washes.register);
-  router.get('/washes/:id', washes.get);
-  router.post('/washes/:id/transitions', washes.transition);
+  router.get('/stations', allow(P.YARD_READ), washes.listStations);
+  router.get('/washes', allow(P.YARD_READ), washes.list);
+  router.post('/washes', allow(P.YARD_OPERATE), washes.register);
+  router.get('/washes/:id', allow(P.YARD_READ), washes.get);
+  router.post('/washes/:id/transitions', allow(P.YARD_OPERATE), washes.transition);
 
   // Pagamentos simulados (com Idempotency-Key)
-  router.get('/washes/:id/payments', payments.listForWash);
-  router.post('/washes/:id/payments/digital', payments.startDigital);
-  router.post('/washes/:id/payments/cash', payments.declareCash);
-  router.post('/payments/:id/simulate', payments.simulate);
-  router.post('/payments/:id/refund', payments.refund);
+  router.get('/washes/:id/payments', allow(P.YARD_READ), payments.listForWash);
+  router.post('/washes/:id/payments/digital', allow(P.DIGITAL_START), payments.startDigital);
+  router.post('/washes/:id/payments/cash', allow(P.CASH_DECLARE), payments.declareCash);
+  router.post('/payments/:id/simulate', allow(P.PAYMENTS_MANAGE), payments.simulate);
+  router.post('/payments/:id/refund', allow(P.PAYMENTS_MANAGE), payments.refund);
 
   // Fidelização
-  router.get('/loyalty/rules', loyalty.getRules);
-  router.put('/loyalty/rules', loyalty.publishRules);
-  router.get('/customers/:id/loyalty', loyalty.card);
-  router.get('/customers/:id/loyalty/movements', loyalty.movements);
+  router.get('/loyalty/rules', allow(P.YARD_READ), loyalty.getRules);
+  router.put('/loyalty/rules', allow(P.CATALOG_MANAGE), loyalty.publishRules);
+  router.get('/customers/:id/loyalty', allow(P.CUSTOMERS_READ), loyalty.card);
+  router.get('/customers/:id/loyalty/movements', allow(P.CUSTOMERS_READ), loyalty.movements);
 
   // Marcações e capacidade
-  router.get('/availability', appointments.availability);
-  router.get('/capacity', appointments.capacity);
-  router.get('/appointments', appointments.list);
-  router.post('/appointments', appointments.book);
-  router.get('/appointments/:id', appointments.get);
-  router.post('/appointments/:id/transitions', appointments.transition);
-  router.post('/appointments/:id/offers', appointments.propose);
-  router.post('/appointment-offers/:id/respond', appointments.respond);
+  router.get('/availability', allow(P.YARD_READ), appointments.availability);
+  router.get('/capacity', allow(P.BUSINESS_READ), appointments.capacity);
+  router.get('/appointments', allow(P.YARD_READ), appointments.list);
+  router.post('/appointments', allow(P.YARD_OPERATE), appointments.book);
+  router.get('/appointments/:id', allow(P.YARD_READ), appointments.get);
+  router.post('/appointments/:id/transitions', allow(P.YARD_OPERATE), appointments.transition);
+  router.post('/appointments/:id/offers', allow(P.YARD_OPERATE), appointments.propose);
 
   // Governação: consentimentos, alterações, postos, fecho do dia
-  router.get('/customers/:id/consents', governance.consents);
-  router.post('/customers/:id/consents', governance.recordConsent);
-  router.get('/change-log', governance.changeLog);
-  router.patch('/stations/:id', governance.setStationActive);
-  router.get('/reconciliation', governance.reconciliation);
-  router.post('/reconciliation/closings', governance.closeCash);
-  router.post('/reconciliation/corrections', governance.addCorrection);
+  router.get('/customers/:id/consents', allow(P.CUSTOMERS_READ), governance.consents);
+  router.post('/customers/:id/consents', allow(P.YARD_OPERATE), governance.recordConsent);
+  router.get('/change-log', allow(P.BUSINESS_READ), governance.changeLog);
+  router.patch('/stations/:id', allow(P.CATALOG_MANAGE), governance.setStationActive);
+  router.get('/reconciliation', allow(P.BUSINESS_READ), governance.reconciliation);
+  router.post('/reconciliation/closings', allow(P.RECONCILIATION_MANAGE), governance.closeCash);
+  router.post('/reconciliation/corrections', allow(P.RECONCILIATION_MANAGE), governance.addCorrection);
 
-  // Painel
-  router.get('/dashboard/summary', dashboard.summary);
-  router.get('/dashboard/weekly', dashboard.weekly);
+  // Painel do gestor
+  router.get('/dashboard/summary', allow(P.BUSINESS_READ), dashboard.summary);
+  router.get('/dashboard/weekly', allow(P.BUSINESS_READ), dashboard.weekly);
 
-  // Vertente Lavadora–Banco (demonstrativa, D-16)
-  router.get('/institutions', bank.listInstitutions);
-  router.get('/institutions/:id/reports/activity', bank.activityReport);
-  router.get('/sharing/authorizations', bank.listAuthorizations);
-  router.post('/sharing/authorizations', bank.grant);
-  router.post('/sharing/authorizations/:id/revoke', bank.revoke);
-  router.get('/sharing/access-logs', bank.accessLogs);
+  // Partilha com bancos: a lavadora (gestor) autoriza e revoga
+  router.get('/institutions', allow(P.SHARING_MANAGE), bank.listInstitutions);
+  router.get('/sharing/authorizations', allow(P.SHARING_MANAGE), bank.listAuthorizations);
+  router.post('/sharing/authorizations', allow(P.SHARING_MANAGE), bank.grant);
+  router.post('/sharing/authorizations/:id/revoke', allow(P.SHARING_MANAGE), bank.revoke);
+  router.get('/sharing/access-logs', allow(P.SHARING_MANAGE), bank.accessLogs);
 
-  // Simulador de WhatsApp
+  // Analista bancário: só a sua instituição e só o que a lavadora autorizou
+  router.get('/bank/authorizations', allow(P.BANK_REPORTS), bank.analystAuthorizations);
+  router.get('/bank/reports/activity', allow(P.BANK_REPORTS), bank.activityReport);
+
+  // Área do cliente
+  router.get('/me', allow(P.SELF_SERVICE), self.profile);
+  router.get('/me/washes', allow(P.SELF_SERVICE), self.washes);
+  router.get('/me/washes/:id', allow(P.SELF_SERVICE), self.wash);
+  router.get('/me/loyalty', allow(P.SELF_SERVICE), self.loyalty);
+  router.post('/me/washes/:id/payments', allow(P.SELF_SERVICE), self.startPayment);
+  router.post('/me/washes/:id/payments/:paymentId/confirm', allow(P.SELF_SERVICE), self.confirmPayment);
+  router.post('/me/appointment-offers/:id/respond', allow(P.SELF_SERVICE), self.respondToOffer);
+
+  // Simulador de WhatsApp: faz de telemóvel do cliente (não existe em produção)
   router.get('/simulator/threads', simulator.listThreads);
   router.get('/simulator/threads/:phone/messages', simulator.listMessages);
   router.post('/simulator/threads/:phone/messages', simulator.sendMessage);

@@ -54,15 +54,15 @@ describe('API do catálogo (I-1)', () => {
   });
 
   it('altera um plano e regista quem alterou', async () => {
-    const res = await t.api('PATCH', '/api/plans/1', { name: 'Simples exterior', baseDurationMin: 35 }, { 'X-Actor': 'Gestora' });
+    const res = await t.api('PATCH', '/api/plans/1', { name: 'Simples exterior', baseDurationMin: 35 });
     assert.equal(res.status, 200);
     assert.equal(res.body.plan.name, 'Simples exterior');
     assert.equal(res.body.plan.baseDurationMin, 35);
     assert.deepEqual(
       changeLog('wash_plan', 1).map((entry) => [entry.field, entry.oldValue, entry.newValue, entry.actor]),
       [
-        ['name', 'Simples', 'Simples exterior', 'Gestora'],
-        ['baseDurationMin', '30', '35', 'Gestora'],
+        ['name', 'Simples', 'Simples exterior', 'Z. Cossa'],
+        ['baseDurationMin', '30', '35', 'Z. Cossa'],
       ],
     );
   });

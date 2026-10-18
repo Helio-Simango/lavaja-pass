@@ -1,5 +1,5 @@
 import { presentAppointment, presentCapacity, presentOffer } from '../presenters.js';
-import { actorOf, bodyOf, optionalBoolean, optionalQuery, parseId } from '../request.js';
+import { actorOf, bodyOf, optionalQuery, parseId } from '../request.js';
 
 export function createAppointmentController({ appointmentService }) {
   return {
@@ -52,14 +52,6 @@ export function createAppointmentController({ appointmentService }) {
         actor: actorOf(req, 'gestor'),
       });
       res.status(201).json({ offer: presentOffer(offer) });
-    },
-
-    respond(req, res) {
-      const appointment = appointmentService.respondToOffer(parseId(req.params.id), {
-        accept: optionalBoolean(bodyOf(req).accept, 'accept'),
-        actor: actorOf(req, 'cliente'),
-      });
-      res.json({ appointment: presentAppointment(appointment) });
     },
 
     capacity(req, res) {

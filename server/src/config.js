@@ -24,5 +24,9 @@ export function loadConfig(env = process.env) {
     dbPath: resolveDbPath(env),
     // Reposição da demonstração pela API: desactivada se não houver token (cap. 14.4).
     demoResetToken: env.DEMO_RESET_TOKEN?.trim() || null,
+    // Assinatura das sessões (I-11). Sem JWT_SECRET, um segredo aleatório: as sessões terminam ao reiniciar.
+    jwtSecret: env.JWT_SECRET?.trim() || null,
+    // Cookies só por HTTPS: ligar quando o servidor estiver atrás de HTTPS.
+    secureCookies: env.COOKIE_SECURE === 'true',
   });
 }
