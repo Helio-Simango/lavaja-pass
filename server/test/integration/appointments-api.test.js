@@ -70,7 +70,7 @@ describe('API de marcações e capacidade (I-8)', () => {
     const [appointment] = (await t.api('GET', `/api/appointments?date=${TOMORROW}`)).body.appointments;
     const offer = appointment.offers[0];
     t.clock.advanceMinutes(16);
-    const res = await t.api('POST', `/api/appointment-offers/${offer.id}/respond`, { accept: true });
+    const res = await t.api('POST', `/api/me/appointment-offers/${offer.id}/respond`, { accept: true }, t.as('customer', '258845550101'));
     assert.equal(res.status, 409);
     assert.equal(res.body.error.code, 'OFFER_EXPIRED');
     const after = (await t.api('GET', `/api/appointments/${appointment.id}`)).body.appointment;
@@ -81,7 +81,11 @@ describe('API de marcações e capacidade (I-8)', () => {
   it('aceitar dentro do prazo remarca, com auditoria e aviso', async () => {
     const [appointment] = (await t.api('GET', `/api/appointments?date=${TOMORROW}`)).body.appointments;
     const { offer } = (await t.api('POST', `/api/appointments/${appointment.id}/offers`, { proposedStartsAt: local('09:00') })).body;
-    const res = await t.api('POST', `/api/appointment-offers/${offer.id}/respond`, { accept: true });
+    const respond = (headers) => t.api('POST', `/api/me/appointment-offers/${offer.id}/respond`, { accept: true }, headers);
+    // Só o cliente da marcação responde: nem a lavadora por ele, nem outro cliente.
+    assert.equal((await respond(t.as('manager'))).status, 403);
+    assert.equal((await respond(t.as('customer', '258825550102'))).status, 404);
+    const res = await respond(t.as('customer', '258845550101'));
     assert.equal(res.status, 200);
     assert.equal(res.body.appointment.startsAt, local('09:00'));
     const { events } = (await t.api('GET', `/api/appointments/${appointment.id}`)).body;

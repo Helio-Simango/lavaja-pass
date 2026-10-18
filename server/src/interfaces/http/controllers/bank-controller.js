@@ -1,4 +1,4 @@
-// Vertente Lavadora–Banco (I-7). Sem autenticação no protótipo (D-16): demonstração com aviso.
+// Vertente Lavadora–Banco (I-7). A lavadora (gestor) autoriza; o analista só vê a sua instituição (I-11).
 import { AccessAction } from '../../../application/bank-report-service.js';
 import {
   activityReportToCsv,
@@ -48,14 +48,20 @@ export function createBankController({ sharingService, bankReportService }) {
       res.json({ accessLogs: sharingService.accessLogs({ authorizationId }).map(presentAccessLog) });
     },
 
-    /** O analista consulta (M16); ?format=csv exporta. Ambos ficam registados. */
+    /** Autorizações dadas à instituição do analista (nunca as de outras instituições). */
+    analystAuthorizations(req, res) {
+      const own = sharingService.listAuthorizations().filter((a) => a.institutionId === req.session.institutionId);
+      res.json({ institution: { id: req.session.institutionId, name: req.session.institutionName }, authorizations: own.map(presentAuthorization) });
+    },
+
+    /** O analista consulta (M12/M16); ?format=csv exporta. Ambos ficam registados. A instituição vem da sessão. */
     activityReport(req, res) {
       const exporting = optionalQuery(req, 'format') === 'csv';
       const report = presentActivityReport(
         bankReportService.activityReport({
-          institutionId: parseId(req.params.id),
+          institutionId: req.session.institutionId,
           authorizationId: parseId(optionalQuery(req, 'authorizationId'), 'authorizationId'),
-          actor: actorOf(req, 'analista.demo'),
+          actor: actorOf(req),
           action: exporting ? AccessAction.EXPORT : AccessAction.VIEW,
         }),
       );

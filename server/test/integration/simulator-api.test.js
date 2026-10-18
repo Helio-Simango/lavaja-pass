@@ -175,8 +175,8 @@ describe('API do simulador de WhatsApp (I-5)', () => {
       await t.api(
         'POST',
         `/api/washes/${wash.id}/payments/cash`,
-        { amountCents: 25000, declaredBy: 'Bento', confirm: true },
-        { 'Idempotency-Key': 'aviso-cash' },
+        { amountCents: 25000, confirm: true },
+        { 'Idempotency-Key': 'aviso-cash', ...t.as('operator', 'Bento') },
       );
       assert.equal((await systemMessages(PHONE)).at(-1), `💵 Numerário declarado por Bento: 250,00 MZN · ${wash.code}.`);
 
@@ -216,8 +216,8 @@ describe('API do simulador de WhatsApp (I-5)', () => {
       await t.api(
         'POST',
         `/api/washes/${wash.id}/payments/cash`,
-        { amountCents: 25000, declaredBy: 'Amílcar', confirm: true },
-        { 'Idempotency-Key': 'aviso-carlos' },
+        { amountCents: 25000, confirm: true },
+        { 'Idempotency-Key': 'aviso-carlos', ...t.as('operator', 'Amílcar') },
       );
       await t.api('POST', `/api/washes/${wash.id}/transitions`, { to: 'completed' });
       assert.match((await systemMessages(carlosPhone)).at(-1), /Fidelização classe A: 0\/10 lavagens\.\n🎁 Ganhou 1 benefício\(s\): lavagem Simples gratuita\./);

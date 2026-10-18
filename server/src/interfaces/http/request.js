@@ -74,10 +74,9 @@ export function idempotencyKeyOf(req) {
   return req.get('idempotency-key');
 }
 
-/** Sem autenticação no protótipo (D-16): o autor é declarado no pedido e fica registado. */
-export function actorOf(req, fallback) {
-  const declared = req.body?.actor ?? req.get('x-actor');
-  return typeof declared === 'string' && declared.trim() ? declared.trim().slice(0, ACTOR_MAX) : fallback;
+/** O autor de cada acção é o utilizador da sessão (I-11): nunca um nome escrito no pedido. */
+export function actorOf(req, fallback = 'sistema') {
+  return req.session?.name?.slice(0, ACTOR_MAX) ?? fallback;
 }
 
 function isAbsent(value) {

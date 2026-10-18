@@ -52,7 +52,7 @@ describe('API de serviços, fila e postos (I-2)', () => {
       'POST',
       '/api/washes',
       { vehicleId: ids.vehicle('ACX731MC'), planId: ids.plan('COMPLETA'), finalPriceCents: 1 },
-      { 'X-Actor': 'Amílcar' },
+      t.as('operator', 'Amílcar'),
     );
     assert.equal(res.status, 201);
     const { wash } = res.body;
@@ -120,7 +120,7 @@ describe('API de serviços, fila e postos (I-2)', () => {
 
   it('inicia num posto livre; repetir o pedido não tem efeitos', async () => {
     t.clock.advanceMinutes(5);
-    let res = await transition(washIds.acx, { to: 'in_progress', stationId: ids.station('P3') }, { 'X-Actor': 'Amílcar' });
+    let res = await transition(washIds.acx, { to: 'in_progress', stationId: ids.station('P3') }, t.as('operator', 'Amílcar'));
     assert.equal(res.status, 200);
     assert.equal(res.body.changed, true);
     assert.equal(res.body.wash.station.code, 'P3');
@@ -152,7 +152,7 @@ describe('API de serviços, fila e postos (I-2)', () => {
     assert.equal(res.body.error.code, 'PAYMENT_REQUIRED');
     assert.equal((await transition(washIds.acx, { to: 'completed', allowUnpaid: 'sim' })).status, 400);
 
-    res = await transition(washIds.acx, { to: 'completed', allowUnpaid: true }, { 'X-Actor': 'Amílcar' });
+    res = await transition(washIds.acx, { to: 'completed', allowUnpaid: true }, t.as('operator', 'Amílcar'));
     assert.equal(res.status, 200);
     assert.equal(res.body.wash.status, 'completed');
     assert.equal(res.body.wash.completedUnpaid, true);
@@ -167,7 +167,7 @@ describe('API de serviços, fila e postos (I-2)', () => {
       [
         [null, 'queued', 'Amílcar'],
         ['queued', 'in_progress', 'Amílcar'],
-        ['in_progress', 'ready', 'operador'],
+        ['in_progress', 'ready', 'Z. Cossa'],
         ['ready', 'completed', 'Amílcar'],
       ],
     );
@@ -190,7 +190,7 @@ describe('API de serviços, fila e postos (I-2)', () => {
   it('cancelar exige motivo e é final', async () => {
     assert.equal((await transition(washIds.acxAgain, { to: 'cancelled' })).status, 400);
     assert.equal((await transition(washIds.acxAgain, { to: 'cancelled', reason: '  ' })).status, 400);
-    let res = await transition(washIds.acxAgain, { to: 'cancelled', reason: 'Cliente desistiu' }, { 'X-Actor': 'Bento' });
+    let res = await transition(washIds.acxAgain, { to: 'cancelled', reason: 'Cliente desistiu' }, t.as('operator', 'Bento'));
     assert.equal(res.status, 200);
     assert.equal(res.body.wash.cancelReason, 'Cliente desistiu');
     res = await transition(washIds.acxAgain, { to: 'in_progress', stationId: ids.station('P3') });

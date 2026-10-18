@@ -29,7 +29,7 @@ export function createPaymentController({ paymentService }) {
       const body = bodyOf(req);
       const result = paymentService.declareCash(parseId(req.params.id), {
         amountCents: amountOf(body),
-        declaredBy: body.declaredBy,
+        declaredBy: actorOf(req), // o numerário é sempre declarado em nome de quem tem a sessão
         confirmed: body.confirm,
         idempotencyKey: idempotencyKeyOf(req),
         actor: actorOf(req, 'operador'),

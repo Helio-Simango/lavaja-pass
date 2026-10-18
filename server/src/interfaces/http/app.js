@@ -12,12 +12,12 @@ const JSON_BODY_LIMIT = '100kb';
  * A aplicação HTTP só conhece os casos de uso; não sabe que a persistência é SQLite.
  * Serve apenas client/ e simulador/ (a base de dados fica em server/data/).
  */
-export function createHttpApp({ services, clock = systemClock, logger = console, demoResetToken = null }) {
+export function createHttpApp({ services, clock = systemClock, logger = console, demoResetToken = null, secureCookies = false }) {
   const app = express();
   app.disable('x-powered-by');
   app.use(express.json({ limit: JSON_BODY_LIMIT }));
 
-  app.use('/api', createApiRouter({ services, clock, demoResetToken }), apiNotFound);
+  app.use('/api', createApiRouter({ services, clock, demoResetToken, secureCookies }), apiNotFound);
   mountSimulator(app);
   app.use('/test', (req, res) => res.sendStatus(404)); // os testes do cliente não são públicos
   app.use(express.static(CLIENT_DIR, { extensions: ['html'] })); // /patio -> patio.html

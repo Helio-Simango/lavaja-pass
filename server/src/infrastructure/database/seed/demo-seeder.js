@@ -12,6 +12,7 @@ import {
   DEMO_BUSINESS_OWNER,
   DEMO_INSTITUTION,
   DEMO_LOYALTY_RULES,
+  DEMO_USERS,
   HISTORY_DAYS,
   LATEST_LOCAL_HOUR_FOR_SAME_DAY,
   SETTINGS,
@@ -29,13 +30,14 @@ const MINUTE_MS = 60_000;
 const SEED_ACTOR = 'demonstração';
 
 /** @returns false se a base já tinha dados (nada é alterado). */
-export function seedDemo(db, { clock = systemClock } = {}) {
+/** @param passwordHasher para os testes usarem um custo de hash mais baixo */
+export function seedDemo(db, { clock = systemClock, passwordHasher } = {}) {
   if (hasReferenceData(db)) return false;
 
   // O relógio da demonstração começa 30 dias antes de "agora" e avança até ao pátio actual.
   const nowMs = clock.now().getTime();
   const demoClock = createFixedClock(new Date(nowMs - HISTORY_DAYS * DAY_MS).toISOString());
-  const { services, repositories, unitOfWork } = createContainer({ db, clock: demoClock });
+  const { services, repositories, unitOfWork } = createContainer({ db, clock: demoClock, security: { passwordHasher } });
 
   unitOfWork.run(() => {
     insertReferenceData(db, repositories.stationRepository, demoClock.nowIso());
@@ -44,6 +46,7 @@ export function seedDemo(db, { clock = systemClock } = {}) {
     CUSTOMERS.forEach((customer) => services.customerService.register(customer));
     playHistory(db, services, demoClock, nowMs);
     seedSharing(repositories.sharingRepository, services, demoClock, nowMs);
+    seedUsers(db, services.authService);
     demoClock.set(new Date(nowMs - YARD_START_OFFSET_MIN * MINUTE_MS).toISOString());
     playYardTimeline(db, services, demoClock);
     demoClock.set(new Date(nowMs).toISOString());
@@ -101,6 +104,13 @@ function seedAppointments(db, { appointmentService }, demoClock) {
       const offer = appointmentService.propose(appointment.id, { proposedStartsAt: localToIso(day, demo.declinedOffer), actor: SEED_ACTOR });
       appointmentService.respondToOffer(offer.id, { accept: false, actor: appointment.customerName });
     }
+  }
+}
+
+function seedUsers(db, authService) {
+  for (const { institution, ...user } of DEMO_USERS) {
+    const institutionId = institution ? db.prepare('SELECT id FROM institutions WHERE code = ?').get(institution).id : undefined;
+    authService.createUser({ ...user, institutionId });
   }
 }
 

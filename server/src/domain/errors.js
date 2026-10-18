@@ -28,3 +28,10 @@ export class ConflictError extends DomainError {}
 
 /** O pedido é válido mas não há autorização para o acesso (ex.: autorização revogada ou expirada). */
 export class AccessDeniedError extends DomainError {}
+
+/** Sem sessão válida (credenciais erradas, token em falta, expirado ou inválido). */
+export class UnauthenticatedError extends DomainError {
+  constructor(message = 'Sessão inválida ou expirada. Entre de novo.', code = 'UNAUTHENTICATED') {
+    super(code, message);
+  }
+}

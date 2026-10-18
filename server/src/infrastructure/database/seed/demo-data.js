@@ -146,8 +146,18 @@ export const DEMO_AUTHORIZATIONS = [
     viewedDaysAgo: 1,
   },
 ];
-export const DEMO_ANALYST = 'analista.demo';
-export const DEMO_BUSINESS_OWNER = 'Gestor da lavadora';
+// Contas de demonstração (I-11, D-16): credenciais públicas, só para a demonstração.
+// Operadores entram com nome + PIN (M6); o gestor e o analista com email + senha.
+export const DEMO_BUSINESS_OWNER = 'Z. Cossa';
+export const DEMO_ANALYST = 'Analista PME · Agência Matola';
+export const DEMO_USERS = [
+  { role: 'operator', name: 'Amílcar', pin: '1234' },
+  { role: 'operator', name: 'Bento', pin: '2345' },
+  { role: 'operator', name: 'Délcio', pin: '3456' },
+  { role: 'operator', name: 'Fátima', pin: '4567' },
+  { role: 'manager', name: DEMO_BUSINESS_OWNER, email: 'gestor@lavaja.demo', password: 'LavaJa-2026' },
+  { role: 'bank_analyst', name: DEMO_ANALYST, email: 'analista@moza.demo', password: 'MozaDemo-2026', institution: 'MOZA' },
+];
 
 // Marcações de demonstração (mock M7/M10), no dia de hoje se ainda for de manhã, senão amanhã.
 // A do Carlos teve uma proposta de antecipação recusada: mantém-se às 15:00 (DEC-10).
