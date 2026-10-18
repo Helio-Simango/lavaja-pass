@@ -1,5 +1,5 @@
 // Entrada nos quatro perfis. Depois de entrar, volta à página pedida (se for deste site) ou à do perfil.
-import { api } from '../core/api-client.js';
+import { api, useSession } from '../core/api-client.js';
 import { $, $$, escapeHtml, hideMessage, showMessage } from '../core/dom.js';
 import { safeReturnPath } from './return-path.js';
 
@@ -19,7 +19,17 @@ function showProfile(profile) {
   if (state.profile === 'operador') loadOperators();
 }
 
-function goHome(result) {
+// O cookie da sessão é HttpOnly: a página não o lê. Confirma-se com o servidor que o browser o guardou;
+// sem isso, a página do perfil devolvia à entrada sem explicação (parecia só um "refresh").
+async function goHome(result) {
+  useSession(result.profile);
+  try {
+    await api('GET', '/auth/session');
+  } catch {
+    throw new Error('Entrou, mas o browser não guardou a sessão. Permita cookies para este endereço (ícone à esquerda do endereço › Cookies) e tente de novo.');
+  } finally {
+    useSession(null);
+  }
   location.assign(safeReturnPath(params.get('volta'), result.home));
 }
 
@@ -71,7 +81,7 @@ $('#operator-form').addEventListener('submit', async (event) => {
   if (state.pin.length !== 4) return showMessage($('#operator-error'), 'Escreva o PIN de 4 dígitos.');
   $('#operator-submit').disabled = true;
   try {
-    goHome(await api('POST', '/auth/operator', { operatorId: state.operatorId, pin: state.pin }));
+    await goHome(await api('POST', '/auth/operator', { operatorId: state.operatorId, pin: state.pin }));
   } catch (error) {
     state.pin = '';
     renderPin();
@@ -93,7 +103,7 @@ $('#staff-form').addEventListener('submit', async (event) => {
       setTimeout(() => location.assign(result.home), 1200);
       return;
     }
-    goHome(result);
+    await goHome(result);
   } catch (error) {
     showMessage($('#staff-error'), error.message);
   }
@@ -124,7 +134,7 @@ $('#verify-form').addEventListener('submit', async (event) => {
   event.preventDefault();
   hideMessage($('#customer-error'));
   try {
-    goHome(await api('POST', '/auth/customer/verify', { phone: $('#customer-phone').value, code: $('#customer-code').value }));
+    await goHome(await api('POST', '/auth/customer/verify', { phone: $('#customer-phone').value, code: $('#customer-code').value }));
   } catch (error) {
     showMessage($('#customer-error'), error.message);
   }
