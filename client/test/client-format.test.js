@@ -47,4 +47,12 @@ describe('regresso depois de entrar', () => {
       assert.equal(safeReturnPath(bad, '/operador'), '/operador', String(bad));
     }
   });
+
+  it('só volta à página pedida se for da área do perfil que entrou', () => {
+    assert.equal(safeReturnPath('/cliente', '/gestor'), '/gestor');
+    assert.equal(safeReturnPath('/operador', '/moza'), '/moza');
+    assert.equal(safeReturnPath('/gestores', '/gestor'), '/gestor');
+    assert.equal(safeReturnPath('/gestor?x=1', '/gestor'), '/gestor?x=1');
+    assert.equal(safeReturnPath('/cliente', '/cliente'), '/cliente');
+  });
 });

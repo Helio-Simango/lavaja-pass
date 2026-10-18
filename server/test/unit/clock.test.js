@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { resolveDbPath } from '../../src/config.js';
+import { resolveDbPath, resolveJwtSecret } from '../../src/config.js';
 import { createFixedClock } from '../../src/infrastructure/clock.js';
 
 describe('relógio injectável', () => {
@@ -19,5 +19,12 @@ describe('configuração', () => {
   it('recusa uma base de dados numa pasta servida ao browser', () => {
     assert.throws(() => resolveDbPath({ DB_PATH: 'client/lavaja.db' }), /client/);
     assert.throws(() => resolveDbPath({ DB_PATH: 'simulador/x.db' }), /simulador/);
+  });
+
+  it('JWT_SECRET: ausente dá segredo aleatório; curto é recusado com a forma de o gerar', () => {
+    assert.equal(resolveJwtSecret({}), null);
+    assert.equal(resolveJwtSecret({ JWT_SECRET: '  ' }), null);
+    assert.throws(() => resolveJwtSecret({ JWT_SECRET: 'curto-11b!!' }), /11 bytes.*32.*randomBytes/);
+    assert.equal(resolveJwtSecret({ JWT_SECRET: 'x'.repeat(32) }), 'x'.repeat(32));
   });
 });
