@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.0.6] — 2026-10-18
+
+- Simulador: botão "← Voltar ao início" na barra do topo.
+
 ## [2.0.5] — 2026-10-18
 
 - Cartaz do pátio (M1): botão "← Voltar ao início" (não sai na impressão).
