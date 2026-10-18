@@ -1,18 +1,29 @@
-// Desenho da conversa: bolhas do cliente (direita), da lavadora (esquerda) e avisos (centro).
-import { messageToHtml } from './whatsapp-format.js';
+// Desenho da conversa (M2, M3, M5): bolhas do cliente (direita) e da lavadora (esquerda), com os
+// avisos automáticos marcados e as opções como botões de resposta.
+import { messageToHtml, splitReplies } from './whatsapp-format.js';
 
 const TIME_ZONE = 'Africa/Maputo';
-const QUICK_REPLIES = ['1', '2', '3', '4', '5', '6', '7', 'MENU'];
+const QUICK_REPLIES = ['LAVAR', 'MENU', 'ESTADO', '1', '2', '3', '4', '5'];
 
-const dayOf = (iso) => new Date(iso).toLocaleDateString('pt-PT', { day: '2-digit', month: 'long', timeZone: TIME_ZONE });
+const dayOf = (iso) => new Date(iso).toLocaleDateString('pt-PT', { weekday: 'long', day: '2-digit', month: 'long', timeZone: TIME_ZONE });
 const timeOf = (iso) => new Date(iso).toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit', timeZone: TIME_ZONE });
 
-export function createChatView(container) {
+export function createChatView(container, { onReply }) {
   let lastDay = null;
 
+  container.addEventListener('click', (event) => {
+    const button = event.target.closest('[data-reply]');
+    if (button) onReply(button.dataset.reply);
+  });
+
   function bubbleHtml(message) {
-    const kind = message.kind === 'system' ? 'system' : message.direction;
-    return `<div class="wa-bubble ${kind}" data-id="${message.id}">${messageToHtml(message.body)}<span class="wa-time">${timeOf(message.createdAt)}</span></div>`;
+    const incoming = message.direction === 'in';
+    const { body, replies } = incoming ? { body: message.body, replies: [] } : splitReplies(message.body);
+    const buttons = replies.length
+      ? `<div class="wa-btns">${replies.map((r) => `<button type="button" data-reply="${r.send}">${messageToHtml(r.label)}</button>`).join('')}</div>`
+      : '';
+    const kind = message.kind === 'system' ? 'out system' : message.direction;
+    return `<div class="wa-bubble ${kind}" data-id="${message.id}">${messageToHtml(body)}${buttons}<span class="wa-time">${timeOf(message.createdAt)}</span></div>`;
   }
 
   return {

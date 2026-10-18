@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="pt">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <title>Cartaz do pátio · LavaJá Pass</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/app.css">
+  <style>
+    .poster { width: min(380px, 100%); border-radius: 14px; overflow: hidden; border: 1px solid var(--line); box-shadow: var(--shadow); background: #fff; }
+    .poster .top { background: var(--red); color: #fff; padding: 22px 22px 16px; }
+    .poster .top b { display: block; font-size: 36px; font-weight: 800; letter-spacing: -0.02em; line-height: 1; }
+    .poster .top span { font-size: 14px; opacity: 0.95; }
+    .poster .mid { padding: 18px 22px; text-align: center; }
+    .poster .qr { width: 170px; height: 170px; margin: 8px auto 12px; display: block; }
+    .poster .num { font-family: var(--mono); font-weight: 700; color: var(--ink); font-size: 17px; }
+    .poster ul { list-style: none; padding: 0; margin: 14px 0 0; text-align: left; font-size: 13.5px; }
+    .poster li { margin: 4px 0; }
+    .poster li.star { color: var(--red); font-weight: 700; }
+    .poster .bot { background: var(--soft); padding: 12px 22px; font-size: 12px; color: var(--muted); }
+    @media print { body { background: #fff; } .no-print { display: none; } .poster { box-shadow: none; } }
+  </style>
+</head>
+<body>
+  <!-- M1 · Cartaz A3 à entrada: o QR abre a conversa com "LAVAR" já escrito -->
+  <main class="center-page">
+    <div class="poster">
+      <div class="top"><b>Lava sem esperar.</b><span id="poster-business">Lava Já – Matola</span> · LavaJá Pass</div>
+      <div class="mid">
+        <b>Lê o código com a câmara</b>
+        <a href="/simulador?texto=LAVAR" id="poster-link" aria-label="Abrir a conversa (simulador)">
+          <svg class="qr" id="qr" viewBox="0 0 25 25" shape-rendering="crispEdges" role="img" aria-label="Código QR ilustrativo"></svg>
+        </a>
+        <div class="muted small">ou envia <b>LAVAR</b> para</div>
+        <div class="num">+258 8X XXX XXXX</div>
+        <ul>
+          <li>✓ Sabe a hora a que o carro fica pronto</li>
+          <li>✓ Paga com a sua carteira ou em numerário</li>
+          <li>✓ Cada lavagem paga conta para a fidelização</li>
+          <li class="star">★ Ter–Qui até às 12h: menos fila</li>
+        </ul>
+      </div>
+      <div class="bot">Os seus dados são usados só para o serviço. Escreva PARAR a qualquer momento.</div>
+    </div>
+    <p class="muted small no-print" style="margin-top:14px;max-width:380px;text-align:center">Protótipo: o código é ilustrativo e o número é de demonstração. No pátio, o QR abre o WhatsApp com "LAVAR"; aqui, o simulador.
+      <button class="btn link" onclick="print()">Imprimir</button></p>
+  </main>
+  <script type="module">
+    // Padrão ilustrativo com os três marcadores de canto de um QR (não é lido por câmaras).
+    const size = 25;
+    let seed = 7;
+    const random = () => ((seed = (seed * 9301 + 49297) % 233280) / 233280);
+    const finder = (x, y) => {
+      const inBox = (dx, dy) => dx >= 0 && dx < 7 && dy >= 0 && dy < 7;
+      for (const [fx, fy] of [[0, 0], [size - 7, 0], [0, size - 7]]) {
+        const dx = x - fx, dy = y - fy;
+        if (inBox(dx, dy)) return dx === 0 || dx === 6 || dy === 0 || dy === 6 || (dx >= 2 && dx <= 4 && dy >= 2 && dy <= 4);
+        if (dx >= -1 && dx <= 7 && dy >= -1 && dy <= 7) return false;
+      }
+      return null;
+    };
+    let cells = '';
+    for (let y = 0; y < size; y++) for (let x = 0; x < size; x++) {
+      const fixed = finder(x, y);
+      if (fixed ?? random() < 0.48) cells += `<rect x="${x}" y="${y}" width="1" height="1"/>`;
+    }
+    document.querySelector('#qr').innerHTML = `<rect width="25" height="25" fill="#fff"/><g fill="#16191d">${cells}</g>`;
+    fetch('/api/public/business').then((r) => r.json()).then(({ name }) => (document.querySelector('#poster-business').textContent = name));
+  </script>
+</body>
+</html>
