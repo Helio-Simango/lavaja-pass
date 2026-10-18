@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.0.1] — 2026-10-18
+
+### Página inicial e entrada
+
+- Página inicial redesenhada: fundo com padrão de bolhas e gotas e ilustração da viatura a ser lavada com a conversa do cliente (SVG, sem imagens externas); números da base de demonstração; o desafio do Moza Banco (quatro problemas); como funciona (do QR ao relatório do banco); os quatro perfis; valor por interveniente com as metas do piloto; o que o banco vê e nunca vê.
+- Página de entrada com "← Voltar ao início", o mesmo fundo temático e atalhos para o simulador e o cartaz.
+
 ## [2.0.0] — 2026-10-18
 
 Marco **I-11**: perfis com autenticação e as telas da proposta v1. Quatro branches (`feature/i11-autenticacao-jwt`, `feature/i11-pre-qualificacao`, `feature/i11-campanhas`, `feature/i11-telas-perfis`) e a documentação, integradas em `develop` e depois em `main`. Decisões da equipa EQ-01 a EQ-07 e de implementação IMP-59 a IMP-76 em `docs/decisoes.md`.
