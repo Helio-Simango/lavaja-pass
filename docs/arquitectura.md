@@ -81,7 +81,7 @@ Um serviço por área: catálogo, clientes, serviços, baias (postos), entrada m
 
 ### Interface HTTP (`server/src/interfaces/http`)
 
-- **`session.js`:** lê o token (cookie do perfil indicado em `X-Session-Profile`, ou `Authorization: Bearer`), valida-o com o `AuthService` e expõe `allow(permissão)`; protege também as páginas de perfil.
+- **`session.js`:** lê o token (cookie do perfil indicado em `X-Session-Profile`, ou `Authorization: Bearer`), valida-o com o `AuthService` e expõe `allow(permissão)`; protege também as páginas de perfil. O token só é entregue no cookie (`HttpOnly`, `SameSite=Strict`, `Max-Age`, `Secure` com HTTPS), nunca no corpo da resposta.
 - **`routes.js`:** cada rota declara a permissão que exige.
 - **`request.js`:** leitura e validação de tipos (ids, inteiros, booleanos, texto) e o autor (`actorOf`, sempre da sessão).
 - **`controllers/`:** finos; lêem o pedido, chamam um caso de uso e apresentam o resultado.

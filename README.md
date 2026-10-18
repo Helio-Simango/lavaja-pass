@@ -126,7 +126,7 @@ Os erros chegam sempre no formato `{ "error": { "code", "message", "details?" } 
 
 ### Sessões e perfis
 
-A sessão é um JWT (HS256) num cookie HttpOnly + SameSite=Strict, um por perfil. A página indica o perfil no cabeçalho `X-Session-Profile` (`operador`, `gestor`, `analista`, `cliente`); clientes da API podem usar `Authorization: Bearer <token>`. O autor de cada acção é sempre o utilizador da sessão.
+A sessão é um JWT (HS256) que só existe num cookie `HttpOnly` + `SameSite=Strict` (com `Max-Age` da sessão e `Secure` quando `COOKIE_SECURE=true`), um por perfil; a resposta da entrada não traz o token no corpo. A página indica o perfil no cabeçalho `X-Session-Profile` (`operador`, `gestor`, `analista`, `cliente`); clientes da API podem usar `Authorization: Bearer <token>`. O autor de cada acção é sempre o utilizador da sessão.
 
 | Método e rota | Descrição |
 |---|---|
