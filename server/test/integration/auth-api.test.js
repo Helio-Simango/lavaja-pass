@@ -42,6 +42,13 @@ describe('Autenticação e perfis (I-11, D-16)', () => {
       assert.match(cookie, /^lj_operador=/);
       assert.match(cookie, /HttpOnly/);
       assert.match(cookie, /SameSite=Strict/);
+      assert.match(cookie, /Path=\//);
+      assert.match(cookie, /Max-Age=36000/); // 10 h de turno
+      assert.doesNotMatch(cookie, /Secure/); // só com COOKIE_SECURE=true (HTTPS)
+      // O token só vive no cookie: nem no corpo da resposta, nem em caches.
+      assert.equal(res.body.token, undefined);
+      assert.doesNotMatch(JSON.stringify(res.body), /eyJ/);
+      assert.equal(res.headers.get('cache-control'), 'no-store');
 
       // O cookie só é usado para o perfil indicado pela página.
       const token = cookie.split(';')[0];
@@ -79,7 +86,8 @@ describe('Autenticação e perfis (I-11, D-16)', () => {
     });
 
     it('um token adulterado ou de outro perfil não serve', async () => {
-      const { token } = (await post('/api/auth/operator', { operatorId: await operatorId('Bento'), pin: '2345' })).body;
+      const login = await post('/api/auth/operator', { operatorId: await operatorId('Bento'), pin: '2345' });
+      const token = login.headers.get('set-cookie').match(/^lj_operador=([^;]+)/)[1];
       const [header, payload, signature] = token.split('.');
       const claims = JSON.parse(Buffer.from(payload, 'base64url'));
       const forged = Buffer.from(JSON.stringify({ ...claims, role: 'manager' })).toString('base64url');

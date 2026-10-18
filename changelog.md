@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.0.8] — 2026-10-19
+
+- Sessões: o JWT só existe no cookie. A resposta da entrada deixou de trazer o token no corpo e leva `Cache-Control: no-store`; o cookie leva `HttpOnly`, `SameSite=Strict`, `Path=/`, `Max-Age` (a duração da sessão), `Priority=High` e `Secure` com `COOKIE_SECURE=true` (IMP-77).
+
 ## [2.0.7] — 2026-10-19
 
 - Entrada: depois de entrar, só se volta à página pedida (`volta=`) se for da área do perfil que entrou. Antes, quem chegava a `/entrar` a partir de outro perfil (ex.: `/cliente`) e entrava como gestor ou operador era devolvido à entrada, o que parecia um simples "refresh".
