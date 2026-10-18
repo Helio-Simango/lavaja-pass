@@ -1,6 +1,7 @@
 // Raiz de composição: o único ponto que liga as implementações concretas (SQLite, relógio,
 // avisos na conversa) aos casos de uso. Nenhuma outra camada instancia repositórios.
 import { AppointmentService } from './application/appointment-service.js';
+import { AuthService } from './application/auth-service.js';
 import { BankReportService } from './application/bank-report-service.js';
 import { CatalogService } from './application/catalog-service.js';
 import { ChangeLogService } from './application/change-log-service.js';
@@ -11,6 +12,7 @@ import { DashboardService } from './application/dashboard-service.js';
 import { LoyaltyService } from './application/loyalty-service.js';
 import { PaymentService } from './application/payment-service.js';
 import { ReconciliationService } from './application/reconciliation-service.js';
+import { SelfService } from './application/self-service.js';
 import { SettingsService } from './application/settings-service.js';
 import { SharingService } from './application/sharing-service.js';
 import { StationService } from './application/station-service.js';
@@ -29,15 +31,23 @@ import { SqliteReconciliationRepository } from './infrastructure/database/reposi
 import { SqliteReportingRepository } from './infrastructure/database/repositories/reporting-repository.js';
 import { SqliteSettingsRepository } from './infrastructure/database/repositories/settings-repository.js';
 import { SqliteSharingRepository } from './infrastructure/database/repositories/sharing-repository.js';
+import { SqliteUserRepository } from './infrastructure/database/repositories/user-repository.js';
 import { SqliteStationRepository } from './infrastructure/database/repositories/station-repository.js';
 import { SqliteVehicleRepository } from './infrastructure/database/repositories/vehicle-repository.js';
 import { SqliteWashRepository } from './infrastructure/database/repositories/wash-repository.js';
 import { SqliteUnitOfWork } from './infrastructure/database/unit-of-work.js';
 import { resetDemoDatabase } from './infrastructure/database/demo-reset.js';
+import { HmacJwtTokenService, randomSecret } from './infrastructure/security/jwt.js';
+import { ScryptPasswordHasher, secureRandom } from './infrastructure/security/password-hasher.js';
 import { ConversationNotifier } from './interfaces/chat/notifier.js';
 
-export function createContainer({ db, clock = systemClock }) {
+/**
+ * @param security { tokenSecret?, passwordHasher? } — sem segredo, as sessões valem só até reiniciar
+ */
+export function createContainer({ db, clock = systemClock, security = {} }) {
   const unitOfWork = new SqliteUnitOfWork(db);
+  const passwordHasher = security.passwordHasher ?? new ScryptPasswordHasher();
+  const tokenService = new HmacJwtTokenService({ secret: security.tokenSecret ?? randomSecret(), clock });
   const repositories = {
     appointmentRepository: new SqliteAppointmentRepository(db),
     catalogRepository: new SqliteCatalogRepository(db),
@@ -52,6 +62,7 @@ export function createContainer({ db, clock = systemClock }) {
     settingsRepository: new SqliteSettingsRepository(db),
     sharingRepository: new SqliteSharingRepository(db),
     stationRepository: new SqliteStationRepository(db),
+    userRepository: new SqliteUserRepository(db),
     vehicleRepository: new SqliteVehicleRepository(db),
     washRepository: new SqliteWashRepository(db),
   };
@@ -74,14 +85,18 @@ export function createContainer({ db, clock = systemClock }) {
   const dashboardService = new DashboardService({ ...shared, sharingService });
   const reconciliationService = new ReconciliationService(shared);
   const changeLogService = new ChangeLogService(shared);
+  const authService = new AuthService({ ...shared, tokenService, passwordHasher, random: secureRandom, conversationService });
+  const selfService = new SelfService({ customerService, consentService, washService, paymentService, loyaltyService, appointmentService });
 
   return {
     unitOfWork,
     repositories,
+    security: { tokenService, passwordHasher },
     services: {
       // Reposição da demonstração (só exposta com token, confirmação e acesso local)
-      demoResetService: { reset: () => resetDemoDatabase(db, { clock }) },
+      demoResetService: { reset: () => resetDemoDatabase(db, { clock, passwordHasher }) },
       appointmentService,
+      authService,
       bankReportService,
       catalogService,
       changeLogService,
@@ -92,6 +107,7 @@ export function createContainer({ db, clock = systemClock }) {
       loyaltyService,
       paymentService,
       reconciliationService,
+      selfService,
       washService,
       stationService,
       settingsService,

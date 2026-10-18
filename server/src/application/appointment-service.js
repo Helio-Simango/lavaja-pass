@@ -254,6 +254,15 @@ export class AppointmentService {
     });
   }
 
+  /** O cliente responde (fora da conversa) a uma proposta da sua própria marcação. */
+  respondToOwnOffer(customerId, offerId, { accept, actor }) {
+    const offer = this.#appointments.findOffer(offerId);
+    if (!offer || this.#getAppointment(offer.appointmentId).customerId !== customerId) {
+      throw new NotFoundError('Proposta não encontrada.');
+    }
+    return this.respondToOffer(offerId, { accept, actor });
+  }
+
   /** Resposta do cliente pela conversa ("ACEITAR" / "MANTER") à sua proposta pendente. */
   respondToPendingOffer(customerId, { accept, actor }) {
     const now = this.#clock.nowIso();
