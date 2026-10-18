@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.0.5] — 2026-10-18
+
+- Cartaz do pátio (M1): botão "← Voltar ao início" (não sai na impressão).
+
 ## [2.0.4] — 2026-10-18
 
 - Cartaz do pátio (M1): o número de telefone fica centrado.
