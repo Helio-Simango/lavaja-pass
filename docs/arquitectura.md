@@ -4,12 +4,13 @@
 
 ```
 ┌────────────── Browser (HTML + CSS + JS puro) ──────────────┐
-│  client/  (/ · /patio · …)        simulador/  (/simulador)  │
+│  client/  (/operador · /gestor · /moza · /cliente · /entrar)│
+│  simulador/  (/simulador: o "telemóvel" do cliente)         │
 └──────────────────────────┬──────────────────────────────────┘
-                           │ fetch JSON (consulta a cada 3 s)
+                           │ fetch JSON + cookie da sessão do perfil
 ┌──────────────────────────▼──────────────────────────────────┐
-│ server/src/interfaces/http   Express: rotas → controladores │
-│                              request.js · presenters.js     │
+│ server/src/interfaces/http   Express: sessão → allow(perm.) │
+│                              → controladores · presenters   │
 │ server/src/interfaces/chat   assistente da conversa · avisos│
 ├─────────────────────────────────────────────────────────────┤
 │ server/src/application       casos de uso (*-service.js)    │
@@ -22,6 +23,7 @@
 │ server/src/infrastructure    SQLite (node:sqlite): ligação, │
 │                              migrações, unidade de trabalho,│
 │                              repositórios · relógio · seed  │
+│                              security/: JWT HS256 · scrypt  │
 └─────────────────────────────────────────────────────────────┘
   server/src/container.js  liga tudo · server/src/main.js  arranca
 ```
@@ -36,7 +38,10 @@ Funções puras, testáveis sem base de dados:
 
 | Módulo | Responsabilidade |
 |---|---|
-| `errors.js` | `ValidationError`, `NotFoundError`, `ConflictError` (sem códigos HTTP) |
+| `errors.js` | `ValidationError`, `UnauthenticatedError`, `AccessDeniedError`, `NotFoundError`, `ConflictError` (sem códigos HTTP) |
+| `access.js` | Perfis, matriz de permissões, regras de PIN, senha, bloqueio, códigos de acesso e conteúdo do token |
+| `prequalification.js` | Score de pré-qualificação da proposta v1 (seis componentes, classes, montante indicativo) |
+| `campaigns.js` | Segmento, ofertas disponíveis, mensagem e atribuição das campanhas fora de pico |
 | `phone.js` · `plate.js` · `money.js` · `customer.js` | Valores: normalização, validação e formatação |
 | `vehicle-class.js` | Classes A, B e C; referência por código ou id |
 | `plan.js` | Regra de aceitação: plano activo e com preço para a classe |
@@ -55,7 +60,7 @@ Funções puras, testáveis sem base de dados:
 
 ### Aplicação (`server/src/application`)
 
-Um serviço por área: catálogo, clientes, serviços, postos, pagamentos, fidelização, conversas, consentimentos, painel, histórico, partilha, relatório do banco, marcações, fecho do dia, registo de alterações e parâmetros. Cada caso de uso:
+Um serviço por área: catálogo, clientes, serviços, baias (postos), entrada manual no pátio, pagamentos, fidelização, conversas, consentimentos, painel, histórico, partilha, relatório do banco (com a pré-qualificação e os pedidos de análise), campanhas, marcações, fecho do dia, registo de alterações, parâmetros, autenticação (`auth-service.js`) e área do cliente (`self-service.js`, que confirma que cada serviço, pagamento ou proposta é do cliente da sessão). Cada caso de uso:
 
 1. lê o que precisa através dos repositórios (portas);
 2. chama o domínio para decidir;
@@ -69,15 +74,20 @@ Um serviço por área: catálogo, clientes, serviços, postos, pagamentos, fidel
 - **`database/unit-of-work.js`:** transacção; as chamadas aninhadas usam `SAVEPOINT`.
 - **`database/repositories/`:** SQL e conversão entre linhas `snake_case` e objectos `camelCase`.
 - **`database/seed/`:** dados de demonstração (`demo-data.js`) e carregamento (`demo-seeder.js`). Os clientes e serviços passam pelos casos de uso.
+- **`database/seed/pitch-data.js`:** volume "pitch" (base da proposta v1), gerado de forma determinística.
+- **`security/jwt.js`:** tokens HS256 com `node:crypto` (porta `TokenService`).
+- **`security/password-hasher.js`:** scrypt com sal (porta `PasswordHasher`) e números aleatórios seguros.
 - **`clock.js`:** relógio do sistema e relógio fixo para testes e demonstração.
 
 ### Interface HTTP (`server/src/interfaces/http`)
 
-- **`request.js`:** leitura e validação de tipos (ids, inteiros, booleanos, texto, `X-Actor`).
+- **`session.js`:** lê o token (cookie do perfil indicado em `X-Session-Profile`, ou `Authorization: Bearer`), valida-o com o `AuthService` e expõe `allow(permissão)`; protege também as páginas de perfil.
+- **`routes.js`:** cada rota declara a permissão que exige.
+- **`request.js`:** leitura e validação de tipos (ids, inteiros, booleanos, texto) e o autor (`actorOf`, sempre da sessão).
 - **`controllers/`:** finos; lêem o pedido, chamam um caso de uso e apresentam o resultado.
 - **`presenters.js`:** formato da API (`display`, `plateDisplay`, rótulos de estado e pagamento).
-- **`middleware/error-handler.js`:** traduz os erros para 400, 404, 409 ou 500, no formato `{ error: { code, message, details? } }`.
-- **`app.js`:** monta `/api`, serve `client/` e `simulador/`.
+- **`middleware/error-handler.js`:** traduz os erros para 400, 401, 403, 404, 409 ou 500, no formato `{ error: { code, message, details? } }`.
+- **`app.js`:** cabeçalhos de segurança, `/api`, páginas por perfil (só com a sessão certa), checkout `/pagar/:id`, redireccionamentos dos endereços antigos, `client/` e `simulador/`.
 
 ### Interface de conversa (`server/src/interfaces/chat`)
 
@@ -89,21 +99,23 @@ Um serviço por área: catálogo, clientes, serviços, postos, pagamentos, fidel
 
 ## Cliente (`client/`)
 
+Uma pasta por perfil; o sistema visual é `css/app.css` (tokens e componentes dos mocks da proposta v1).
+
 - **`js/core/`:**
-  - `api-client.js` faz as chamadas à API;
-  - `dom.js` tem os utilitários de interface e o `escapeHtml`;
-  - `operator.js` guarda o nome do operador.
-- **`js/patio/`:**
-  - `main.js` faz a ligação e a actualização a cada 3 s;
-  - `board-view.js` desenha o quadro;
-  - `register-dialog.js` trata o registo de serviço (M8);
-  - `confirm-dialog.js` trata as confirmações.
+  - `api-client.js` faz as chamadas à API com a sessão do perfil (`useSession`) e volta à entrada se a sessão expirar;
+  - `session.js` confirma a sessão da página e trata da saída;
+  - `format.js` formata dinheiro, horas e datas de Maputo; `dom.js` tem o `escapeHtml`; `charts.js` desenha os gráficos de barras.
+- **`js/entrar/`:** entrada dos quatro perfis (M6 para o operador).
+- **`js/operador/`:** quadro de baias (M7), entrada manual (M8) e entrega (M9).
+- **`js/gestor/`:** uma vista por secção (visão geral M10, pátio, clientes, campanhas M11, conciliação, catálogo, crédito).
+- **`js/moza/`:** módulo do analista (M12) e extratos.
+- **`js/cliente/`:** área do cliente e checkout (M4).
 
 ## Simulador (`simulador/`)
 
 - **`js/main.js`:** lista de conversas, endereço por número e consulta a cada 3 s.
-- **`js/chat-view.js`:** bolhas, avisos e respostas rápidas.
-- **`js/whatsapp-format.js`:** marcação `*negrito*` e `_itálico_` sobre texto já escapado.
+- **`js/chat-view.js`:** bolhas, avisos, opções como botões de resposta (M2, M5) e respostas rápidas.
+- **`js/whatsapp-format.js`:** marcação `*negrito*` e `_itálico_` sobre texto já escapado, links só http(s) e separação das opções.
 
 Reutiliza `client/js/core/`, servido em `/js/core/`.
 
