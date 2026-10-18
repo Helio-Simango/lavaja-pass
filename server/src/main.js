@@ -4,7 +4,13 @@ import { openDatabase } from './infrastructure/database/connection.js';
 import { migrate } from './infrastructure/database/migrator.js';
 import { createHttpApp } from './interfaces/http/app.js';
 
-const config = loadConfig();
+let config;
+try {
+  config = loadConfig();
+} catch (error) {
+  console.error(`Configuração inválida (.env): ${error.message}`);
+  process.exit(1);
+}
 const db = openDatabase(config.dbPath);
 const applied = migrate(db);
 if (applied.length) console.log(`Migrações aplicadas: ${applied.join(', ')}`);

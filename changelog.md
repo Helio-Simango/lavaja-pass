@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.0.7] — 2026-10-19
+
+- Entrada: depois de entrar, só se volta à página pedida (`volta=`) se for da área do perfil que entrou. Antes, quem chegava a `/entrar` a partir de outro perfil (ex.: `/cliente`) e entrava como gestor ou operador era devolvido à entrada, o que parecia um simples "refresh".
+- Entrada: confirma que o browser guardou o cookie da sessão; se não guardou (cookies bloqueados), mostra uma mensagem em vez de voltar à entrada sem explicação.
+- Arranque: um `JWT_SECRET` com menos de 32 bytes dá uma mensagem clara, com a forma de gerar um, em vez de um erro com pilha.
+
 ## [2.0.6] — 2026-10-18
 
 - Simulador: botão "← Voltar ao início" na barra do topo.
