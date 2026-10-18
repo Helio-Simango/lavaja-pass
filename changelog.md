@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.0.2] — 2026-10-18
+
+- Página de entrada simplificada: fundo branco, só o botão "← Voltar ao início" acima da escolha do perfil (sem padrão, título nem atalhos).
+
 ## [2.0.1] — 2026-10-18
 
 ### Página inicial e entrada
