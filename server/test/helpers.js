@@ -49,8 +49,10 @@ export async function startTestServer({ demoResetToken = null } = {}) {
    */
   function as(role, who) {
     const key = `${role}:${who ?? ''}`;
-    if (!sessions.has(key)) sessions.set(key, `Bearer ${tokenFor(context, role, who)}`);
-    return { Authorization: sessions.get(key) };
+    const cached = sessions.get(key);
+    // As sessões expiram com o relógio dos testes: renova quando for preciso.
+    if (!cached || Date.parse(cached.expiresAt) <= context.clock.now().getTime()) sessions.set(key, tokenFor(context, role, who));
+    return { Authorization: `Bearer ${sessions.get(key).token}` };
   }
 
   async function api(method, path, body, headers = {}) {
@@ -91,15 +93,15 @@ function tokenFor({ services, security: { tokenService }, db }, role, who) {
     const name = who ?? 'Amílcar';
     const { pin } = DEMO_USERS.find((user) => user.role === 'operator' && user.name === name);
     const operatorId = authService.operatorRoster().find((operator) => operator.name === name).id;
-    return authService.loginOperator({ operatorId, pin }).token;
+    return authService.loginOperator({ operatorId, pin });
   }
   if (role === 'manager' || role === 'bank_analyst') {
     const { email, password } = DEMO_USERS.find((user) => user.role === role);
-    return authService.loginStaff({ email, password }).token;
+    return authService.loginStaff({ email, password });
   }
   const customer = db.prepare('SELECT id, name FROM customers WHERE phone = ?').get(who);
   const claims = { sub: `customer:${customer.id}`, role: 'customer', name: customer.name, cid: customer.id, purpose: 'session' };
-  return tokenService.issue(claims, 30).token;
+  return tokenService.issue(claims, 30);
 }
 
 /** Atalhos para encontrar ids pelos códigos dos dados de demonstração. */

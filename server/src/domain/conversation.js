@@ -41,6 +41,9 @@ export function globalCommandOf(text) {
   if (normalized === 'ADERIR') return 'JOIN_LOYALTY';
   if (normalized === 'ACEITAR') return 'ACCEPT_OFFER';
   if (normalized === 'MANTER') return 'KEEP_OFFER';
+  // Cartaz do pátio (M1) e campanhas (M5): "LAVAR" entra directamente na fila.
+  if (normalized === 'LAVAR') return 'START_WASH';
+  if (normalized === 'ESTADO') return 'STATUS';
   return null;
 }
 

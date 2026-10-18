@@ -13,7 +13,7 @@ describe('base de dados', () => {
     const db = createTestDb({ seed: false });
     assert.deepEqual(migrate(db), []);
     const versions = db.prepare('SELECT version FROM schema_migrations ORDER BY version').all().map((r) => r.version);
-    assert.deepEqual(versions, ['001_foundation.sql', '002_catalog_customers.sql', '003_washes.sql', '004_payments.sql', '005_loyalty.sql', '006_conversations.sql', '007_bank_sharing.sql', '008_appointments.sql', '009_reconciliation.sql', '010_autenticacao.sql', '011_pre_qualificacao.sql']);
+    assert.deepEqual(versions, ['001_foundation.sql', '002_catalog_customers.sql', '003_washes.sql', '004_payments.sql', '005_loyalty.sql', '006_conversations.sql', '007_bank_sharing.sql', '008_appointments.sql', '009_reconciliation.sql', '010_autenticacao.sql', '011_pre_qualificacao.sql', '012_campanhas.sql']);
     db.close();
   });
 

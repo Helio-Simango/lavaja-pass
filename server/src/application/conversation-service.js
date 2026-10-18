@@ -76,6 +76,11 @@ export class ConversationService {
     return this.#append(thread, { direction: MessageDirection.OUT, kind: MessageKind.TEXT, body });
   }
 
+  /** Mensagem da lavadora iniciada por ela (ex.: campanha confirmada pelo gestor). */
+  sendToPhone(phone, body) {
+    return this.appendReply(this.threadFor(phone), body);
+  }
+
   /** Aviso automático ao cliente (serviço iniciado, pronto, pagamento…). */
   notifyPhone(phone, body) {
     return this.#append(this.threadFor(phone), { direction: MessageDirection.OUT, kind: MessageKind.SYSTEM, body });

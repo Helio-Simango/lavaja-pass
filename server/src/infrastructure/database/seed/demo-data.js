@@ -74,6 +74,12 @@ export const SETTINGS = [
       'Score de pré-qualificação (proposta v1, secção 8), por validar com o banco: volume de referência 100.000 MZN, antiguidade de referência 180 dias, classes A ≥ 75 e B ≥ 60, retenção de 10% dos recebimentos digitais, 12 meses, factor de custo ilustrativo 1,25',
   },
   {
+    key: 'campaigns.policy',
+    value: { minInactiveDays: 14, cooldownDays: 7, attributionDays: 7 },
+    description:
+      'Campanhas fora de pico (proposta v1, secção 7.5), por validar: clientes sem lavar há 14+ dias, no máximo uma campanha em 7 dias, resultado medido até 7 dias após o envio. Envio sempre confirmado pelo gestor.',
+  },
+  {
     key: 'demo.institution',
     value: 'Moza Banco',
     description:
