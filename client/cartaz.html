@@ -20,11 +20,15 @@
     .poster li { margin: 4px 0; }
     .poster li.star { color: var(--red); font-weight: 700; }
     .poster .bot { background: var(--soft); padding: 12px 22px; font-size: 12px; color: var(--muted); }
+    .back { position: absolute; top: 14px; left: 20px; color: var(--ink); font-weight: 700; font-size: 13.5px; text-decoration: none; border: 1.5px solid var(--line); border-radius: 99px; padding: 7px 14px; background: #fff; }
+    .back:hover { background: var(--soft); }
+    @media (max-width: 560px) { .back { position: static; display: inline-block; margin: 14px 0 0 16px; } }
     @media print { body { background: #fff; } .no-print { display: none; } .poster { box-shadow: none; } }
   </style>
 </head>
 <body>
   <!-- M1 · Cartaz A3 à entrada: o QR abre a conversa com "LAVAR" já escrito -->
+  <a class="back no-print" href="/">← Voltar ao início</a>
   <main class="center-page">
     <div class="poster">
       <div class="top"><b>Lava sem esperar.</b><span id="poster-business">Lava Já – Matola</span> · LavaJá Pass</div>
