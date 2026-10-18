@@ -99,6 +99,8 @@ Decisões da equipa para o marco I-11 (versão 2.0.0). Revêem pontos da v3, ass
 | IMP-74 | "Recebido hoje" mostra o total com a separação ao lado (% digital, numerário por operador) e a origem de cada parte | O M10 pede o total; o DEC-07 continua cumprido porque a origem nunca se perde |
 | IMP-75 | O QR do cartaz (M1) é ilustrativo (não é lido por câmaras) e abre o simulador com "LAVAR" | Um QR verdadeiro exigiria uma biblioteca ou o número real |
 | IMP-76 | Migrações do I-11: uma por funcionalidade (`010_autenticacao`, `011_pre_qualificacao`, `012_campanhas`) | Cada uma entrou numa branch própria |
+| IMP-77 | O JWT de sessão só existe no cookie: a resposta da entrada não o traz no corpo e leva `Cache-Control: no-store`. O cookie leva `HttpOnly`, `SameSite=Strict`, `Path=/`, `Max-Age` (a duração da sessão), `Priority=High` e `Secure` com `COOKIE_SECURE=true` | Um script na página (ex.: XSS) não consegue ler nem copiar a sessão; o `Max-Age` relativo não depende do relógio do browser. O `Bearer` continua aceite para clientes da API e testes |
+| IMP-78 | Depois de entrar, só se volta à página pedida (`volta=`) se for da área do perfil que entrou; a página confirma com o servidor que o browser guardou o cookie | Entrar como gestor a partir de `/cliente` devolvia à entrada (parecia um "refresh"); com cookies bloqueados, aparece uma mensagem |
 
 ## Decisões de implementação (I-10)
 
