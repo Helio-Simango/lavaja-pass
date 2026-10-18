@@ -11,6 +11,8 @@
 
 body.simulator { height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
 .sim-bar { display: flex; align-items: center; gap: 12px; padding: 10px 16px; background: var(--ink); color: #c9cfd6; flex-wrap: wrap; }
+.sim-bar .back { color: #fff; font-weight: 700; font-size: 13px; text-decoration: none; border: 1.5px solid rgb(255 255 255 / 0.35); border-radius: 99px; padding: 5px 12px; }
+.sim-bar .back:hover { background: rgb(255 255 255 / 0.12); }
 .sim-bar .brand { color: #fff; font-weight: 800; text-decoration: none; }
 .sim-bar .brand em { font-style: normal; color: var(--red-bright); }
 .sim-bar nav { margin-left: auto; display: flex; gap: 12px; font-size: 13px; }
