@@ -1,5 +1,46 @@
 # Changelog
 
+## [2.0.0] — 2026-10-18
+
+Marco **I-11**: perfis com autenticação e as telas da proposta v1. Quatro branches (`feature/i11-autenticacao-jwt`, `feature/i11-pre-qualificacao`, `feature/i11-campanhas`, `feature/i11-telas-perfis`) e a documentação, integradas em `develop` e depois em `main`. Decisões da equipa EQ-01 a EQ-07 e de implementação IMP-59 a IMP-76 em `docs/decisoes.md`.
+
+### Autenticação e perfis (D-16 decidida)
+
+- Quatro perfis com permissões separadas (`domain/access.js`): cliente, operador, gestor e analista bancário. Sem sessão 401, sem permissão 403.
+- Sessões JWT HS256 com `node:crypto` (sem dependências), em cookies HttpOnly + SameSite=Strict, um por perfil (`X-Session-Profile`), ou `Authorization: Bearer`.
+- Operador com nome + PIN; gestor e analista com email + senha; cliente com código de 6 dígitos enviado na conversa ou com o link de pagamento.
+- Hash scrypt com sal; bloqueio de 15 min após 5 falhas; registo de entradas (`auth_events`, migração `010_autenticacao`).
+- O autor de cada acção e o numerário declarado vêm sempre da sessão. O analista só vê a sua instituição.
+- Área do cliente na API (`/api/me`): os seus serviços, fidelização, checkout e resposta às propostas de horário, com verificação de dono.
+- `JWT_SECRET`, `COOKIE_SECURE` e `PUBLIC_URL` na configuração.
+
+### Pré-qualificação (M12, EQ-04)
+
+- Score de 0 a 100 com os seis componentes da proposta v1 (volume verificado, regularidade, tendência, % digital, retenção, antiguidade), classes A/B/C e montante indicativo pela retenção de 10% dos recebimentos digitais; parâmetros por validar.
+- É uma secção do relatório que a lavadora autoriza; o numerário declarado não conta para o volume nem para a % digital.
+- Pedido de análise de crédito registado (migração `011_pre_qualificacao`), visível para a lavadora.
+
+### Campanhas fora de pico (M11 → M5, EQ-05)
+
+- Segmento: consentimento de ofertas, 14+ dias sem lavar, no máximo uma campanha em 7 dias. Envio sempre confirmado pelo gestor.
+- A mensagem chega à conversa com `LAVAR` (entra na fila) e `PARAR` (retira o consentimento); resultado medido até 7 dias (migração `012_campanhas`).
+- Conversa: comandos `LAVAR` e `ESTADO`.
+
+### Telas da proposta v1 (EQ-03)
+
+- Sistema visual dos mocks (`client/css/app.css`) e entrada nos quatro perfis (`/entrar`, M6).
+- Operador (`/operador`): quadro de baias (M7), entrada manual por matrícula com telefone opcional e hora prevista (M8), entrega e cobrança com troco (M9).
+- Gestor (`/gestor`): visão geral com ocupação por dia e capacidade parada (M10), campanhas (M11), pátio ao vivo e agenda, clientes, conciliação, catálogo e regras, crédito · Moza Banco.
+- Analista (`/moza`): pré-qualificação e montante indicativo (M12), extratos, pedidos de análise, exportação.
+- Cliente: checkout com a carteira, aberto pelo link do aviso de pronto (M4); área do cliente; cartaz do pátio (M1); simulador ao estilo WhatsApp com botões de resposta (M2, M3, M5).
+- As páginas de perfil só abrem com a sessão certa; os endereços antigos redireccionam; cabeçalhos de segurança.
+- Os postos passam a chamar-se baias (B1–B4) na interface.
+
+### Demonstração
+
+- Volume "pitch" com a base da proposta v1 (212 clientes, ~350 lavagens, ~62% digital), por omissão no `db:reset`; os testes usam o volume compacto.
+- Contas de demonstração no README e no roteiro.
+
 ## [1.0.0] — 2026-10-17
 
 Protótipo completo: marcos **I-6** a **I-10**. Cada marco foi desenvolvido numa branch `feature/…`, integrado em `develop` e depois em `main`.
