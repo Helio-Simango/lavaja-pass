@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.0.4] — 2026-10-18
+
+- Cartaz do pátio (M1): o número de telefone fica centrado.
+
 ## [2.0.3] — 2026-10-18
 
 - A página inicial volta à versão 2.0.0 (fundo branco, sem padrão, ilustração nem secções extra); sai `client/css/inicio.css`. A entrada mantém o botão "← Voltar ao início".
