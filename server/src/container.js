@@ -18,6 +18,7 @@ import { SettingsService } from './application/settings-service.js';
 import { SharingService } from './application/sharing-service.js';
 import { StationService } from './application/station-service.js';
 import { VehicleHistoryService } from './application/vehicle-history-service.js';
+import { silentNotifier } from './application/ports.js';
 import { WashService } from './application/wash-service.js';
 import { YardEntryService } from './application/yard-entry-service.js';
 import { systemClock } from './infrastructure/clock.js';
@@ -48,8 +49,9 @@ import { ConversationNotifier } from './interfaces/chat/notifier.js';
  * @param security { tokenSecret?, passwordHasher? } — sem segredo, as sessões valem só até reiniciar
  * @param demoVolume volume da reposição da demonstração ("pitch" por omissão; os testes usam "compact")
  * @param publicUrl endereço público, para os links enviados na conversa (ex.: pagamento)
+ * @param notifications false = sem avisos na conversa (ex.: histórico de fundo da demonstração)
  */
-export function createContainer({ db, clock = systemClock, security = {}, demoVolume, publicUrl = 'http://localhost:3000' }) {
+export function createContainer({ db, clock = systemClock, security = {}, demoVolume, publicUrl = 'http://localhost:3000', notifications = true }) {
   const unitOfWork = new SqliteUnitOfWork(db);
   const passwordHasher = security.passwordHasher ?? new ScryptPasswordHasher();
   const tokenService = new HmacJwtTokenService({ secret: security.tokenSecret ?? randomSecret(), clock });
@@ -81,7 +83,9 @@ export function createContainer({ db, clock = systemClock, security = {}, demoVo
   const customerService = new CustomerService({ ...shared, catalogService, consentService });
   const loyaltyService = new LoyaltyService(shared);
   const authService = new AuthService({ ...shared, tokenService, passwordHasher, random: secureRandom, conversationService });
-  const notifier = new ConversationNotifier({ conversationService, loyaltyService, catalogService, paymentLinks: authService, publicUrl });
+  const notifier = notifications
+    ? new ConversationNotifier({ conversationService, loyaltyService, catalogService, paymentLinks: authService, publicUrl })
+    : silentNotifier;
   const paymentService = new PaymentService({ ...shared, loyaltyService, notifier });
   const washService = new WashService({ ...shared, catalogService, paymentService, loyaltyService, notifier });
   const appointmentService = new AppointmentService({ ...shared, catalogService, washService, settingsService, notifier });

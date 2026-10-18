@@ -125,7 +125,9 @@ function presentWashPayment(wash) {
   return {
     status: paymentState,
     label,
-    effective: effective ? { id: effective.id, method: effective.method, declaredBy: effective.declaredBy } : null,
+    effective: effective
+      ? { id: effective.id, method: effective.method, declaredBy: effective.declaredBy, at: effective.confirmedAt ?? effective.declaredAt ?? null }
+      : null,
   };
 }
 
@@ -151,6 +153,7 @@ export function presentWash(wash) {
     source: wash.source,
     queuedAt: wash.queuedAt,
     startedAt: wash.startedAt,
+    startedBy: wash.startedBy ?? null,
     readyAt: wash.readyAt,
     completedAt: wash.completedAt,
     cancelledAt: wash.cancelledAt,

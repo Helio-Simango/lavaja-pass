@@ -64,7 +64,6 @@ export function seedDemo(db, { clock = systemClock, passwordHasher, volume = See
     services.loyaltyService.publishRules(DEMO_LOYALTY_RULES, { actor: SEED_ACTOR, toValidate: true });
     CUSTOMERS.forEach((customer) => services.customerService.register(customer));
     playHistory(db, services, demoClock, nowMs);
-    if (volume === SeedVolume.PITCH) playPitchHistory(db, services, demoClock, nowMs);
     seedSharing(repositories.sharingRepository, services, demoClock, nowMs);
     seedUsers(db, services.authService);
     demoClock.set(new Date(nowMs - YARD_START_OFFSET_MIN * MINUTE_MS).toISOString());
@@ -72,6 +71,12 @@ export function seedDemo(db, { clock = systemClock, passwordHasher, volume = See
     demoClock.set(new Date(nowMs).toISOString());
     seedAppointments(db, services, demoClock);
   });
+  // O histórico de fundo não gera avisos: as conversas do simulador ficam só com os clientes do roteiro.
+  if (volume === SeedVolume.PITCH) {
+    const quiet = createContainer({ db, clock: demoClock, security: { passwordHasher }, notifications: false });
+    quiet.unitOfWork.run(() => playPitchHistory(db, quiet.services, demoClock, nowMs));
+    demoClock.set(new Date(nowMs).toISOString());
+  }
   return true;
 }
 
@@ -184,7 +189,12 @@ function playPitchHistory(db, { customerService, washService, paymentService }, 
   const vehicleIds = pitchCustomers(PITCH_CUSTOMERS_TOTAL - CUSTOMERS.length, random).map(
     (customer) => customerService.register(customer).vehicles[0].id,
   );
-  const stationIds = STATIONS.map((code) => db.prepare('SELECT id FROM stations WHERE code = ?').get(code).id);
+  // As baias ocupadas pelo pátio de hoje ficam de fora (o histórico é jogado depois do pátio).
+  const stationIds = db
+    .prepare(`SELECT id FROM stations WHERE id NOT IN
+      (SELECT station_id FROM washes WHERE status IN ('in_progress', 'ready') AND station_id IS NOT NULL) ORDER BY sort_order`)
+    .all()
+    .map((row) => row.id);
   const planIds = Object.fromEntries(PITCH_PLAN_MIX.map(([code]) => [code, db.prepare('SELECT id FROM wash_plans WHERE code = ?').get(code).id]));
 
   const slots = pitchSlots(nowMs);

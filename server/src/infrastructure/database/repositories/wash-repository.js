@@ -1,4 +1,6 @@
-const SELECT_WASH = `SELECT w.*, cu.name AS customer_name, cu.phone AS customer_phone, s.code AS station_code
+// started_by: quem iniciou a lavagem (último início registado), para o quadro do pátio (M7).
+const SELECT_WASH = `SELECT w.*, cu.name AS customer_name, cu.phone AS customer_phone, s.code AS station_code,
+    (SELECT e.actor FROM wash_status_events e WHERE e.wash_id = w.id AND e.to_status = 'in_progress' ORDER BY e.id DESC LIMIT 1) AS started_by
   FROM washes w
   JOIN customers cu ON cu.id = w.customer_id
   LEFT JOIN stations s ON s.id = w.station_id`;
@@ -41,6 +43,7 @@ const toWash = (row) => ({
   source: row.source,
   queuedAt: row.queued_at,
   startedAt: row.started_at,
+  startedBy: row.started_by,
   readyAt: row.ready_at,
   completedAt: row.completed_at,
   cancelledAt: row.cancelled_at,

@@ -10,7 +10,7 @@ export function createCustomerController({ customerService }) {
         res.json({ customer: presentCustomer(customerService.findByPhone(phone)) });
         return;
       }
-      res.json({ customers: customerService.list().map(presentCustomer) });
+      res.json({ customers: customerService.list().map(presentCustomer), total: customerService.count() });
     },
 
     get(req, res) {

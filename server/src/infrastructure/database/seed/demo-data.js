@@ -75,9 +75,9 @@ export const SETTINGS = [
   },
   {
     key: 'capacity.practical',
-    value: { practicalWashesPerDay: 28, lowOccupancyThreshold: 0.3 },
+    value: { practicalWashesPerDay: 28, lowOccupancyThreshold: 0.27 },
     description:
-      'Capacidade prática ≈ 28 lavagens/dia com 4 baias, 07:00–18:00 (proposta v1, secção 2.1), declarada e por validar; abaixo de 30% o dia aparece como capacidade parada no painel',
+      'Capacidade prática ≈ 28 lavagens/dia com 4 baias, 07:00–18:00 (proposta v1, secção 2.1), declarada e por validar; abaixo de 27% o dia aparece como capacidade parada no painel (na proposta v1: terça e quarta)',
   },
   {
     key: 'campaigns.policy',

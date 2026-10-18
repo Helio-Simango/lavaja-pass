@@ -8,7 +8,7 @@ const DAY_MS = 86_400_000;
 const MAX_DAYS = 365;
 const WEEKS_SHOWN = 4;
 // Capacidade prática da proposta v1 (4 baias, 07:00–18:00): declarada, por validar.
-const DEFAULT_CAPACITY = { practicalWashesPerDay: 28, lowOccupancyThreshold: 0.3 };
+const DEFAULT_CAPACITY = { practicalWashesPerDay: 28, lowOccupancyThreshold: 0.27 };
 
 export class DashboardService {
   #reporting;

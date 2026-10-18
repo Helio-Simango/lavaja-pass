@@ -42,7 +42,7 @@ describe('API do Painel, viaturas por classe e histórico (I-6)', () => {
     for (const day of body.occupancy) {
       assert.equal(day.occupancyPercent, Math.round((day.completed / day.days / 28) * 100));
     }
-    assert.ok(body.lowOccupancy.every((day) => day.occupancyPercent < 30));
+    assert.ok(body.lowOccupancy.every((day) => day.occupancyPercent < 27));
   });
 
   it('o dia de hoje (M10) separa o digital confirmado do numerário declarado, por operador', async () => {

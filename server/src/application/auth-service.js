@@ -22,7 +22,8 @@ import { UnauthenticatedError, ValidationError } from '../domain/errors.js';
 import { parsePhone } from '../domain/phone.js';
 
 const TokenPurpose = Object.freeze({ SESSION: 'session', LINK: 'link' });
-const PAYMENT_LINK_TTL_MIN = 60;
+// O link de pagamento vale 24 h (o cliente pode pagar depois); a sessão que abre dura 30 min.
+const PAYMENT_LINK_TTL_MIN = 24 * 60;
 const INVALID_CREDENTIALS = 'Credenciais inválidas.';
 // Usado quando o utilizador não existe, para a resposta demorar o mesmo (não revela quem existe).
 const DECOY_HASH = 'scrypt$16384$8$1$AAAAAAAAAAAAAAAAAAAAAA$AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
